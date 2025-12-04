@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-from out_of_context.models import (
+from hjeon139_mcp_outofcontext.models import (
     AnalysisResult,
     ContextDescriptors,
     ContextSegment,

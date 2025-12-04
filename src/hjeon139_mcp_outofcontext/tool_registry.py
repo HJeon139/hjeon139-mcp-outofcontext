@@ -3,7 +3,7 @@
 from collections.abc import Awaitable, Callable
 from typing import Any
 
-from out_of_context.app_state import AppState
+from hjeon139_mcp_outofcontext.app_state import AppState
 
 
 class ToolHandler:

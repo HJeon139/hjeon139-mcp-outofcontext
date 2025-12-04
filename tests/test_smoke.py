@@ -2,7 +2,7 @@
 
 import pytest
 
-from out_of_context import __version__
+from hjeon139_mcp_outofcontext import __version__
 
 
 @pytest.mark.unit

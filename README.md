@@ -73,7 +73,7 @@ See [`docs/steering/`](docs/steering/) for comprehensive development guidelines:
 ```
 out_of_context/
   src/
-    out_of_context/      # Main package code
+    hjeon139_mcp_outofcontext/      # Main package code
   tests/                 # Test files
   docs/                  # Documentation
   artifacts/             # Test outputs and artifacts

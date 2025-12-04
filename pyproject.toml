@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "out-of-context"
+name = "hjeon139-mcp-outofcontext"
 version = "0.2.0"
 description = "Out of context project"
 readme = "README.md"
@@ -52,7 +52,7 @@ release = [
   "lint-fix",
   "fmt-fix",
   "typecheck",
-  "pytest -m 'unit' --cov=src/out_of_context",
+  "pytest -m 'unit' --cov=src/hjeon139_mcp_outofcontext",
   "hatch build -t wheel",
 ]
 
@@ -61,7 +61,7 @@ type = "virtual"
 features = ["dev"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/out_of_context"]
+packages = ["src/hjeon139_mcp_outofcontext"]
 
 [tool.ruff]
 line-length = 100
@@ -96,7 +96,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["out_of_context"]
+known-first-party = ["hjeon139_mcp_outofcontext"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -106,7 +106,7 @@ disallow_untyped_defs = false
 check_untyped_defs = true
 pretty = true
 
-modules = ["out_of_context"]
+modules = ["hjeon139_mcp_outofcontext"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"

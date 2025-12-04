@@ -4,8 +4,8 @@ import asyncio
 from contextlib import asynccontextmanager
 from typing import Any
 
-from out_of_context.app_state import AppState
-from out_of_context.tool_registry import ToolRegistry
+from hjeon139_mcp_outofcontext.app_state import AppState
+from hjeon139_mcp_outofcontext.tool_registry import ToolRegistry
 
 
 class MCPServer:
