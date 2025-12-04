@@ -1,0 +1,69 @@
+# Cursor Rules for Out of Context Project
+
+This file provides guidelines for AI-assisted development in Cursor.
+
+## Commit Standards
+
+Always follow Conventional Commits format when making commits:
+
+- Format: `<type>(<scope>): <subject>`
+- Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+- Scope examples: foundation, models, server, storage, gc, tools, tests
+- Subject: imperative mood, lowercase, max 72 chars
+
+See: `docs/steering/06_conventional_commits.md`
+
+## Version Management
+
+When making commits, bump version appropriately:
+
+- `feat` commits → Bump MINOR version (0.1.0 → 0.2.0)
+- `fix` commits → Bump PATCH version (0.1.0 → 0.1.1)
+- Breaking changes → Bump MAJOR version (0.1.0 → 1.0.0)
+- Update in both: `pyproject.toml` and `src/out_of_context/__init__.py`
+
+See: `docs/steering/07_semantic_versioning.md`
+
+## Commit Workflow
+
+1. Make code changes
+2. Determine commit type (feat/fix/docs/etc.)
+3. Choose scope
+4. Bump version if needed (feat/fix/breaking)
+5. Write commit message in conventional format
+6. Stage and commit
+
+See: `docs/steering/08_commit_version_workflow.md`
+
+## Code Quality
+
+- Use ruff for linting and formatting
+- Type hints required for all functions
+- All tests must pass before committing
+- Follow FastAPI/MCP best practices (no globals, dependency injection)
+
+## File Organization
+
+- Source code: `src/out_of_context/`
+- Tests: `tests/`
+- Documentation: `docs/`
+- Steering docs: `docs/steering/`
+
+## Testing
+
+- Run tests: `hatch run test`
+- All tests must pass before committing
+- Use pytest markers: `@pytest.mark.unit`, `@pytest.mark.integration`
+
+## Dependencies
+
+- Minimal dependencies: mcp, pydantic, tiktoken
+- Dev dependencies: pytest, pytest-asyncio, ruff, mypy, pre-commit
+- Add new dependencies only when necessary
+
+## References
+
+- Steering Documentation: `docs/steering/`
+- Task Documentation: `docs/v1/tasks/`
+- Design Documentation: `docs/v1/design/`
+

@@ -8,7 +8,7 @@ from out_of_context import __version__
 @pytest.mark.unit
 def test_package_imports() -> None:
     """Verify the package can be imported."""
-    assert __version__ == "0.1.0"
+    assert __version__ == "0.2.0"
 
 
 @pytest.mark.unit

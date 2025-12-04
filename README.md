@@ -33,6 +33,12 @@ This project uses:
    hatch run update-deps
    ```
 
+5. **Setup pre-commit hooks** (optional, recommended):
+   ```bash
+   hatch run pre-commit install --hook-type commit-msg
+   ```
+   This automatically validates commit messages follow Conventional Commits format.
+
 ### Quick Reference
 
 ```bash
@@ -54,13 +60,13 @@ hatch run release
 
 ## Steering Documentation
 
-See `../steering_docs/` for comprehensive development guidelines:
+See [`docs/steering/`](docs/steering/) for comprehensive development guidelines:
 
-- **Setup**: `01_setup.md` - Python, Hatch, project structure
-- **Standards**: `02_coding_standards.md` - Ruff, MyPy, Pytest configuration
-- **Workflow**: `03_development_workflow.md` - Scoping → Design → Implementation
-- **Patterns**: `04_common_patterns.md` - Experiments, dependencies, typing
-- **FastAPI+MCP**: `05_fastapi_mcp_integration.md` - FastAPI with MCP integration
+- **Conventional Commits**: `06_conventional_commits.md` - Commit message standards
+- **Semantic Versioning**: `07_semantic_versioning.md` - Version management guidelines
+- **Commit Workflow**: `08_commit_version_workflow.md` - Step-by-step commit and version workflow
+
+*Note: Additional steering docs (setup, standards, workflow, patterns) may be added as needed.*
 
 ## Project Structure
 

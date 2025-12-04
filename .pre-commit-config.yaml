@@ -1,0 +1,31 @@
+# Pre-commit hooks for code quality and commit message validation
+# See: https://pre-commit.com/
+
+repos:
+  # Conventional Commits validation
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.0.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args:
+          # Allowed commit types
+          - --types
+          - feat,fix,docs,style,refactor,perf,test,build,ci,chore,revert
+          # Maximum subject line length
+          - --max-subject-length
+          - "72"
+
+  # Python code quality (optional, can be run manually)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-merge-conflict
+

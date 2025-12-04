@@ -1,0 +1,124 @@
+---
+description: Commit message standards and version management guidelines
+alwaysApply: true
+---
+
+# Commit Standards and Version Management
+
+## Commit Message Format
+
+Always follow Conventional Commits format when making commits:
+
+**Format**: `<type>(<scope>): <subject>`
+
+**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
+
+**Scope examples**: `foundation`, `models`, `server`, `storage`, `gc`, `tools`, `tests`, `deps`, `config`
+
+**Subject**: Imperative mood, lowercase, max 72 characters, no period
+
+## Version Bumping Rules
+
+When making commits, **always bump version** in both locations before committing:
+
+- **`feat`** commits → Bump **MINOR** version (0.1.0 → 0.2.0)
+- **`fix`** commits → Bump **PATCH** version (0.1.0 → 0.1.1)
+- **Breaking changes** → Bump **MAJOR** version (0.1.0 → 1.0.0)
+- Other types (`docs`, `style`, `refactor`, `test`, `chore`) → No version bump
+
+**Update version in:**
+1. `pyproject.toml`: `version = "0.2.0"`
+2. `src/out_of_context/__init__.py`: `__version__ = "0.2.0"`
+
+## Pre-Commit Checklist
+
+Before committing, complete this checklist:
+
+1. ✅ **Run release pipeline** to verify build and tests:
+   ```bash
+   hatch run release
+   ```
+   This runs: lint-fix, fmt-fix, typecheck, tests with coverage, and build
+
+2. ✅ **All tests pass** - `hatch run test` must succeed
+
+3. ✅ **Version bumped** (if needed) - Updated in both locations
+
+4. ✅ **Code formatted** - `hatch run fmt-fix` completes successfully
+
+5. ✅ **Linting passes** - `hatch run lint-fix` completes successfully
+
+6. ✅ **Type checking passes** - `hatch run typecheck` completes successfully
+
+### Bug Documentation
+
+If issues are detected during the pre-commit checklist:
+
+- **Simple issues**: Fix them before committing
+- **Complex bugs**: Do NOT fix in the same session. Instead:
+  1. Document the issue in `docs/v1/bugs/` directory
+  2. Create a markdown file: `docs/v1/bugs/YYYY-MM-DD-issue-description.md`
+  3. Include: description, reproduction steps, expected vs actual behavior
+  4. Continue with commit (if blocking issues are not critical)
+  5. Address in a separate session or task
+
+Example bug documentation:
+```markdown
+# Issue: Type checking fails in storage layer
+
+**Date**: 2024-12-04
+**Severity**: Medium
+**Component**: storage
+
+## Description
+Type checking fails for segment loading due to Optional type handling.
+
+## Reproduction
+Run `hatch run typecheck` after changes to storage layer.
+
+## Expected Behavior
+Type checking should pass.
+
+## Actual Behavior
+MyPy reports type error in load_segments method.
+
+## Notes
+Non-blocking for current feature. Can address in separate fix.
+```
+
+## Commit Workflow
+
+1. Make code changes
+2. **Run pre-commit checklist** (see above)
+3. Document complex bugs in `docs/v1/bugs/` if found
+4. Determine commit type (feat/fix/docs/etc.)
+5. Choose appropriate scope
+6. **Bump version if needed** (feat/fix/breaking) - update both locations
+7. Write commit message in conventional format
+8. Stage all changes including version updates
+9. Commit
+
+## Examples
+
+**Feature commit:**
+```
+feat(tools): add context analysis tool
+```
+→ Bump MINOR version: 0.1.0 → 0.2.0
+
+**Bug fix:**
+```
+fix(storage): handle missing directory gracefully
+```
+→ Bump PATCH version: 0.2.0 → 0.2.1
+
+**Documentation (no version bump):**
+```
+docs(readme): update installation instructions
+```
+
+## References
+
+- Full documentation: `docs/steering/06_conventional_commits.md`
+- Version guidelines: `docs/steering/07_semantic_versioning.md`
+- Workflow guide: `docs/steering/08_commit_version_workflow.md`

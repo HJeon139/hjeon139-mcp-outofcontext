@@ -1,0 +1,47 @@
+---
+description: Code quality standards and best practices
+alwaysApply: true
+---
+
+# Code Quality Standards
+
+## General Principles
+
+- **Type hints required** for all functions
+- **All tests must pass** before committing
+- **Follow FastAPI/MCP best practices**: no globals, dependency injection
+- **Use ruff** for linting and formatting
+
+## Testing
+
+- Run tests: `hatch run test`
+- Use pytest markers: `@pytest.mark.unit`, `@pytest.mark.integration`
+- All tests must pass as part of pre-commit checklist
+
+## Code Style
+
+- Use ruff for linting and formatting
+- Run `hatch run fmt-fix` before committing
+- Run `hatch run lint-fix` before committing
+- Run `hatch run typecheck` before committing
+
+## Architecture Patterns
+
+- **No global variables** - all state is instance-scoped
+- **Dependency injection** - components receive dependencies via constructor
+- **Lifecycle management** - explicit initialize/cleanup methods
+- **Testable architecture** - can create multiple instances for testing
+
+## File Organization
+
+- Source code: `src/out_of_context/`
+- Tests: `tests/`
+- Documentation: `docs/`
+- Steering docs: `docs/steering/`
+- Bug documentation: `docs/v1/bugs/`
+
+## Dependencies
+
+- Minimal dependencies: mcp, pydantic, tiktoken
+- Dev dependencies: pytest, pytest-asyncio, ruff, mypy, pre-commit
+- Add new dependencies only when necessary
