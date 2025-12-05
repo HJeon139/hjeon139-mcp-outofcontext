@@ -232,8 +232,14 @@ class TestAnalysisResult:
 
     def test_valid_analysis_result(self) -> None:
         """Test valid AnalysisResult creation."""
-        result = AnalysisResult(total_tokens=1000, segment_count=10, usage_percent=75.0)
+        from hjeon139_mcp_outofcontext.models import HealthScore
+
+        health_score = HealthScore(score=75.0, usage_percent=75.0, factors={})
+        result = AnalysisResult(
+            total_tokens=1000, segment_count=10, usage_percent=75.0, health_score=health_score
+        )
         assert result.total_tokens == 1000
         assert result.segment_count == 10
         assert result.usage_percent == 75.0
+        assert result.health_score.score == 75.0
         assert result.recommendations == []

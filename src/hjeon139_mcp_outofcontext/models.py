@@ -129,6 +129,7 @@ class AnalysisResult(BaseModel):
     total_tokens: int = Field(description="Total token count")
     segment_count: int = Field(description="Number of segments")
     usage_percent: float = Field(description="Usage percentage")
+    health_score: "HealthScore" = Field(description="Context health score")
     recommendations: list[str] = Field(default_factory=list, description="Analysis recommendations")
 
 
