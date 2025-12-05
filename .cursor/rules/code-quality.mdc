@@ -17,6 +17,56 @@ alwaysApply: true
 - Run tests: `hatch run test`
 - Use pytest markers: `@pytest.mark.unit`, `@pytest.mark.integration`
 - All tests must pass as part of pre-commit checklist
+- **All test functions must be marked** with `@pytest.mark.unit` or `@pytest.mark.integration`
+
+### Unit Testing Standards
+
+**Unit tests** test individual components in isolation:
+- **Mark all unit tests** with `@pytest.mark.unit`
+- **Use MagicMock** to test functions without directly calling dependencies
+- **Use `@patch` decorator** instead of context manager for cleaner code
+- **Test one thing per test** - each test should verify a single behavior
+- **Use descriptive test names** that explain what is being tested
+- **Isolate dependencies** - mock external services, file I/O, network calls
+
+**Example unit test pattern:**
+```python
+from unittest.mock import MagicMock, patch
+import pytest
+
+@pytest.mark.unit
+def test_function_with_mocked_dependency() -> None:
+    """Test function behavior with mocked dependency."""
+    # Arrange
+    mock_dependency = MagicMock()
+    mock_dependency.method.return_value = "expected"
+    
+    # Act
+    result = function_under_test(mock_dependency)
+    
+    # Assert
+    assert result == "expected"
+    mock_dependency.method.assert_called_once()
+```
+
+**Using `@patch` decorator (preferred):**
+```python
+from unittest.mock import patch
+import pytest
+
+@pytest.mark.unit
+@patch('module.ExternalService')
+def test_with_patch_decorator(mock_service: MagicMock) -> None:
+    """Test using patch decorator instead of context manager."""
+    mock_service.return_value.method.return_value = "result"
+    # Test implementation
+```
+
+**Integration tests** test component interactions:
+- **Mark with `@pytest.mark.integration`**
+- Test real interactions between components
+- May use real file I/O, databases, or external services
+- Slower than unit tests but verify end-to-end behavior
 
 ## Code Style
 

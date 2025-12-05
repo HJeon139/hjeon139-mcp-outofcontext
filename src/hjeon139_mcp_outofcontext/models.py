@@ -130,3 +130,24 @@ class AnalysisResult(BaseModel):
     segment_count: int = Field(description="Number of segments")
     usage_percent: float = Field(description="Usage percentage")
     recommendations: list[str] = Field(default_factory=list, description="Analysis recommendations")
+
+
+class PruningCandidate(BaseModel):
+    """Pruning candidate with score and metadata."""
+
+    segment_id: str = Field(description="Segment identifier")
+    score: float = Field(description="Prune score (higher = more likely to prune)")
+    tokens: int = Field(description="Token count for this segment")
+    reason: str = Field(description="Reason why it's a candidate")
+    segment_type: str = Field(description="Segment type")
+    age_hours: float = Field(description="Age in hours")
+
+
+class PruningPlan(BaseModel):
+    """Pruning plan with candidates and actions."""
+
+    candidates: list[PruningCandidate] = Field(description="Sorted candidates by score")
+    total_tokens_freed: int = Field(description="Total tokens that will be freed")
+    stash_segments: list[str] = Field(description="Segment IDs to stash")
+    delete_segments: list[str] = Field(description="Segment IDs to delete")
+    reason: str = Field(description="Explanation of plan")

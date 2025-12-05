@@ -1,9 +1,9 @@
 """Tests for storage layer."""
 
-import contextlib
 import json
 from datetime import datetime
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -62,6 +62,7 @@ def sample_segment_2() -> ContextSegment:
 class TestStorageInterface:
     """Test that StorageLayer implements IStorageLayer interface."""
 
+    @pytest.mark.unit
     def test_implements_interface(self, storage_layer: StorageLayer) -> None:
         """Test that StorageLayer implements IStorageLayer."""
         assert isinstance(storage_layer, IStorageLayer)
@@ -70,6 +71,7 @@ class TestStorageInterface:
 class TestInMemoryStorage:
     """Test in-memory storage operations."""
 
+    @pytest.mark.unit
     def test_store_segment(
         self,
         storage_layer: StorageLayer,
@@ -81,6 +83,7 @@ class TestInMemoryStorage:
         assert "seg-1" in storage_layer.active_segments["proj-1"]
         assert storage_layer.active_segments["proj-1"]["seg-1"] == sample_segment
 
+    @pytest.mark.unit
     def test_store_multiple_segments(
         self,
         storage_layer: StorageLayer,
@@ -95,6 +98,7 @@ class TestInMemoryStorage:
         assert "seg-1" in storage_layer.active_segments["proj-1"]
         assert "seg-2" in storage_layer.active_segments["proj-1"]
 
+    @pytest.mark.unit
     def test_store_different_projects(
         self,
         storage_layer: StorageLayer,
@@ -120,6 +124,7 @@ class TestInMemoryStorage:
         assert storage_layer.active_segments["proj-1"]["seg-1"].project_id == "proj-1"
         assert storage_layer.active_segments["proj-2"]["seg-1"].project_id == "proj-2"
 
+    @pytest.mark.unit
     def test_load_segments_active_only(
         self,
         storage_layer: StorageLayer,
@@ -135,6 +140,7 @@ class TestInMemoryStorage:
 class TestJSONPersistence:
     """Test JSON file persistence."""
 
+    @pytest.mark.unit
     def test_stash_segment_persists(
         self,
         storage_layer: StorageLayer,
@@ -156,6 +162,7 @@ class TestJSONPersistence:
         assert len(data["projects"]["proj-1"]["segments"]) == 1
         assert data["projects"]["proj-1"]["segments"][0]["segment_id"] == "seg-1"
 
+    @pytest.mark.unit
     def test_stash_segment_updates_tier(
         self,
         storage_layer: StorageLayer,
@@ -166,6 +173,7 @@ class TestJSONPersistence:
         storage_layer.stash_segment(sample_segment, "proj-1")
         assert sample_segment.tier == "stashed"
 
+    @pytest.mark.unit
     def test_load_segments_includes_stashed(
         self,
         storage_layer: StorageLayer,
@@ -178,6 +186,7 @@ class TestJSONPersistence:
         assert segments[0].segment_id == "seg-1"
         assert segments[0].tier == "stashed"
 
+    @pytest.mark.unit
     def test_stash_removes_from_active(
         self,
         storage_layer: StorageLayer,
@@ -190,6 +199,7 @@ class TestJSONPersistence:
         storage_layer.stash_segment(sample_segment, "proj-1")
         assert "seg-1" not in storage_layer.active_segments.get("proj-1", {})
 
+    @pytest.mark.unit
     def test_persistence_survives_restart(
         self,
         temp_storage_path: Path,
@@ -212,6 +222,7 @@ class TestJSONPersistence:
 class TestAtomicOperations:
     """Test atomic write operations."""
 
+    @pytest.mark.unit
     def test_atomic_write_creates_temp_file(
         self,
         storage_layer: StorageLayer,
@@ -226,6 +237,7 @@ class TestAtomicOperations:
         assert not temp_path.exists()
         assert temp_storage_path.exists()
 
+    @pytest.mark.unit
     def test_handles_incomplete_write(
         self,
         temp_storage_path: Path,
@@ -249,6 +261,7 @@ class TestAtomicOperations:
 class TestErrorHandling:
     """Test error handling scenarios."""
 
+    @pytest.mark.unit
     def test_handles_missing_json_file(
         self,
         temp_storage_path: Path,
@@ -264,6 +277,7 @@ class TestErrorHandling:
         # Should create file successfully
         assert temp_storage_path.exists()
 
+    @pytest.mark.unit
     def test_handles_corrupt_json_file(
         self,
         temp_storage_path: Path,
@@ -285,30 +299,36 @@ class TestErrorHandling:
             data = json.load(f)
             assert "projects" in data
 
+    @pytest.mark.unit
+    @patch("hjeon139_mcp_outofcontext.storage.open")
     def test_handles_permission_error_on_read(
         self,
+        mock_open: MagicMock,
         temp_storage_path: Path,
     ) -> None:
         """Test handling of permission errors on read."""
-        # Make file read-only (if possible)
+        # Create storage layer first (file doesn't exist yet, so init succeeds)
+        storage = StorageLayer(storage_path=str(temp_storage_path))
+
+        # Create file so exists() returns True when load_segments is called
         temp_storage_path.touch()
-        try:
-            temp_storage_path.chmod(0o000)
-            storage = StorageLayer(storage_path=str(temp_storage_path))
-            with pytest.raises(PermissionError):
-                storage.load_segments("proj-1")
-        except (OSError, PermissionError):
-            # On some systems, we can't make files unreadable
-            pytest.skip("Cannot test permission error on this system")
-        finally:
-            # Restore permissions for cleanup
-            with contextlib.suppress(Exception):
-                temp_storage_path.chmod(0o644)
+
+        # Mock open to raise PermissionError when load_segments calls
+        # _load_stashed_data
+        mock_open.side_effect = PermissionError("Permission denied")
+
+        # Should raise PermissionError
+        with pytest.raises(PermissionError, match="Permission denied"):
+            storage.load_segments("proj-1")
+
+        # Verify open was called
+        mock_open.assert_called()
 
 
 class TestProjectIsolation:
     """Test project isolation."""
 
+    @pytest.mark.unit
     def test_segments_isolated_by_project(
         self,
         storage_layer: StorageLayer,
@@ -336,6 +356,7 @@ class TestProjectIsolation:
         assert segments_proj1[0].project_id == "proj-1"
         assert segments_proj2[0].project_id == "proj-2"
 
+    @pytest.mark.unit
     def test_search_stashed_project_isolation(
         self,
         storage_layer: StorageLayer,
@@ -367,6 +388,7 @@ class TestProjectIsolation:
 class TestMetadataIndexing:
     """Test metadata indexing."""
 
+    @pytest.mark.unit
     def test_indexes_created_on_stash(
         self,
         storage_layer: StorageLayer,
@@ -389,6 +411,7 @@ class TestMetadataIndexing:
         assert "test" in indexes["by_tag"]
         assert "sample" in indexes["by_tag"]
 
+    @pytest.mark.unit
     def test_indexes_updated_on_delete(
         self,
         storage_layer: StorageLayer,
@@ -412,6 +435,7 @@ class TestMetadataIndexing:
 class TestSearchFunctionality:
     """Test search functionality."""
 
+    @pytest.mark.unit
     def test_search_by_keyword(
         self,
         storage_layer: StorageLayer,
@@ -430,6 +454,7 @@ class TestSearchFunctionality:
         assert len(results) == 1
         assert results[0].segment_id == "seg-2"
 
+    @pytest.mark.unit
     def test_search_by_task_id(
         self,
         storage_layer: StorageLayer,
@@ -446,6 +471,7 @@ class TestSearchFunctionality:
         results = storage_layer.search_stashed("", {"task_id": "task-2"}, "proj-1")
         assert len(results) == 0
 
+    @pytest.mark.unit
     def test_search_by_file_path(
         self,
         storage_layer: StorageLayer,
@@ -460,6 +486,7 @@ class TestSearchFunctionality:
         assert len(results) == 1
         assert results[0].segment_id == "seg-1"
 
+    @pytest.mark.unit
     def test_search_by_tag(
         self,
         storage_layer: StorageLayer,
@@ -478,6 +505,7 @@ class TestSearchFunctionality:
         assert len(results) == 1
         assert results[0].segment_id == "seg-2"
 
+    @pytest.mark.unit
     def test_search_by_type(
         self,
         storage_layer: StorageLayer,
@@ -496,6 +524,7 @@ class TestSearchFunctionality:
         assert len(results) == 1
         assert results[0].segment_id == "seg-2"
 
+    @pytest.mark.unit
     def test_search_combines_filters(
         self,
         storage_layer: StorageLayer,
@@ -516,6 +545,7 @@ class TestSearchFunctionality:
 class TestDeleteOperations:
     """Test delete operations."""
 
+    @pytest.mark.unit
     def test_delete_from_active(
         self,
         storage_layer: StorageLayer,
@@ -528,6 +558,7 @@ class TestDeleteOperations:
         storage_layer.delete_segment("seg-1", "proj-1")
         assert "seg-1" not in storage_layer.active_segments.get("proj-1", {})
 
+    @pytest.mark.unit
     def test_delete_from_stashed(
         self,
         storage_layer: StorageLayer,
@@ -543,6 +574,7 @@ class TestDeleteOperations:
 
         assert len(data["projects"]["proj-1"]["segments"]) == 0
 
+    @pytest.mark.unit
     def test_delete_nonexistent_segment(
         self,
         storage_layer: StorageLayer,
