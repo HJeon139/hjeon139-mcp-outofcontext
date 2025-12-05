@@ -22,13 +22,17 @@ Always follow Conventional Commits format when making commits:
 When making commits, **always bump version** in both locations before committing:
 
 - **`feat`** commits → Bump **MINOR** version (0.1.0 → 0.2.0)
-- **`fix`** commits → Bump **PATCH** version (0.1.0 → 0.1.1)
+- **`fix`** commits → Bump **PATCH** version (0.1.0 → 0.1.1) ⚠️ **REQUIRED**
 - **Breaking changes** → Bump **MAJOR** version (0.1.0 → 1.0.0)
 - Other types (`docs`, `style`, `refactor`, `test`, `chore`) → No version bump
 
-**Update version in:**
+**⚠️ CRITICAL**: For `fix` commits, version bumping is **MANDATORY**. Do not commit a fix without bumping the PATCH version.
+
+**Update version in BOTH locations:**
 1. `pyproject.toml`: `version = "0.2.0"`
-2. `src/out_of_context/__init__.py`: `__version__ = "0.2.0"`
+2. `src/hjeon139_mcp_outofcontext/__init__.py`: `__version__ = "0.2.0"`
+
+**Version bump must be included in the same commit as the fix.**
 
 ## Pre-Commit Checklist
 
@@ -43,6 +47,8 @@ Before committing, complete this checklist:
 2. ✅ **All tests pass** - `hatch run test` must succeed
 
 3. ✅ **Version bumped** (if needed) - Updated in both locations
+   - ⚠️ **For `fix` commits**: Version bump is **MANDATORY** (PATCH bump)
+   - ⚠️ **For `feat` commits**: Version bump is **MANDATORY** (MINOR bump)
 
 4. ✅ **Code formatted** - `hatch run fmt-fix` completes successfully
 
@@ -93,10 +99,13 @@ Non-blocking for current feature. Can address in separate fix.
 3. Document complex bugs in `docs/v1/bugs/` if found
 4. Determine commit type (feat/fix/docs/etc.)
 5. Choose appropriate scope
-6. **Bump version if needed** (feat/fix/breaking) - update both locations
+6. **⚠️ Bump version if needed** (feat/fix/breaking) - update both locations
+   - **For `fix` commits**: Version bump is **MANDATORY** - bump PATCH version
+   - **For `feat` commits**: Version bump is **MANDATORY** - bump MINOR version
+   - Version bump must be in the **same commit** as the code changes
 7. Write commit message in conventional format
 8. Stage all changes including version updates
-9. Commit
+9. Commit (version bump and code changes together)
 
 ## Examples
 
@@ -106,11 +115,12 @@ feat(tools): add context analysis tool
 ```
 → Bump MINOR version: 0.1.0 → 0.2.0
 
-**Bug fix:**
+**Bug fix (⚠️ MUST bump version):**
 ```
 fix(storage): handle missing directory gracefully
 ```
-→ Bump PATCH version: 0.2.0 → 0.2.1
+→ **Bump PATCH version: 0.2.0 → 0.2.1** (in same commit)
+→ Update both: `pyproject.toml` and `src/hjeon139_mcp_outofcontext/__init__.py`
 
 **Documentation (no version bump):**
 ```
