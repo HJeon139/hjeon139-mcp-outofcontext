@@ -8,7 +8,7 @@ from hjeon139_mcp_outofcontext import __version__
 @pytest.mark.unit
 def test_package_imports() -> None:
     """Verify the package can be imported."""
-    assert __version__ == "0.3.0"
+    assert __version__ == "0.5.0"
 
 
 @pytest.mark.unit
