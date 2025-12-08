@@ -39,6 +39,30 @@ class IndexingOperations:
             project_id: Project identifier
             add: True to add, False to remove
         """
+        indexes = self._ensure_project_indexes(project_id)
+        segment_id = segment.segment_id
+
+        # Update each index type
+        if segment.file_path:
+            self._update_index(indexes["by_file"], segment.file_path, segment_id, add)
+
+        if segment.task_id:
+            self._update_index(indexes["by_task"], segment.task_id, segment_id, add)
+
+        for tag in segment.tags:
+            self._update_index(indexes["by_tag"], tag, segment_id, add)
+
+        self._update_index(indexes["by_type"], segment.type, segment_id, add)
+
+    def _ensure_project_indexes(self, project_id: str) -> dict[str, dict[str, set[str]]]:
+        """Ensure project indexes exist and return them.
+
+        Args:
+            project_id: Project identifier
+
+        Returns:
+            Indexes dictionary for the project
+        """
         if project_id not in self.metadata_indexes:
             self.metadata_indexes[project_id] = {
                 "by_file": {},
@@ -46,48 +70,26 @@ class IndexingOperations:
                 "by_tag": {},
                 "by_type": {},
             }
+        return self.metadata_indexes[project_id]
 
-        indexes = self.metadata_indexes[project_id]
-        segment_id = segment.segment_id
+    def _update_index(
+        self, index: dict[str, set[str]], key: str, segment_id: str, add: bool
+    ) -> None:
+        """Update a single index entry.
 
-        # Update file_path index
-        if segment.file_path:
-            if add:
-                indexes["by_file"].setdefault(segment.file_path, set()).add(segment_id)
-            else:
-                if segment.file_path in indexes["by_file"]:
-                    indexes["by_file"][segment.file_path].discard(segment_id)
-                    if not indexes["by_file"][segment.file_path]:
-                        del indexes["by_file"][segment.file_path]
-
-        # Update task_id index
-        if segment.task_id:
-            if add:
-                indexes["by_task"].setdefault(segment.task_id, set()).add(segment_id)
-            else:
-                if segment.task_id in indexes["by_task"]:
-                    indexes["by_task"][segment.task_id].discard(segment_id)
-                    if not indexes["by_task"][segment.task_id]:
-                        del indexes["by_task"][segment.task_id]
-
-        # Update tags index
-        for tag in segment.tags:
-            if add:
-                indexes["by_tag"].setdefault(tag, set()).add(segment_id)
-            else:
-                if tag in indexes["by_tag"]:
-                    indexes["by_tag"][tag].discard(segment_id)
-                    if not indexes["by_tag"][tag]:
-                        del indexes["by_tag"][tag]
-
-        # Update type index
+        Args:
+            index: Index dictionary to update
+            key: Index key
+            segment_id: Segment ID to add/remove
+            add: True to add, False to remove
+        """
         if add:
-            indexes["by_type"].setdefault(segment.type, set()).add(segment_id)
+            index.setdefault(key, set()).add(segment_id)
         else:
-            if segment.type in indexes["by_type"]:
-                indexes["by_type"][segment.type].discard(segment_id)
-                if not indexes["by_type"][segment.type]:
-                    del indexes["by_type"][segment.type]
+            if key in index:
+                index[key].discard(segment_id)
+                if not index[key]:
+                    del index[key]
 
     def apply_metadata_filters(
         self, candidate_ids: set[str], filters: dict, project_id: str

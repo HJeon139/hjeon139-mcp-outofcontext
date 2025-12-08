@@ -36,6 +36,57 @@ async def handle_retrieve_stashed(
         ValueError: If parameters are invalid
     """
     # Validate and parse parameters
+    params_result = _validate_retrieve_params(project_id, segment_ids, move_to_active)
+    if "error" in params_result:
+        return params_result
+
+    params = params_result["params"]
+
+    try:
+        # Find and retrieve stashed segments
+        segments_to_retrieve = _find_stashed_segments(
+            app_state, params.project_id, params.segment_ids
+        )
+
+        # Retrieve and optionally move to active
+        result = _retrieve_and_move_segments(app_state, params, segments_to_retrieve)
+
+        # Invalidate cache if needed
+        if params.move_to_active and result["moved_ids"]:
+            _invalidate_working_set_cache(app_state, params.project_id)
+
+        return {
+            "retrieved_segments": result["retrieved_segments"],
+            "moved_to_active": result["moved_ids"] if params.move_to_active else [],
+        }
+    except ValueError as e:
+        logger.error(f"Value error in context_retrieve_stashed: {e}")
+        return {
+            "error": {
+                "code": "INVALID_PARAMETER",
+                "message": str(e),
+                "details": {},
+            }
+        }
+    except Exception as e:
+        logger.error(f"Unexpected error in context_retrieve_stashed: {e}", exc_info=True)
+        return {
+            "error": {
+                "code": "INTERNAL_ERROR",
+                "message": f"Internal error: {e!s}",
+                "details": {"exception": str(e)},
+            }
+        }
+
+
+def _validate_retrieve_params(
+    project_id: str | None, segment_ids: list[str] | None, move_to_active: bool
+) -> dict[str, Any]:
+    """Validate retrieve stashed parameters.
+
+    Returns:
+        Dictionary with "params" key on success, "error" key on failure
+    """
     try:
         params = RetrieveStashedParams(
             project_id=project_id or "",
@@ -70,65 +121,61 @@ async def handle_retrieve_stashed(
             }
         }
 
-    try:
-        # Load all segments to find stashed ones
-        all_segments = app_state.storage.load_segments(params.project_id)
+    return {"params": params}
 
-        # Filter to only stashed segments with matching IDs
-        segments_to_retrieve: list[tuple[str, Any]] = []
-        for segment in all_segments:
-            if segment.segment_id in params.segment_ids and segment.tier == "stashed":
-                segments_to_retrieve.append((segment.segment_id, segment))
 
-        # Retrieve segments
-        retrieved_segments: list[Any] = []
-        moved_ids: list[str] = []
+def _find_stashed_segments(
+    app_state: AppState, project_id: str, segment_ids: list[str]
+) -> list[tuple[str, Any]]:
+    """Find stashed segments matching the given IDs.
 
-        for segment_id, segment in segments_to_retrieve:
-            # Add to retrieved list
-            retrieved_segments.append(segment)
+    Returns:
+        List of (segment_id, segment) tuples
+    """
+    all_segments = app_state.storage.load_segments(project_id)
+    segments_to_retrieve: list[tuple[str, Any]] = []
 
-            # Move to active if requested
-            if params.move_to_active:
-                try:
-                    # Update segment tier to working
-                    segment.tier = "working"
-                    # Unstash the segment (move from stashed to active)
-                    app_state.storage.unstash_segment(segment, params.project_id)
-                    moved_ids.append(segment_id)
-                except Exception as e:
-                    logger.error(f"Failed to move segment {segment_id} to active: {e}")
-                    # Continue with other segments
+    for segment in all_segments:
+        if segment.segment_id in segment_ids and segment.tier == "stashed":
+            segments_to_retrieve.append((segment.segment_id, segment))
 
-        # Invalidate working set cache if segments were moved to active
-        if (
-            params.move_to_active
-            and moved_ids
-            and hasattr(app_state.context_manager, "working_sets")
-            and params.project_id in app_state.context_manager.working_sets
-        ):
-            app_state.context_manager.working_sets[params.project_id].clear()
+    return segments_to_retrieve
 
-        # Format response
-        return {
-            "retrieved_segments": [segment.model_dump() for segment in retrieved_segments],
-            "moved_to_active": moved_ids if params.move_to_active else [],
-        }
-    except ValueError as e:
-        logger.error(f"Value error in context_retrieve_stashed: {e}")
-        return {
-            "error": {
-                "code": "INVALID_PARAMETER",
-                "message": str(e),
-                "details": {},
-            }
-        }
-    except Exception as e:
-        logger.error(f"Unexpected error in context_retrieve_stashed: {e}", exc_info=True)
-        return {
-            "error": {
-                "code": "INTERNAL_ERROR",
-                "message": f"Internal error: {e!s}",
-                "details": {"exception": str(e)},
-            }
-        }
+
+def _retrieve_and_move_segments(
+    app_state: AppState,
+    params: RetrieveStashedParams,
+    segments_to_retrieve: list[tuple[str, Any]],
+) -> dict[str, Any]:
+    """Retrieve segments and optionally move them to active storage.
+
+    Returns:
+        Dictionary with "retrieved_segments" and "moved_ids" keys
+    """
+    retrieved_segments: list[Any] = []
+    moved_ids: list[str] = []
+
+    for segment_id, segment in segments_to_retrieve:
+        retrieved_segments.append(segment)
+
+        if params.move_to_active:
+            try:
+                segment.tier = "working"
+                app_state.storage.unstash_segment(segment, params.project_id)
+                moved_ids.append(segment_id)
+            except Exception as e:
+                logger.error(f"Failed to move segment {segment_id} to active: {e}")
+
+    return {
+        "retrieved_segments": [segment.model_dump() for segment in retrieved_segments],
+        "moved_ids": moved_ids,
+    }
+
+
+def _invalidate_working_set_cache(app_state: AppState, project_id: str) -> None:
+    """Invalidate working set cache for a project."""
+    if (
+        hasattr(app_state.context_manager, "working_sets")
+        and project_id in app_state.context_manager.working_sets
+    ):
+        app_state.context_manager.working_sets[project_id].clear()

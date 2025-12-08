@@ -41,8 +41,64 @@ async def handle_gc_prune(
         ValueError: If parameters are invalid
     """
     # Validate and parse parameters
+    params_result = _validate_gc_prune_params(project_id, segment_ids, action, confirm)
+    if "error" in params_result:
+        return params_result
+
+    params = params_result["params"]
+
     try:
-        # Cast action to Literal type
+        # Validate segments and collect pruning candidates
+        validation_result = _validate_pruning_segments(
+            app_state, params.project_id, params.segment_ids
+        )
+        segments_to_prune = validation_result["segments_to_prune"]
+        errors = validation_result["errors"]
+
+        # Execute pruning action
+        execution_result = _execute_pruning(app_state, params, segments_to_prune)
+
+        # Invalidate working set cache
+        _invalidate_working_set_cache(app_state, params.project_id)
+
+        return {
+            "pruned_segments": execution_result["pruned_segments"],
+            "tokens_freed": execution_result["tokens_freed"],
+            "action": execution_result["action"],
+            "errors": errors + execution_result["errors"],
+        }
+    except ValueError as e:
+        logger.error(f"Value error in gc_prune: {e}")
+        return {
+            "error": {
+                "code": "INVALID_PARAMETER",
+                "message": str(e),
+                "details": {},
+            }
+        }
+    except Exception as e:
+        logger.error(f"Unexpected error in gc_prune: {e}", exc_info=True)
+        return {
+            "error": {
+                "code": "INTERNAL_ERROR",
+                "message": f"Internal error: {e!s}",
+                "details": {"exception": str(e)},
+            }
+        }
+
+
+def _validate_gc_prune_params(
+    project_id: str | None,
+    segment_ids: list[str] | None,
+    action: str | None,
+    confirm: bool,
+) -> dict[str, Any]:
+    """Validate and parse GC prune parameters.
+
+    Returns:
+        Dictionary with "params" key on success, "error" key on failure
+    """
+    try:
         action_value = cast(
             Literal["stash", "delete"],
             action if action in ("stash", "delete") else "stash",
@@ -81,7 +137,6 @@ async def handle_gc_prune(
             }
         }
 
-    # Safety check for delete actions
     if params.action == "delete" and not params.confirm:
         return {
             "error": {
@@ -91,88 +146,83 @@ async def handle_gc_prune(
             }
         }
 
-    try:
-        # Load all segments to validate
-        all_segments = app_state.storage.load_segments(params.project_id)
+    return {"params": params}
 
-        # Build segment lookup
-        segment_map = {s.segment_id: s for s in all_segments}
 
-        # Validate segment IDs and check for pinned segments
-        pruned_segments: list[str] = []
-        tokens_freed = 0
-        errors: list[str] = []
-        segments_to_prune: list[tuple[str, Any]] = []
+def _validate_pruning_segments(
+    app_state: AppState, project_id: str, segment_ids: list[str]
+) -> dict[str, Any]:
+    """Validate segments for pruning.
 
-        for segment_id in params.segment_ids:
-            if segment_id not in segment_map:
-                errors.append(f"Segment {segment_id} not found")
-                continue
+    Returns:
+        Dictionary with "segments_to_prune" and "errors" keys
+    """
+    all_segments = app_state.storage.load_segments(project_id)
+    segment_map = {s.segment_id: s for s in all_segments}
 
-            segment = segment_map[segment_id]
+    segments_to_prune: list[tuple[str, Any]] = []
+    errors: list[str] = []
 
-            # Check if pinned
-            if segment.pinned:
-                errors.append(f"Segment {segment_id} is pinned and cannot be pruned")
-                continue
+    for segment_id in segment_ids:
+        if segment_id not in segment_map:
+            errors.append(f"Segment {segment_id} not found")
+            continue
 
-            # Check if segment is in working tier
-            if segment.tier != "working":
-                errors.append(f"Segment {segment_id} is not in working tier (tier: {segment.tier})")
-                continue
+        segment = segment_map[segment_id]
 
-            segments_to_prune.append((segment_id, segment))
+        if segment.pinned:
+            errors.append(f"Segment {segment_id} is pinned and cannot be pruned")
+            continue
 
-        # Execute pruning action
-        action_taken = "stashed" if params.action == "stash" else "deleted"
+        if segment.tier != "working":
+            errors.append(f"Segment {segment_id} is not in working tier (tier: {segment.tier})")
+            continue
 
-        for segment_id, segment in segments_to_prune:
-            try:
-                if params.action == "stash":
-                    # Stash the segment
-                    app_state.storage.stash_segment(segment, params.project_id)
-                    pruned_segments.append(segment_id)
-                    tokens = segment.tokens if segment.tokens is not None else 0
-                    tokens_freed += tokens
-                elif params.action == "delete":
-                    # Delete the segment
-                    app_state.storage.delete_segment(segment_id, params.project_id)
-                    pruned_segments.append(segment_id)
-                    tokens = segment.tokens if segment.tokens is not None else 0
-                    tokens_freed += tokens
-            except Exception as e:
-                error_msg = f"Failed to {params.action} segment {segment_id}: {e!s}"
-                errors.append(error_msg)
-                logger.error(error_msg, exc_info=True)
+        segments_to_prune.append((segment_id, segment))
 
-        # Invalidate working set cache in context manager
-        if (
-            hasattr(app_state.context_manager, "working_sets")
-            and params.project_id in app_state.context_manager.working_sets
-        ):
-            app_state.context_manager.working_sets[params.project_id].clear()
+    return {"segments_to_prune": segments_to_prune, "errors": errors}
 
-        return {
-            "pruned_segments": pruned_segments,
-            "tokens_freed": tokens_freed,
-            "action": action_taken,
-            "errors": errors,
-        }
-    except ValueError as e:
-        logger.error(f"Value error in gc_prune: {e}")
-        return {
-            "error": {
-                "code": "INVALID_PARAMETER",
-                "message": str(e),
-                "details": {},
-            }
-        }
-    except Exception as e:
-        logger.error(f"Unexpected error in gc_prune: {e}", exc_info=True)
-        return {
-            "error": {
-                "code": "INTERNAL_ERROR",
-                "message": f"Internal error: {e!s}",
-                "details": {"exception": str(e)},
-            }
-        }
+
+def _execute_pruning(
+    app_state: AppState, params: GCPruneParams, segments_to_prune: list[tuple[str, Any]]
+) -> dict[str, Any]:
+    """Execute the pruning action on segments.
+
+    Returns:
+        Dictionary with "pruned_segments", "tokens_freed", "action", and "errors" keys
+    """
+    pruned_segments: list[str] = []
+    tokens_freed = 0
+    errors: list[str] = []
+    action_taken = "stashed" if params.action == "stash" else "deleted"
+
+    for segment_id, segment in segments_to_prune:
+        try:
+            if params.action == "stash":
+                app_state.storage.stash_segment(segment, params.project_id)
+            elif params.action == "delete":
+                app_state.storage.delete_segment(segment_id, params.project_id)
+
+            pruned_segments.append(segment_id)
+            tokens = segment.tokens if segment.tokens is not None else 0
+            tokens_freed += tokens
+        except Exception as e:
+            error_msg = f"Failed to {params.action} segment {segment_id}: {e!s}"
+            errors.append(error_msg)
+            logger.error(error_msg, exc_info=True)
+
+    return {
+        "pruned_segments": pruned_segments,
+        "tokens_freed": tokens_freed,
+        "action": action_taken,
+        "errors": errors,
+    }
+
+
+def _invalidate_working_set_cache(app_state: AppState, project_id: str) -> None:
+    """Invalidate working set cache for a project."""
+    if (
+        hasattr(app_state.context_manager, "working_sets")
+        and project_id in app_state.context_manager.working_sets
+    ):
+        app_state.context_manager.working_sets[project_id].clear()

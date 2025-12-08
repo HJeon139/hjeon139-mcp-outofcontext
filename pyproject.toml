@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hjeon139-mcp-outofcontext"
-version = "0.12.0"
+version = "0.12.1"
 description = "Out of context project"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -87,6 +87,7 @@ select = [
   "UP",   # pyupgrade
   "I",    # isort
   "C4",   # flake8-comprehensions
+  "C90",  # mccabe complexity checks (C901)
   "SIM",  # flake8-simplify
   "RUF",  # Ruff-specific rules
 ]
@@ -118,5 +119,7 @@ markers = [
   "unit: fast unit tests for core logic",
   "integration: slower or integration tests",
   "experiment: research experiments (if applicable)",
+  "performance: performance-sensitive test scenarios",
+  "scalability: scale or load-focused test scenarios",
 ]
 
