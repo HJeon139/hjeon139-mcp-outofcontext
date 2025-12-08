@@ -26,13 +26,16 @@ class StorageLayer(IStorageLayer):
         """Initialize storage layer.
 
         Args:
-            storage_path: Path to storage directory. Defaults to ~/.out_of_context/
+            storage_path: Path to storage directory. Defaults to .out_of_context/ in project root
             max_active_segments: Maximum number of active segments in memory
         """
         if storage_path is None:
+            # Default to .out_of_context in current directory (project root)
+            # This allows the server to use context from the project directory by default
+            default_path = Path(".out_of_context")
             storage_path = os.getenv(
                 "OUT_OF_CONTEXT_STORAGE_PATH",
-                str(Path.home() / ".out_of_context"),
+                str(default_path),
             )
 
         self.storage_path = Path(storage_path)

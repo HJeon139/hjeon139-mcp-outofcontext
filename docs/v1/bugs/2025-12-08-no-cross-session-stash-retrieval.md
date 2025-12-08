@@ -3,7 +3,7 @@
 **Date**: 2025-12-08  
 **Severity**: High (Launch Blocker)  
 **Component**: MCP Tools / Storage / Retrieval  
-**Status**: Open
+**Status**: Fixed (2025-12-08)
 
 ## Description
 The `context_search_stashed` tool requires a `project_id` parameter, but there is no way to discover what `project_id` values exist or search across all projects. This prevents retrieving stashed context from a different chat window or session where the `project_id` may be unknown or different. The storage layer organizes segments by project (one JSON file per project), but the MCP tool interface doesn't expose project discovery functionality.
@@ -45,6 +45,111 @@ The `context_search_stashed` tool requires a `project_id` parameter, but there i
 - Storage layer already has the capability (iterates through all `.json` files in `rebuild_indexes`)
 - Need to expose this via MCP tool interface
 - Consider backward compatibility if making `project_id` optional
+
+## Resolution
+**Fixed on 2025-12-08:**
+- Added `context_list_projects` tool to discover available project IDs
+- Made `project_id` optional in `context_search_stashed` - when omitted, searches across all projects
+- Updated `context_retrieve_stashed` to also support optional `project_id` for cross-project retrieval
+- Storage layer's `list_projects()` method now exposed via MCP tool interface
+
+**Implementation:**
+- `src/hjeon139_mcp_outofcontext/tools/stashing/context_list_projects.py` - New tool for project discovery
+- `src/hjeon139_mcp_outofcontext/storage/__init__.py` - Added `list_projects()` method
+- `src/hjeon139_mcp_outofcontext/storage/file_operations.py` - Added `list_stashed_projects()` implementation
+- `src/hjeon139_mcp_outofcontext/tools/stashing/context_search_stashed.py` - Made `project_id` optional
+
+## Verification Steps
+
+To verify cross-session stash retrieval works correctly:
+
+### Step 1: Discover Available Projects
+
+First, list all projects that have stashed context:
+
+```
+Call: context_list_projects
+```
+
+This returns all project IDs with stashed context, even if you don't know the project_id from the other session.
+
+### Step 2: Search for Stashed Context
+
+Search across all projects or within a specific project:
+
+**Option A: Search across all projects (omit project_id)**
+
+```
+Call: context_search_stashed(query="your search term")
+```
+
+**Option B: Search within a specific project**
+
+```
+Call: context_search_stashed(project_id="project-name", query="your search term")
+```
+
+**Option C: Search with filters**
+
+```
+Call: context_search_stashed(
+    project_id="project-name",
+    filters={"type": "message", "created_after": "2025-12-08T00:00:00Z"}
+)
+```
+
+### Step 3: Retrieve Stashed Context
+
+After finding segments, retrieve them:
+
+**Just retrieve (read-only):**
+
+```
+Call: context_retrieve_stashed(
+    project_id="project-name",
+    query="your search term"
+)
+```
+
+**Retrieve and restore to active context:**
+
+```
+Call: context_retrieve_stashed(
+    project_id="project-name",
+    query="your search term",
+    move_to_active=True
+)
+```
+
+### Step 4: Verify Content
+
+After retrieving, verify the content matches what was stashed:
+
+```
+Call: context_get_working_set(project_id="project-name")
+```
+
+This shows the segments in active context if you used `move_to_active=True`.
+
+### Example Verification Workflow
+
+1. **List projects**: `context_list_projects()` → Returns: `["test-put-fetch", "test-simple-interface"]`
+
+2. **Search for "IMPORTANT"**: `context_search_stashed(project_id="test-put-fetch", query="IMPORTANT")`
+
+3. **Retrieve important message**: `context_retrieve_stashed(project_id="test-put-fetch", query="IMPORTANT", move_to_active=True)`
+
+4. **Verify**: `context_get_working_set(project_id="test-put-fetch")` → Should show the retrieved segment
+
+### Key Features to Test
+
+- Cross-project discovery: `context_list_projects` works without knowing project IDs
+- Cross-project search: Omit `project_id` to search all projects
+- Query-based retrieval: Use `query` to find segments by content
+- Filter-based retrieval: Use `filters` to find segments by metadata
+- Restore capability: Use `move_to_active=True` to restore segments to active context
+
+The interface abstracts away segment IDs—use queries and filters instead.
 
 ## Related Issues
 - Related to `2025-12-08-no-auto-fetch-from-stash.md` - both involve retrieval workflow

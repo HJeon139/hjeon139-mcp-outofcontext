@@ -12,7 +12,7 @@ from typing import Any
 class Config:
     """Configuration for MCP server."""
 
-    storage_path: str = "~/.out_of_context"
+    storage_path: str = ".out_of_context"
     token_limit: int = 1000000  # Millions of tokens
     model: str = "gpt-4"
     log_level: str = "INFO"
@@ -46,7 +46,7 @@ def load_config() -> Config:
 
     Priority:
     1. Environment variables (highest priority)
-    2. Config file (~/.out_of_context/config.json)
+    2. Config file (.out_of_context/config.json or ~/.out_of_context/config.json)
     3. Default values (lowest priority)
 
     Returns:
@@ -55,8 +55,10 @@ def load_config() -> Config:
     # Start with defaults
     config_dict: dict[str, Any] = {}
 
-    # Load from config file if it exists
-    config_file = Path.home() / ".out_of_context" / "config.json"
+    # Load from config file if it exists (check project directory first, then home)
+    config_file = Path(".out_of_context") / "config.json"
+    if not config_file.exists():
+        config_file = Path.home() / ".out_of_context" / "config.json"
     if config_file.exists():
         try:
             with open(config_file) as f:

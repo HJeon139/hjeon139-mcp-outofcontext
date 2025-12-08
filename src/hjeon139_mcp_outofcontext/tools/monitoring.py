@@ -1,5 +1,6 @@
 """Monitoring tools for context analysis and working set inspection."""
 
+import json
 import logging
 from typing import Any
 
@@ -14,6 +15,33 @@ from ..models import (
 from ..tool_registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
+
+
+def _parse_context_descriptors(
+    context_descriptors: dict[str, Any] | str | None,
+) -> dict[str, Any] | None:
+    """Parse context_descriptors parameter, handling JSON strings.
+
+    Args:
+        context_descriptors: Context descriptors as dict, JSON string, or None
+
+    Returns:
+        Parsed context descriptors dict or None
+
+    Raises:
+        ValueError: If JSON string is invalid
+    """
+    if context_descriptors is None:
+        return None
+
+    if isinstance(context_descriptors, str):
+        try:
+            return json.loads(context_descriptors)
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse context_descriptors JSON: {e}")
+            raise ValueError(f"Invalid JSON in context_descriptors: {e!s}") from e
+
+    return context_descriptors
 
 
 def _generate_threshold_warnings(
@@ -96,7 +124,7 @@ def _generate_threshold_warnings(
 
 async def handle_analyze_usage(
     app_state: AppState,
-    context_descriptors: dict[str, Any] | None = None,
+    context_descriptors: dict[str, Any] | str | None = None,
     project_id: str | None = None,
     task_id: str | None = None,
     token_limit: int | None = None,
@@ -129,9 +157,14 @@ async def handle_analyze_usage(
     """
     # Validate and parse parameters
     try:
+        # Parse context_descriptors if it's a JSON string
+        parsed_context_descriptors = _parse_context_descriptors(context_descriptors)
+
         params = AnalyzeUsageParams(
             context_descriptors=(
-                ContextDescriptors(**context_descriptors) if context_descriptors else None
+                ContextDescriptors(**parsed_context_descriptors)
+                if parsed_context_descriptors
+                else None
             ),
             project_id=project_id or "",
             task_id=task_id,

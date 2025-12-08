@@ -29,3 +29,6 @@ build/
 # Jupyter and notebooks
 .ipynb_checkpoints/
 
+# Storage and runtime data
+.out_of_context/
+

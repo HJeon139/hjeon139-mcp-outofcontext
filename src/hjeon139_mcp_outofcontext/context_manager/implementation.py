@@ -1,7 +1,7 @@
 """Context Manager implementation that orchestrates all context operations."""
 
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from ..analysis_engine import IAnalysisEngine
@@ -164,7 +164,7 @@ class ContextManager(IContextManager):
             total_tokens=total_tokens,
             project_id=project_id,
             task_id=effective_task_id,
-            last_updated=datetime.now(),
+            last_updated=datetime.now(UTC).replace(tzinfo=None),
         )
 
         # Cache working set
@@ -278,7 +278,8 @@ class ContextManager(IContextManager):
             List of context segments
         """
         segments: list[ContextSegment] = []
-        now = datetime.now()
+
+        now = datetime.now(UTC).replace(tzinfo=None)  # Use UTC, then make naive
 
         # Convert recent messages to segments
         for i, message in enumerate(descriptors.recent_messages):
@@ -358,14 +359,19 @@ class ContextManager(IContextManager):
                 continue
 
             # Create segment from summary
+            # Normalize datetime to timezone-naive for consistency
+            created_at = summary.created_at
+            if created_at.tzinfo is not None:
+                created_at = created_at.replace(tzinfo=None)
+
             segment = ContextSegment(
                 segment_id=summary.segment_id,
                 text=summary.preview,
                 type=summary.type,
                 project_id=project_id,
                 task_id=descriptors.task_info.task_id if descriptors.task_info else None,
-                created_at=summary.created_at,
-                last_touched_at=summary.created_at,
+                created_at=created_at,
+                last_touched_at=created_at,
                 pinned=False,
                 generation="young",
                 gc_survival_count=0,
@@ -542,7 +548,7 @@ class ContextManager(IContextManager):
         task_segments = task_context["segments"]
 
         # Create snapshot ID
-        now = datetime.now()
+        now = datetime.now(UTC).replace(tzinfo=None)  # Use UTC, then make naive
         snapshot_id = f"snapshot-{project_id}-{effective_task_id}-{now.timestamp()}"
 
         # Create snapshot segments by copying task segments and adding snapshot tag

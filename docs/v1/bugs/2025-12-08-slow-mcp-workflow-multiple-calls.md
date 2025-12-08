@@ -3,7 +3,7 @@
 **Date**: 2025-12-08  
 **Severity**: Medium  
 **Component**: MCP UX / performance  
-**Status**: Open
+**Status**: Partially Addressed (2025-12-08)
 
 ## Description
 Using the current workflow (`context_analyze_usage` → `context_get_working_set` → `context_stash`) is slow end-to-end. Latency comes from:
@@ -33,6 +33,21 @@ This makes routine context updates feel sluggish and discourages frequent use.
 - Reduce tool steps: combine analysis+stash (or expose a single “ingest_and_stash” helper) to cut round-trips.
 - Performance tuning: ensure server-side handlers are as fast as possible; consider optional batching of recent_messages/file pointers.
 - Keep dependencies minimal; prefer protocol/tooling changes over new libraries.
+
+## Partial Resolution (2025-12-08)
+**Improved:**
+- Reduced workflow from 3 calls to 2 calls: `context_analyze_usage` → `context_stash` (eliminated `context_get_working_set` step)
+- Simplified interface: No need to extract segment IDs from working set - can stash directly with query/filters
+- More intuitive: Agents can stash by content (`query="old docs"`) or metadata (`filters={"type": "file"}`) without managing IDs
+- Reduced cognitive overhead: Agents think in terms of content/metadata, not low-level segment IDs
+
+**Still Open:**
+- Still requires 2 separate calls (not a single combined call)
+- LLM drafting latency for large payloads remains (see 2025-12-08-llm-drafting-latency.md)
+
+**Implementation:**
+- `src/hjeon139_mcp_outofcontext/tools/stashing/context_stash.py` - Refactored to use query/filters instead of segment_ids
+- `src/hjeon139_mcp_outofcontext/tools/stashing/context_retrieve_stashed.py` - Refactored to use query/filters instead of segment_ids
 
 ## Notes
 - Related to 2025-12-08-llm-drafting-latency.md, but focuses on multi-call overhead and workflow optimization, not just drafting. 

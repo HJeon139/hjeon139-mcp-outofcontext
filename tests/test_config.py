@@ -16,7 +16,7 @@ class TestConfig:
     def test_config_defaults(self) -> None:
         """Test config with default values."""
         config = Config()
-        assert config.storage_path == "~/.out_of_context"
+        assert config.storage_path == ".out_of_context"
         assert config.token_limit == 1000000
         assert config.model == "gpt-4"
         assert config.log_level == "INFO"
@@ -54,7 +54,8 @@ class TestLoadConfig:
 
         try:
             config = load_config()
-            assert config.storage_path == "~/.out_of_context"
+            # Default storage path is .out_of_context in project directory
+            assert config.storage_path == ".out_of_context"
             assert config.model == "gpt-4"
             assert config.log_level == "INFO"
         finally:

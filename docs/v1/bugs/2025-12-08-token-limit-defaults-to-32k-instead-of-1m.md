@@ -3,7 +3,7 @@
 **Date**: 2025-12-08  
 **Severity**: High (Launch Blocker)  
 **Component**: Configuration / Token Limits / Analysis Engine  
-**Status**: Open
+**Status**: Fixed (2025-12-08)
 
 ## Description
 The system configuration (`config.py`) defines `token_limit: int = 1000000` (1 million tokens) as the default, but the MCP tools and analysis engine use hardcoded defaults of 32,000 tokens throughout the codebase. The config's token limit is never actually used - it's defined but not connected to the tools. This means the system effectively stores only 32k tokens before eviction, which is far below the required 1 million tokens needed to match Cursor's native chat context size.
@@ -72,6 +72,20 @@ The system configuration (`config.py`) defines `token_limit: int = 1000000` (1 m
 - Consider making `token_limit` a required parameter in `AppState.__init__` or extract from config dict
 - Update all hardcoded 32k values to use config default
 - Ensure backward compatibility if tools are called with explicit `token_limit` parameter
+
+## Resolution
+**Fixed on 2025-12-08:**
+- Extracted `token_limit` from config in `AppState` and stored as `self.token_limit` (defaults to 1M)
+- Updated `AnalyzeUsageParams` to remove hardcoded 32k default, making it truly optional
+- Updated `AnalysisEngine` default values from 32k to 1M in `analyze_context_usage` and `compute_health_score`
+- Updated `handle_analyze_usage` in `tools/monitoring.py` to use `app_state.token_limit` as default
+- All tools now use the configured 1M token limit instead of hardcoded 32k
+
+**Implementation:**
+- `src/hjeon139_mcp_outofcontext/app_state.py` - Extracts and stores `token_limit` from config
+- `src/hjeon139_mcp_outofcontext/models/params.py` - Removed hardcoded default from `AnalyzeUsageParams`
+- `src/hjeon139_mcp_outofcontext/analysis_engine.py` - Updated all default `token_limit` values to 1M
+- `src/hjeon139_mcp_outofcontext/tools/monitoring.py` - Uses `app_state.token_limit` as default
 
 ## Related Issues
 - Related to monitoring and analysis tools - they all need to use consistent token limits

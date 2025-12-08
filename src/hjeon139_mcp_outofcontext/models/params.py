@@ -65,7 +65,21 @@ class StashParams(BaseModel):
     """Parameters for context_stash tool."""
 
     project_id: str = Field(description="Project identifier")
-    segment_ids: list[str] = Field(description="List of segment IDs to stash")
+    query: str | None = Field(
+        None,
+        description=(
+            "Optional keyword search query to match segment text. "
+            "If provided, only segments containing this text will be stashed."
+        ),
+    )
+    filters: dict | None = Field(
+        None,
+        description=(
+            "Optional metadata filters: file_path, task_id, tags (list), type, "
+            "created_after (ISO datetime), created_before (ISO datetime). "
+            "If provided, only segments matching these filters will be stashed."
+        ),
+    )
 
 
 class SearchStashedParams(BaseModel):
@@ -89,8 +103,28 @@ class RetrieveStashedParams(BaseModel):
     """Parameters for context_retrieve_stashed tool."""
 
     project_id: str = Field(description="Project identifier")
-    segment_ids: list[str] = Field(description="List of segment IDs to retrieve")
-    move_to_active: bool = Field(False, description="Move segments back to active storage")
+    query: str | None = Field(
+        None,
+        description=(
+            "Optional keyword search query to match segment text. "
+            "If provided, only segments containing this text will be retrieved."
+        ),
+    )
+    filters: dict | None = Field(
+        None,
+        description=(
+            "Optional metadata filters: file_path, task_id, tags (list), type, "
+            "created_after (ISO datetime), created_before (ISO datetime). "
+            "If provided, only segments matching these filters will be retrieved."
+        ),
+    )
+    move_to_active: bool = Field(
+        False,
+        description=(
+            "If True, move retrieved segments back to active storage. "
+            "If False, segments remain stashed but are returned for inspection."
+        ),
+    )
 
 
 class SetCurrentTaskParams(BaseModel):
