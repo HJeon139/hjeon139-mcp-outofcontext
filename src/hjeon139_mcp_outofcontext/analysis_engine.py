@@ -212,7 +212,7 @@ class AnalysisEngine(IAnalysisEngine):
             },
         )
 
-    def generate_recommendations(
+    def generate_recommendations(  # noqa: C901
         self,
         metrics: UsageMetrics,
     ) -> list[Recommendation]:
@@ -241,6 +241,14 @@ class AnalysisEngine(IAnalysisEngine):
                     priority="high",
                     message="Consider pruning old segments to free space",
                     action="prune",
+                )
+            )
+        elif metrics.usage_percent >= 60.0:
+            recommendations.append(
+                Recommendation(
+                    priority="medium",
+                    message="Context usage at 60%+ - monitor closely and consider stashing old segments",
+                    action="stash",
                 )
             )
         elif metrics.usage_percent < 50.0:
