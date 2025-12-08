@@ -100,15 +100,16 @@ async def handle_retrieve_stashed(
     - When you want to restore stashed segments back to active context (move_to_active=True)
 
     **How to use:**
-    - Provide project_id (required) to scope the search
-    - Optionally provide query to match segment text (e.g., "launch bugs")
-    - Optionally provide filters to match metadata (e.g., {"type": "file", "task_id": "task-123"})
-    - Set move_to_active=True to restore segments to active context (default: False, just retrieves for inspection)
+    - **Avoid project_id when possible** - the server uses the project directory by default
+    - Optional: project_id (defaults to 'default' if omitted)
+    - Optional: query to match segment text (e.g., "launch bugs")
+    - Optional: filters to match metadata (e.g., {"type": "file", "task_id": "task-123"})
+    - Optional: move_to_active=True to restore segments to active context (default: False, just retrieves for inspection)
     - If both query and filters are omitted, all stashed segments will be retrieved
 
     Args:
         app_state: Application state with all components
-        project_id: Project identifier (required)
+        project_id: Optional project identifier (defaults to 'default')
         query: Optional keyword search to match segment text
         filters: Optional metadata filters (file_path, task_id, tags, type, created_after, created_before)
         move_to_active: If True, move segments back to active storage (default: False)
@@ -122,8 +123,10 @@ async def handle_retrieve_stashed(
     # Parse and validate parameters
     try:
         parsed_filters = parse_filters_param(filters)
+        # Use 'default' as the default project_id when not provided
+        effective_project_id = project_id or "default"
         params = RetrieveStashedParams(
-            project_id=project_id or "",
+            project_id=effective_project_id,
             query=query,
             filters=parsed_filters,
             move_to_active=move_to_active,
@@ -137,9 +140,6 @@ async def handle_retrieve_stashed(
             "INVALID_PARAMETER", f"Invalid parameters: {e!s}", {"exception": str(e)}
         )
 
-    if not params.project_id:
-        return create_error_response("INVALID_PARAMETER", "project_id is required")
-
     # Execute retrieve operation
     try:
         filters_parsed = _parse_search_filters(params.filters)
@@ -148,7 +148,7 @@ async def handle_retrieve_stashed(
         segments = app_state.storage.search_stashed(
             query=search_query,
             filters=filters_parsed,
-            project_id=params.project_id,
+            project_id=effective_project_id,
         )
 
         # Apply datetime filters (not handled by indexing layer)
@@ -162,7 +162,7 @@ async def handle_retrieve_stashed(
         segments.sort(key=lambda s: s.created_at, reverse=True)
 
         result = _process_retrieved_segments(
-            segments, params.move_to_active, app_state, params.project_id
+            segments, params.move_to_active, app_state, effective_project_id
         )
 
         return {

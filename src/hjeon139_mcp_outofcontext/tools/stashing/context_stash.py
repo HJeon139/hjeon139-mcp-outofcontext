@@ -30,14 +30,15 @@ async def handle_stash(
     - When you want to stash segments matching specific criteria (file, task, type, etc.)
 
     **How to use:**
-    - Provide project_id (required) to scope the operation
-    - Optionally provide query to match segment text (e.g., "old documentation")
-    - Optionally provide filters to match metadata (e.g., {"type": "file", "task_id": "task-123"})
+    - **Avoid project_id when possible** - the server uses the project directory by default
+    - Optional: project_id (defaults to 'default' if omitted)
+    - Optional: query to match segment text (e.g., "old documentation")
+    - Optional: filters to match metadata (e.g., {"type": "file", "task_id": "task-123"})
     - If both query and filters are omitted, all working segments will be stashed
 
     Args:
         app_state: Application state with all components
-        project_id: Project identifier (required)
+        project_id: Optional project identifier (defaults to 'default')
         query: Optional keyword search to match segment text
         filters: Optional metadata filters (file_path, task_id, tags, type, created_after, created_before)
 
@@ -51,8 +52,10 @@ async def handle_stash(
     # Parse and validate parameters
     try:
         parsed_filters = parse_filters_param(filters)
+        # Use 'default' as the default project_id when not provided
+        effective_project_id = project_id or "default"
         params = StashParams(
-            project_id=project_id or "",
+            project_id=effective_project_id,
             query=query,
             filters=parsed_filters,
         )
@@ -65,13 +68,10 @@ async def handle_stash(
             "INVALID_PARAMETER", f"Invalid parameters: {e!s}", {"exception": str(e)}
         )
 
-    if not params.project_id:
-        return create_error_response("INVALID_PARAMETER", "project_id is required")
-
     # Execute stash operation
     try:
         working_set = app_state.context_manager.get_working_set(
-            project_id=params.project_id,
+            project_id=effective_project_id,
             task_id=None,  # Get all segments, not just current task
         )
 
@@ -92,7 +92,7 @@ async def handle_stash(
         segment_ids = [seg.segment_id for seg in matching_segments]
         stash_result = app_state.context_manager.stash_segments(
             segment_ids=segment_ids,
-            project_id=params.project_id,
+            project_id=effective_project_id,
         )
 
         return {

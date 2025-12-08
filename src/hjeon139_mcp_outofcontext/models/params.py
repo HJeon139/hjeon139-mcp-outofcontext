@@ -64,7 +64,14 @@ class GCUnpinParams(BaseModel):
 class StashParams(BaseModel):
     """Parameters for context_stash tool."""
 
-    project_id: str = Field(description="Project identifier")
+    project_id: str | None = Field(
+        None,
+        description=(
+            "Optional project identifier. "
+            "If omitted, uses 'default' project. "
+            "Avoid specifying project_id when possible - the server uses the project directory by default."
+        ),
+    )
     query: str | None = Field(
         None,
         description=(
@@ -102,7 +109,14 @@ class SearchStashedParams(BaseModel):
 class RetrieveStashedParams(BaseModel):
     """Parameters for context_retrieve_stashed tool."""
 
-    project_id: str = Field(description="Project identifier")
+    project_id: str | None = Field(
+        None,
+        description=(
+            "Optional project identifier. "
+            "If omitted, uses 'default' project. "
+            "Avoid specifying project_id when possible - the server uses the project directory by default."
+        ),
+    )
     query: str | None = Field(
         None,
         description=(

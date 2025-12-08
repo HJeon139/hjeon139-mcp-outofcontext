@@ -14,6 +14,8 @@ Create comprehensive documentation for installation, usage, development, and dem
 - API documentation (tool schemas, data models)
 - Demo procedures and scenarios
 - Add Apache 2.0 license file
+- Clean up bug files for already fixed issues
+- Summarize what was implemented in docs/v1/tasks to clean up this directory
 
 ## Acceptance Criteria
 

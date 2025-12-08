@@ -166,22 +166,38 @@ class TestContextStash:
         app_state.context_manager.stash_segments.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_stash_missing_project_id(self) -> None:
-        """Test stash with missing project_id."""
+    async def test_stash_without_project_id_uses_default(self) -> None:
+        """Test stash without project_id uses default project."""
         # Arrange
         app_state = AppState()
+        query = "test"
+
+        # Mock empty working set for default project
+        mock_working_set = WorkingSet(
+            segments=[],
+            total_tokens=0,
+            project_id="default",
+            task_id=None,
+            last_updated=datetime.now(),
+        )
+        app_state.context_manager.get_working_set = MagicMock(  # type: ignore[method-assign]
+            return_value=mock_working_set
+        )
 
         # Act
         result = await handle_stash(
             app_state=app_state,
             project_id=None,
-            query="test",
+            query=query,
         )
 
-        # Assert
-        assert "error" in result
-        assert result["error"]["code"] == "INVALID_PARAMETER"
-        assert result["error"]["message"] == "project_id is required"
+        # Assert - should use 'default' project_id
+        assert "error" not in result
+        assert result["stashed_segments"] == []
+        assert result["segments_matched"] == 0
+        app_state.context_manager.get_working_set.assert_called_once_with(
+            project_id="default", task_id=None
+        )
 
     @pytest.mark.asyncio
     async def test_stash_no_matching_segments(self) -> None:
@@ -534,6 +550,13 @@ class TestContextSearchStashed:
         """Test search without project_id searches across all projects."""
         # Arrange
         app_state = AppState()
+        # Mock storage to return empty results (no stashed segments)
+        app_state.storage.search_stashed = MagicMock(  # type: ignore[method-assign]
+            return_value=[]
+        )
+        app_state.storage.list_projects = MagicMock(  # type: ignore[method-assign]
+            return_value=[]
+        )
 
         # Act
         result = await handle_search_stashed(
@@ -743,22 +766,30 @@ class TestContextRetrieveStashed:
         assert result["error"]["code"] == "INVALID_PARAMETER"
 
     @pytest.mark.asyncio
-    async def test_retrieve_missing_project_id(self) -> None:
-        """Test retrieve with missing project_id."""
+    async def test_retrieve_without_project_id_uses_default(self) -> None:
+        """Test retrieve without project_id uses default project."""
         # Arrange
         app_state = AppState()
+        query = "test"
+
+        app_state.storage.search_stashed = MagicMock(  # type: ignore[method-assign]
+            return_value=[]
+        )
 
         # Act
         result = await handle_retrieve_stashed(
             app_state=app_state,
             project_id=None,
-            query="test",
+            query=query,
         )
 
-        # Assert
-        assert "error" in result
-        assert result["error"]["code"] == "INVALID_PARAMETER"
-        assert result["error"]["message"] == "project_id is required"
+        # Assert - should use 'default' project_id
+        assert "error" not in result
+        assert len(result["retrieved_segments"]) == 0
+        assert result["segments_found"] == 0
+        app_state.storage.search_stashed.assert_called_once_with(
+            query=query, filters={}, project_id="default"
+        )
 
     @pytest.mark.asyncio
     async def test_retrieve_no_matching_segments(self) -> None:
