@@ -1,5 +1,3 @@
 """Out of context project."""
 
-from importlib.metadata import version
-
-__version__ = version("hjeon139-mcp-outofcontext")
+__version__ = "0.12.0"
