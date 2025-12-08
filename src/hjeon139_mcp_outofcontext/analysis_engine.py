@@ -235,30 +235,27 @@ class AnalysisEngine(IAnalysisEngine):
             (50.0, "low", "Context usage at 50%+ - monitor usage", None),
         ]
 
-        recommendations: list[Recommendation] = []
+        # Find first matching threshold using generator expression
+        matching = next(
+            (
+                Recommendation(priority=priority, message=message, action=action)
+                for threshold, priority, message, action in thresholds
+                if metrics.usage_percent >= threshold
+            ),
+            None,
+        )
 
-        # Find first matching threshold
-        for threshold, priority, message, action in thresholds:
-            if metrics.usage_percent >= threshold:
-                recommendations.append(
-                    Recommendation(
-                        priority=priority,
-                        message=message,
-                        action=action,
-                    )
-                )
-                break
-        else:
-            # If no threshold matched (usage < 50%), add healthy status
-            recommendations.append(
-                Recommendation(
-                    priority="low",
-                    message="Context usage is healthy, no action needed",
-                    action=None,
-                )
+        if matching:
+            return [matching]
+
+        # If no threshold matched (usage < 50%), return healthy status
+        return [
+            Recommendation(
+                priority="low",
+                message="Context usage is healthy, no action needed",
+                action=None,
             )
-
-        return recommendations
+        ]
 
     def _generate_age_recommendations(self, metrics: UsageMetrics) -> list[Recommendation]:
         """Generate recommendations based on segment age.
