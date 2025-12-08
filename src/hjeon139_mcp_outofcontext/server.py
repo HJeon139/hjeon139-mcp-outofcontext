@@ -14,8 +14,8 @@ class MCPServer:
 
     Follows best practices:
     - NO global variables - all state is instance-scoped
-    - AppState holds all components
-    - Lifecycle management - explicit initialize/cleanup
+    - AppState holds all components (initialized in __init__)
+    - Lifecycle management via async context manager
     - Tool registry with dependency injection
     """
 
@@ -33,27 +33,6 @@ class MCPServer:
         self.tool_registry = ToolRegistry()
         self._running = False
 
-    async def initialize(self) -> None:
-        """
-        Initialize server and application state.
-
-        Sets up lifecycle and initializes all components.
-        """
-        # Initialize application state (loads storage, initializes components)
-        await self.app_state.initialize()
-        # Tools will be registered here in later tasks
-        # For now, registry is empty
-
-    async def cleanup(self) -> None:
-        """
-        Cleanup server resources.
-
-        Ensures proper resource cleanup and persistence.
-        """
-        # Cleanup application state
-        await self.app_state.cleanup()
-        self._running = False
-
     @asynccontextmanager
     async def lifespan(self) -> Any:
         """
@@ -64,12 +43,12 @@ class MCPServer:
                 # Server running
                 pass
         """
-        await self.initialize()
         self._running = True
         try:
-            yield
+            async with self.app_state.lifespan():
+                yield
         finally:
-            await self.cleanup()
+            self._running = False
 
     async def run(self) -> None:
         """
@@ -105,14 +84,12 @@ class MCPServer:
 
 async def create_server(config: dict[str, Any] | None = None) -> MCPServer:
     """
-    Create and initialize MCP server instance.
+    Create MCP server instance.
 
     Args:
         config: Optional configuration dictionary
 
     Returns:
-        Initialized MCPServer instance
+        MCPServer instance (components initialized in __init__)
     """
-    server = MCPServer(config=config)
-    await server.initialize()
-    return server
+    return MCPServer(config=config)

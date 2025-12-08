@@ -44,68 +44,40 @@ class TestMCPServer:
         registry = server.get_tool_registry()
         assert registry is server.tool_registry
 
+    def test_app_state_components_initialized(self) -> None:
+        """Test that AppState components are initialized in __init__."""
+        server = MCPServer()
+        # Components should be available immediately
+        assert server.app_state.storage is not None
+        assert server.app_state.analysis_engine is not None
+        assert server.app_state.gc_engine is not None
+        assert server.app_state.context_manager is not None
+
     async def test_server_lifespan(self) -> None:
         """Test server lifespan context manager."""
         server = MCPServer()
 
         async with server.lifespan():
             assert server._running is True
-            assert server.app_state._initialized is True
+            # Components should be available
+            assert server.app_state.storage is not None
 
-        assert server._running is False
-        assert server.app_state._initialized is False
-
-    async def test_server_initialize_cleanup(self) -> None:
-        """Test server initialize and cleanup methods."""
-        server = MCPServer()
-        assert server.app_state._initialized is False
-        assert server._running is False
-
-        await server.initialize()
-        assert server.app_state._initialized is True
-        # _running is only set to True in lifespan context, not in initialize()
-        assert server._running is False
-
-        await server.cleanup()
-        assert server.app_state._initialized is False
         assert server._running is False
 
     async def test_create_server(self) -> None:
         """Test create_server factory function."""
         server = await create_server()
         assert isinstance(server, MCPServer)
-        assert server.app_state._initialized is True
-
-        # Cleanup
-        await server.cleanup()
+        # Components should be initialized
+        assert server.app_state.storage is not None
 
     async def test_create_server_with_config(self) -> None:
         """Test create_server with config."""
         config = {"test": "value"}
         server = await create_server(config=config)
         assert server.config == config
-
-        # Cleanup
-        await server.cleanup()
-
-    async def test_double_initialize(self) -> None:
-        """Test that double initialization is safe."""
-        server = MCPServer()
-        await server.initialize()
-        assert server.app_state._initialized is True
-
-        # Second initialize should be safe
-        await server.initialize()
-        assert server.app_state._initialized is True
-
-        await server.cleanup()
-
-    async def test_cleanup_before_initialize(self) -> None:
-        """Test that cleanup before initialize is safe."""
-        server = MCPServer()
-        # Should not raise
-        await server.cleanup()
-        assert server.app_state._initialized is False
+        # Components should be initialized
+        assert server.app_state.storage is not None
 
 
 @pytest.mark.integration
