@@ -8,7 +8,10 @@
 
 ## Scope
 
-Fix the one launch-blocking bug identified in pre-launch review to meet requirement #5 (proactive limit warnings). This task ensures the MCP server provides proactive suggestions/notifications when context approaches limits.
+Fix the launch-blocking bugs identified in pre-launch review:
+1. **Proactive limit warnings** (requirement #5): Ensure the MCP server provides proactive suggestions/notifications when context approaches limits
+2. **Cross-session stash retrieval**: Enable retrieval of stashed context across different chat windows/sessions by adding project discovery functionality
+3. **Token limit defaults**: Fix system to use 1 million token limit from config instead of hardcoded 32k defaults throughout codebase
 
 ## Acceptance Criteria
 
@@ -106,6 +109,8 @@ Enhance response dictionary to include:
 
 - `docs/v1/bugs/2025-12-08-missing-proactive-limit-warnings.md` - This task addresses this bug
 - `docs/v1/bugs/2025-12-08-tool-feedback-lacks-impact.md` - Partially addressed (impact summaries)
+- `docs/v1/bugs/2025-12-08-no-cross-session-stash-retrieval.md` - **LAUNCH BLOCKER**: Cannot retrieve stashed context across sessions
+- `docs/v1/bugs/2025-12-08-token-limit-defaults-to-32k-instead-of-1m.md` - **LAUNCH BLOCKER**: System defaults to 32k tokens instead of 1 million
 
 ## References
 
