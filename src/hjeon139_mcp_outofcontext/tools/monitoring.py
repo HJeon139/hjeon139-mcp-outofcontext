@@ -16,7 +16,85 @@ from ..tool_registry import ToolRegistry
 logger = logging.getLogger(__name__)
 
 
-async def handle_analyze_usage(  # noqa: C901
+def _generate_threshold_warnings(
+    usage_percent: float,
+    metrics: Any,
+    pruning_candidates_count: int,
+    token_limit: int,
+) -> tuple[list[str], list[dict[str, Any]], dict[str, Any]]:
+    """Generate threshold-based warnings, suggested actions, and impact summary.
+
+    Args:
+        usage_percent: Current usage percentage
+        metrics: Usage metrics object
+        pruning_candidates_count: Number of pruning candidates
+        token_limit: Token limit for calculations
+
+    Returns:
+        Tuple of (warnings, suggested_actions, impact_summary)
+    """
+    warnings: list[str] = []
+    suggested_actions: list[dict[str, Any]] = []
+    impact_summary: dict[str, Any] = {}
+
+    if usage_percent >= 90.0:
+        warnings.append("URGENT: Context usage at 90%+ - prune immediately to avoid hitting limits")
+        suggested_actions.append(
+            {
+                "tool": "context_gc_prune",
+                "description": "Prune old segments immediately",
+                "estimated_tokens_freed": metrics.total_tokens * 0.3,  # Rough estimate
+            }
+        )
+    elif usage_percent >= 80.0:
+        warnings.append("HIGH: Context usage at 80%+ - consider pruning to free space")
+        suggested_actions.append(
+            {
+                "tool": "context_gc_analyze",
+                "description": "Analyze pruning candidates",
+                "estimated_tokens_freed": metrics.total_tokens * 0.2,  # Rough estimate
+            }
+        )
+        suggested_actions.append(
+            {
+                "tool": "context_stash",
+                "description": "Stash old segments to free space",
+                "estimated_tokens_freed": metrics.total_tokens * 0.15,  # Rough estimate
+            }
+        )
+    elif usage_percent >= 60.0:
+        warnings.append(
+            "WARNING: Context usage at 60%+ - monitor closely and consider stashing old segments"
+        )
+        suggested_actions.append(
+            {
+                "tool": "context_stash",
+                "description": "Stash old segments to free space",
+                "estimated_tokens_freed": metrics.total_tokens * 0.1,  # Rough estimate
+            }
+        )
+
+    # Calculate impact summary if pruning candidates exist
+    if pruning_candidates_count > 0:
+        # Estimate tokens that could be freed (rough calculation)
+        avg_tokens_per_segment = (
+            metrics.total_tokens / metrics.total_segments if metrics.total_segments > 0 else 0
+        )
+        estimated_tokens_freed = pruning_candidates_count * avg_tokens_per_segment
+        estimated_usage_after = max(
+            0.0,
+            usage_percent - (estimated_tokens_freed / token_limit * 100.0),
+        )
+        impact_summary = {
+            "pruning_candidates_count": pruning_candidates_count,
+            "estimated_tokens_freed": int(estimated_tokens_freed),
+            "estimated_usage_after_pruning": round(estimated_usage_after, 1),
+        }
+
+    return warnings, suggested_actions, impact_summary
+
+
+async def handle_analyze_usage(
     app_state: AppState,
     context_descriptors: dict[str, Any] | None = None,
     project_id: str | None = None,
@@ -136,66 +214,12 @@ async def handle_analyze_usage(  # noqa: C901
         recommendations = recommendation_objects
 
         # Generate threshold-based warnings and suggested actions
-        warnings: list[str] = []
-        suggested_actions: list[dict[str, Any]] = []
-        impact_summary: dict[str, Any] = {}
-
-        usage_percent = metrics.usage_percent
-        if usage_percent >= 90.0:
-            warnings.append(
-                "URGENT: Context usage at 90%+ - prune immediately to avoid hitting limits"
-            )
-            suggested_actions.append(
-                {
-                    "tool": "context_gc_prune",
-                    "description": "Prune old segments immediately",
-                    "estimated_tokens_freed": metrics.total_tokens * 0.3,  # Rough estimate
-                }
-            )
-        elif usage_percent >= 80.0:
-            warnings.append("HIGH: Context usage at 80%+ - consider pruning to free space")
-            suggested_actions.append(
-                {
-                    "tool": "context_gc_analyze",
-                    "description": "Analyze pruning candidates",
-                    "estimated_tokens_freed": metrics.total_tokens * 0.2,  # Rough estimate
-                }
-            )
-            suggested_actions.append(
-                {
-                    "tool": "context_stash",
-                    "description": "Stash old segments to free space",
-                    "estimated_tokens_freed": metrics.total_tokens * 0.15,  # Rough estimate
-                }
-            )
-        elif usage_percent >= 60.0:
-            warnings.append(
-                "WARNING: Context usage at 60%+ - monitor closely and consider stashing old segments"
-            )
-            suggested_actions.append(
-                {
-                    "tool": "context_stash",
-                    "description": "Stash old segments to free space",
-                    "estimated_tokens_freed": metrics.total_tokens * 0.1,  # Rough estimate
-                }
-            )
-
-        # Calculate impact summary if pruning candidates exist
-        if pruning_candidates_count > 0:
-            # Estimate tokens that could be freed (rough calculation)
-            avg_tokens_per_segment = (
-                metrics.total_tokens / metrics.total_segments if metrics.total_segments > 0 else 0
-            )
-            estimated_tokens_freed = pruning_candidates_count * avg_tokens_per_segment
-            estimated_usage_after = max(
-                0.0,
-                usage_percent - (estimated_tokens_freed / descriptors.token_usage.limit * 100.0),
-            )
-            impact_summary = {
-                "pruning_candidates_count": pruning_candidates_count,
-                "estimated_tokens_freed": int(estimated_tokens_freed),
-                "estimated_usage_after_pruning": round(estimated_usage_after, 1),
-            }
+        warnings, suggested_actions, impact_summary = _generate_threshold_warnings(
+            metrics.usage_percent,
+            metrics,
+            pruning_candidates_count,
+            descriptors.token_usage.limit,
+        )
 
         # Format response
         return {

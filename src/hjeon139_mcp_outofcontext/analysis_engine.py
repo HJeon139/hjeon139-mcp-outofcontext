@@ -212,21 +212,17 @@ class AnalysisEngine(IAnalysisEngine):
             },
         )
 
-    def generate_recommendations(  # noqa: C901
-        self,
-        metrics: UsageMetrics,
-    ) -> list[Recommendation]:
-        """Generate recommendations based on usage metrics.
+    def _generate_usage_recommendations(self, metrics: UsageMetrics) -> list[Recommendation]:
+        """Generate recommendations based on usage percentage.
 
         Args:
             metrics: Usage metrics to analyze
 
         Returns:
-            List of recommendations
+            List of usage-based recommendations
         """
         recommendations: list[Recommendation] = []
 
-        # High usage recommendations
         if metrics.usage_percent >= 90.0:
             recommendations.append(
                 Recommendation(
@@ -260,7 +256,19 @@ class AnalysisEngine(IAnalysisEngine):
                 )
             )
 
-        # Old segments recommendation
+        return recommendations
+
+    def _generate_age_recommendations(self, metrics: UsageMetrics) -> list[Recommendation]:
+        """Generate recommendations based on segment age.
+
+        Args:
+            metrics: Usage metrics to analyze
+
+        Returns:
+            List of age-based recommendations
+        """
+        recommendations: list[Recommendation] = []
+
         if metrics.oldest_segment_age_hours > 24.0:
             recommendations.append(
                 Recommendation(
@@ -270,24 +278,53 @@ class AnalysisEngine(IAnalysisEngine):
                 )
             )
 
-        # Distribution recommendations
-        if metrics.total_segments > 0:
-            # Check if distribution is unbalanced
-            type_counts = list(metrics.segments_by_type.values())
-            if len(type_counts) > 0:
-                max_type_count = max(type_counts)
-                total_segments = metrics.total_segments
-                # If one type dominates (>60% of segments)
-                if max_type_count / total_segments > 0.6:
-                    dominant_type = max(metrics.segments_by_type.items(), key=lambda x: x[1])[0]
-                    if dominant_type == "log":
-                        recommendations.append(
-                            Recommendation(
-                                priority="medium",
-                                message="Too many log segments, consider stashing",
-                                action="stash",
-                            )
-                        )
+        return recommendations
+
+    def _generate_distribution_recommendations(self, metrics: UsageMetrics) -> list[Recommendation]:
+        """Generate recommendations based on segment distribution.
+
+        Args:
+            metrics: Usage metrics to analyze
+
+        Returns:
+            List of distribution-based recommendations
+        """
+        recommendations: list[Recommendation] = []
+
+        if metrics.total_segments == 0:
+            return recommendations
+
+        # Check if distribution is unbalanced
+        type_counts = list(metrics.segments_by_type.values())
+        if not type_counts:
+            return recommendations
+
+        max_type_count = max(type_counts)
+        total_segments = metrics.total_segments
+        # If one type dominates (>60% of segments)
+        if max_type_count / total_segments > 0.6:
+            dominant_type = max(metrics.segments_by_type.items(), key=lambda x: x[1])[0]
+            if dominant_type == "log":
+                recommendations.append(
+                    Recommendation(
+                        priority="medium",
+                        message="Too many log segments, consider stashing",
+                        action="stash",
+                    )
+                )
+
+        return recommendations
+
+    def _generate_pinning_recommendations(self, metrics: UsageMetrics) -> list[Recommendation]:
+        """Generate recommendations based on segment pinning.
+
+        Args:
+            metrics: Usage metrics to analyze
+
+        Returns:
+            List of pinning-based recommendations
+        """
+        recommendations: list[Recommendation] = []
 
         # All segments pinned recommendation
         if (
@@ -301,6 +338,28 @@ class AnalysisEngine(IAnalysisEngine):
                     action="unpin",
                 )
             )
+
+        return recommendations
+
+    def generate_recommendations(
+        self,
+        metrics: UsageMetrics,
+    ) -> list[Recommendation]:
+        """Generate recommendations based on usage metrics.
+
+        Args:
+            metrics: Usage metrics to analyze
+
+        Returns:
+            List of recommendations
+        """
+        recommendations: list[Recommendation] = []
+
+        # Collect recommendations from different sources
+        recommendations.extend(self._generate_usage_recommendations(metrics))
+        recommendations.extend(self._generate_age_recommendations(metrics))
+        recommendations.extend(self._generate_distribution_recommendations(metrics))
+        recommendations.extend(self._generate_pinning_recommendations(metrics))
 
         return recommendations
 

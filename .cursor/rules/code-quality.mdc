@@ -74,6 +74,10 @@ def test_with_patch_decorator(mock_service: MagicMock) -> None:
 - Run `hatch run fmt-fix` before committing
 - Run `hatch run lint-fix` before committing
 - Run `hatch run typecheck` before committing
+- **NEVER use `# noqa` comments to suppress linting errors** - fix the underlying issue instead
+  - If complexity is too high, refactor the function into smaller functions
+  - If a rule is incorrectly flagged, fix the code to satisfy the rule
+  - Suppressing errors hides real code quality issues and technical debt
 
 ## Architecture Patterns
 
