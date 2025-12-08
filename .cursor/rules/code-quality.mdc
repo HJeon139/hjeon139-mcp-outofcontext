@@ -82,6 +82,23 @@ def test_with_patch_decorator(mock_service: MagicMock) -> None:
 - **Lifecycle management** - explicit initialize/cleanup methods
 - **Testable architecture** - can create multiple instances for testing
 
+## Backwards Compatibility
+
+**Only add backwards compatibility when necessary:**
+
+- ✅ **DO add backwards compatibility** if:
+  - It breaks an existing feature used in production
+  - It requires a data migration/backfill with increasing levels of effort
+  - It's part of a public API contract that external users depend on
+
+- ❌ **DON'T add backwards compatibility** if:
+  - Only tests need updating (update tests to match new API)
+  - It's an internal implementation detail
+  - The old API was never documented or released
+  - It would hurt long-term maintainability or refactoring ability
+
+**When in doubt, prefer clean APIs over backwards compatibility.** Update tests and documentation to match the new design rather than maintaining legacy support.
+
 ## File Organization
 
 - Source code: `src/out_of_context/`

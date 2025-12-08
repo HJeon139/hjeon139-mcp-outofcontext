@@ -119,11 +119,14 @@ class IndexingOperations:
             task_ids = indexes["by_task"].get(task_id, set())
             candidate_ids &= task_ids
 
-        # Apply tag filter
-        if "tag" in filters:
-            tag = filters["tag"]
-            tag_ids = indexes["by_tag"].get(tag, set())
-            candidate_ids &= tag_ids
+        # Apply tags filter (list of tags - all must be present)
+        if "tags" in filters:
+            tags = filters["tags"]
+            if isinstance(tags, list) and tags:
+                # Intersect all tag sets (segment must have all tags)
+                for tag in tags:
+                    tag_ids = indexes["by_tag"].get(tag, set())
+                    candidate_ids &= tag_ids
 
         # Apply type filter
         if "type" in filters:

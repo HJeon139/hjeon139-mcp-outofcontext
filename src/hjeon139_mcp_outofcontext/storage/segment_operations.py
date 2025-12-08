@@ -27,7 +27,8 @@ class SegmentOperations:
 
         Args:
             active_segments: LRU cache for active segments
-            active_segment_ids: Dictionary tracking active segment IDs by project
+            active_segment_ids: Dictionary tracking active segment IDs by
+                project
             file_ops: FileOperations instance
             indexing_ops: IndexingOperations instance
         """
@@ -218,3 +219,45 @@ class SegmentOperations:
             self.indexing_ops.update_metadata_indexes(segment, project_id, add=True)
         else:
             logger.warning(f"Segment {segment_id} not found for update in project {project_id}")
+
+    def unstash_segment(self, segment: ContextSegment, project_id: str) -> None:
+        """Move segment from stashed storage back to active storage."""
+        segment_id = segment.segment_id
+
+        # Load stashed file
+        file_path = self.file_ops.get_stashed_file_path(project_id)
+        stashed = self.file_ops.load_stashed_file(file_path)
+
+        # Find and remove segment from stashed storage
+        removed_segment_dict = None
+        for seg_dict in stashed:
+            if seg_dict.get("segment_id") == segment_id:
+                removed_segment_dict = seg_dict
+                # Remove from list
+                stashed = [s for s in stashed if s.get("segment_id") != segment_id]
+                break
+
+        if removed_segment_dict:
+            # Save updated stashed file
+            self.file_ops.save_stashed_file(file_path, stashed)
+
+            # Update segment tier to working
+            segment.tier = "working"
+
+            # Add to active storage
+            self.active_segments.put(segment_id, segment)
+
+            # Track active segment ID
+            if project_id not in self.active_segment_ids:
+                self.active_segment_ids[project_id] = set()
+            self.active_segment_ids[project_id].add(segment_id)
+
+            # Update indexes: remove from stashed indexes, add to active
+            # Note: We don't remove from keyword index (it's shared)
+            # But we do update metadata indexes to reflect the tier change
+            # Actually, metadata indexes don't track tier, so no change needed
+            # Just ensure the segment is in active storage
+        else:
+            logger.warning(
+                f"Segment {segment_id} not found in stashed storage for project {project_id}"
+            )

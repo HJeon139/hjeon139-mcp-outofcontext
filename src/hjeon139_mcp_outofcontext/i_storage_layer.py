@@ -55,3 +55,11 @@ class IStorageLayer(ABC):
         project_id: str,
     ) -> None:
         """Update segment attributes in storage."""
+
+    @abstractmethod
+    def unstash_segment(
+        self,
+        segment: ContextSegment,
+        project_id: str,
+    ) -> None:
+        """Move segment from stashed storage back to active storage."""

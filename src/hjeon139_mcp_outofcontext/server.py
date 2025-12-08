@@ -9,6 +9,7 @@ from hjeon139_mcp_outofcontext.tool_registry import ToolRegistry
 from hjeon139_mcp_outofcontext.tools import (
     register_monitoring_tools,
     register_pruning_tools,
+    register_stashing_tools,
 )
 
 
@@ -97,6 +98,8 @@ class MCPServer:
         register_monitoring_tools(self.tool_registry, self.app_state)
         # Register pruning tools
         register_pruning_tools(self.tool_registry, self.app_state)
+        # Register stashing tools
+        register_stashing_tools(self.tool_registry, self.app_state)
 
 
 async def create_server(config: dict[str, Any] | None = None) -> MCPServer:

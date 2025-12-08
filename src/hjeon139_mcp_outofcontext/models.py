@@ -247,3 +247,33 @@ class GCUnpinParams(BaseModel):
 
     project_id: str = Field(description="Project identifier")
     segment_ids: list[str] = Field(description="List of segment IDs to unpin")
+
+
+class StashParams(BaseModel):
+    """Parameters for context_stash tool."""
+
+    project_id: str = Field(description="Project identifier")
+    segment_ids: list[str] = Field(description="List of segment IDs to stash")
+
+
+class SearchStashedParams(BaseModel):
+    """Parameters for context_search_stashed tool."""
+
+    project_id: str = Field(description="Project identifier")
+    query: str | None = Field(None, description="Keyword search query")
+    filters: dict | None = Field(
+        None,
+        description=(
+            "Metadata filters: file_path, task_id, tags (list), type, "
+            "created_after (ISO datetime), created_before (ISO datetime)"
+        ),
+    )
+    limit: int | None = Field(50, description="Maximum number of results to return")
+
+
+class RetrieveStashedParams(BaseModel):
+    """Parameters for context_retrieve_stashed tool."""
+
+    project_id: str = Field(description="Project identifier")
+    segment_ids: list[str] = Field(description="List of segment IDs to retrieve")
+    move_to_active: bool = Field(False, description="Move segments back to active storage")

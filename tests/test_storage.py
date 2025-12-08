@@ -504,15 +504,15 @@ class TestSearchFunctionality:
         sample_segment: ContextSegment,
         sample_segment_2: ContextSegment,
     ) -> None:
-        """Test searching by tag filter."""
+        """Test searching by tags filter."""
         storage_layer.stash_segment(sample_segment, "proj-1")
         storage_layer.stash_segment(sample_segment_2, "proj-1")
 
-        results = storage_layer.search_stashed("", {"tag": "test"}, "proj-1")
+        results = storage_layer.search_stashed("", {"tags": ["test"]}, "proj-1")
         assert len(results) == 1
         assert results[0].segment_id == "seg-1"
 
-        results = storage_layer.search_stashed("", {"tag": "code"}, "proj-1")
+        results = storage_layer.search_stashed("", {"tags": ["code"]}, "proj-1")
         assert len(results) == 1
         assert results[0].segment_id == "seg-2"
 

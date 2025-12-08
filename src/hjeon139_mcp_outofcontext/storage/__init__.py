@@ -101,6 +101,10 @@ class StorageLayer(IStorageLayer):
         """Update segment attributes in storage."""
         return self.segment_ops.update_segment(segment, project_id)
 
+    def unstash_segment(self, segment, project_id: str) -> None:
+        """Move segment from stashed storage back to active storage."""
+        return self.segment_ops.unstash_segment(segment, project_id)
+
     def _load_persisted_data(self) -> None:
         """Load persisted data on startup."""
         # Rebuild indexes from stashed files
