@@ -41,18 +41,28 @@ See: `docs/steering/08_commit_version_workflow.md`
 - Type hints required for all functions
 - All tests must pass before committing
 - Follow FastAPI/MCP best practices (no globals, dependency injection)
-- **File Size Rule**: When a file exceeds 200 lines of code, split it into separate files following the "one file per declaration" principle
-  - File names should match the declaration name (class/function) following PEP 8 standards (snake_case)
-  - Example: If `storage.py` has `InvertedIndex`, `LRUSegmentCache`, and `StorageLayer` classes, split into:
-    - `inverted_index.py` (contains `InvertedIndex` class)
-    - `lru_segment_cache.py` (contains `LRUSegmentCache` class)
-    - `storage.py` (contains `StorageLayer` class)
-  - Maintain backward compatibility by re-exporting from the main module if needed
+- **File Size Rule**: Keep files under ~400 lines of code (max recommended: 400 lines)
+  - When a file exceeds 400 lines, split it into logical modules with clear separation of concerns
+  - Use subdirectories for related functionality (e.g., `tools/`, `storage/`)
+  - Group related handlers/functions into separate modules within a package
+  - File names should match their purpose following PEP 8 standards (snake_case)
+  - Maintain backward compatibility by re-exporting from `__init__.py` if needed
+  - **Examples**:
+    - `tools/pruning/` directory for pruning tool handlers (one file per handler)
+    - `storage/` directory split into `file_operations.py`, `indexing.py`, `segment_operations.py`
+    - Keep main classes in `__init__.py` if they compose sub-modules
 
 ## File Organization
 
-- Source code: `src/out_of_context/`
-- Tests: `tests/`
+- Source code: `src/hjeon139_mcp_outofcontext/`
+  - `tools/` - MCP tool handlers organized by functionality
+    - `tools/monitoring.py` - Monitoring tool handlers
+    - `tools/pruning/` - Pruning tool handlers (one per file)
+  - `storage/` - Storage layer organized by operation type
+    - `storage/file_operations.py` - File I/O operations
+    - `storage/indexing.py` - Indexing operations
+    - `storage/segment_operations.py` - Segment CRUD operations
+- Tests: `tests/` (mirror source structure)
 - Documentation: `docs/`
 - Steering docs: `docs/steering/`
 

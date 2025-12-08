@@ -14,12 +14,12 @@ from hjeon139_mcp_outofcontext.models import (
     UsageMetrics,
     WorkingSet,
 )
-from hjeon139_mcp_outofcontext.monitoring_tools import (
+from hjeon139_mcp_outofcontext.tool_registry import ToolRegistry
+from hjeon139_mcp_outofcontext.tools.monitoring import (
     handle_analyze_usage,
     handle_get_working_set,
     register_monitoring_tools,
 )
-from hjeon139_mcp_outofcontext.tool_registry import ToolRegistry
 
 
 @pytest.mark.unit

@@ -213,3 +213,37 @@ class GetWorkingSetParams(BaseModel):
 
     project_id: str = Field(description="Project identifier")
     task_id: str | None = Field(None, description="Optional task identifier")
+
+
+class GCAnalyzeParams(BaseModel):
+    """Parameters for context_gc_analyze tool."""
+
+    context_descriptors: ContextDescriptors | None = Field(
+        None, description="Optional context descriptors from platform"
+    )
+    project_id: str = Field(description="Project identifier")
+    task_id: str | None = Field(None, description="Optional task identifier")
+    target_tokens: int | None = Field(None, description="Optional target tokens to free")
+
+
+class GCPruneParams(BaseModel):
+    """Parameters for context_gc_prune tool."""
+
+    project_id: str = Field(description="Project identifier")
+    segment_ids: list[str] = Field(description="List of segment IDs to prune")
+    action: Literal["stash", "delete"] = Field(description="Action to take: stash or delete")
+    confirm: bool = Field(False, description="Safety flag - must be True for delete actions")
+
+
+class GCPinParams(BaseModel):
+    """Parameters for context_gc_pin tool."""
+
+    project_id: str = Field(description="Project identifier")
+    segment_ids: list[str] = Field(description="List of segment IDs to pin")
+
+
+class GCUnpinParams(BaseModel):
+    """Parameters for context_gc_unpin tool."""
+
+    project_id: str = Field(description="Project identifier")
+    segment_ids: list[str] = Field(description="List of segment IDs to unpin")

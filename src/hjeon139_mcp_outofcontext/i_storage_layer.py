@@ -47,3 +47,11 @@ class IStorageLayer(ABC):
         project_id: str,
     ) -> None:
         """Delete segment from storage."""
+
+    @abstractmethod
+    def update_segment(
+        self,
+        segment: ContextSegment,
+        project_id: str,
+    ) -> None:
+        """Update segment attributes in storage."""

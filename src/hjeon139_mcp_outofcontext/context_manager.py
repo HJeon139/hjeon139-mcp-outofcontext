@@ -24,7 +24,12 @@ logger = logging.getLogger(__name__)
 
 
 class IContextManager(ABC):
-    """Interface for Context Manager operations."""
+    """Interface for Context Manager operations.
+
+    Note: This is not a Python context manager (does not implement
+    __enter__/__exit__). It manages conversation/working context for the
+    MCP server, not Python context protocol.
+    """
 
     @abstractmethod
     def analyze_context(
@@ -94,7 +99,12 @@ class IContextManager(ABC):
 
 
 class ContextManager(IContextManager):
-    """Context Manager implementation that orchestrates all context operations."""
+    """Context Manager implementation that orchestrates all context operations.
+
+    Note: This class manages conversation/working context (segments,
+    working sets) for the MCP server, not Python context managers. It
+    does not implement the context manager protocol (__enter__/__exit__).
+    """
 
     def __init__(
         self,

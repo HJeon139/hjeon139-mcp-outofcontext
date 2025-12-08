@@ -311,7 +311,7 @@ class TestErrorHandling:
             assert "segments" in data
 
     @pytest.mark.unit
-    @patch("hjeon139_mcp_outofcontext.storage.open")
+    @patch("hjeon139_mcp_outofcontext.storage.file_operations.open")
     def test_handles_permission_error_on_read(
         self,
         mock_open: MagicMock,

@@ -3,15 +3,15 @@
 import logging
 from typing import Any
 
-from .app_state import AppState
-from .models import (
+from ..app_state import AppState
+from ..models import (
     AnalyzeUsageParams,
     ContextDescriptors,
     GetWorkingSetParams,
     Recommendation,
     TokenUsage,
 )
-from .tool_registry import ToolRegistry
+from ..tool_registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 
