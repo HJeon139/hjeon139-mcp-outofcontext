@@ -31,6 +31,9 @@ class AppState:
         """
         self.config = config or {}
 
+        # Extract token_limit from config (default: 1 million)
+        self.token_limit = self.config.get("token_limit", 1000000)
+
         # 1. Initialize Storage Layer (no dependencies)
         storage_path = self.config.get("storage_path")
         max_active_segments = self.config.get("max_active_segments", 10000)

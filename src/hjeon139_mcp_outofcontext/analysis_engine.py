@@ -5,7 +5,7 @@ import math
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, cast
 
 from .models import ContextSegment, HealthScore, Recommendation, UsageMetrics
 from .tokenizer import Tokenizer
@@ -23,13 +23,13 @@ class IAnalysisEngine(ABC):
     def analyze_context_usage(
         self,
         segments: list[ContextSegment],
-        token_limit: int = 32000,
+        token_limit: int = 1000000,
     ) -> UsageMetrics:
         """Analyze context usage and return metrics.
 
         Args:
             segments: List of context segments to analyze
-            token_limit: Token limit for usage percentage calculation
+            token_limit: Token limit for usage percentage calculation (default: 1 million)
 
         Returns:
             Usage metrics
@@ -39,7 +39,7 @@ class IAnalysisEngine(ABC):
     def compute_health_score(
         self,
         segments: list[ContextSegment],
-        token_limit: int = 32000,
+        token_limit: int = 1000000,
     ) -> HealthScore:
         """Compute context health score.
 
@@ -81,7 +81,7 @@ class AnalysisEngine(IAnalysisEngine):
     def analyze_context_usage(
         self,
         segments: list[ContextSegment],
-        token_limit: int = 32000,
+        token_limit: int = 1000000,
     ) -> UsageMetrics:
         """Analyze context usage and return metrics.
 
@@ -167,7 +167,7 @@ class AnalysisEngine(IAnalysisEngine):
     def compute_health_score(
         self,
         segments: list[ContextSegment],
-        token_limit: int = 32000,
+        token_limit: int = 1000000,
     ) -> HealthScore:
         """Compute context health score (0-100, higher = healthier).
 
@@ -238,7 +238,11 @@ class AnalysisEngine(IAnalysisEngine):
         # Find first matching threshold using generator expression
         matching = next(
             (
-                Recommendation(priority=priority, message=message, action=action)
+                Recommendation(
+                    priority=cast(Literal["low", "medium", "high", "urgent"], priority),
+                    message=message,
+                    action=action,
+                )
                 for threshold, priority, message, action in thresholds
                 if metrics.usage_percent >= threshold
             ),

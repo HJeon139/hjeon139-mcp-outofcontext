@@ -15,7 +15,9 @@ class AnalyzeUsageParams(BaseModel):
     )
     project_id: str = Field(description="Project identifier")
     task_id: str | None = Field(None, description="Optional task identifier")
-    token_limit: int | None = Field(32000, description="Token limit (default: 32000)")
+    token_limit: int | None = Field(
+        None, description="Optional token limit (defaults to config value, typically 1 million)"
+    )
 
 
 class GetWorkingSetParams(BaseModel):

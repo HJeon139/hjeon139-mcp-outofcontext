@@ -18,7 +18,7 @@ def test_analyze_context_usage_empty() -> None:
     assert metrics.total_tokens == 0
     assert metrics.total_segments == 0
     assert metrics.usage_percent == 0.0
-    assert metrics.estimated_remaining_tokens == 32000
+    assert metrics.estimated_remaining_tokens == 1000000
     assert metrics.pinned_segments_count == 0
     assert metrics.pinned_tokens == 0
 
@@ -44,7 +44,7 @@ def test_analyze_context_usage_single_segment() -> None:
     assert metrics.total_segments == 1
     assert metrics.segments_by_type["message"] == 1
     assert metrics.tokens_by_type["message"] == 100
-    assert metrics.usage_percent == (100 / 32000) * 100
+    assert metrics.usage_percent == (100 / 1000000) * 100
 
 
 @pytest.mark.unit

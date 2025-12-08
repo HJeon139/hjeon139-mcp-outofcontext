@@ -157,6 +157,9 @@ async def handle_analyze_usage(
         }
 
     try:
+        # Use config token_limit as default if not provided
+        effective_token_limit = params.token_limit or app_state.token_limit
+
         # Prepare context descriptors
         # If not provided, create minimal descriptors with token_limit
         if params.context_descriptors is None:
@@ -165,7 +168,7 @@ async def handle_analyze_usage(
                 current_file=None,
                 token_usage=TokenUsage(
                     current=0,
-                    limit=params.token_limit or 32000,
+                    limit=effective_token_limit,
                     usage_percent=0.0,
                 ),
                 segment_summaries=[],
@@ -173,9 +176,11 @@ async def handle_analyze_usage(
             )
         else:
             descriptors = params.context_descriptors
-            # Override token_limit if provided
+            # Override token_limit if provided, otherwise use config default
             if params.token_limit is not None:
                 descriptors.token_usage.limit = params.token_limit
+            elif descriptors.token_usage.limit == 0 or descriptors.token_usage.limit is None:
+                descriptors.token_usage.limit = effective_token_limit
 
         # Call context manager to analyze context
         analysis_result = app_state.context_manager.analyze_context(
