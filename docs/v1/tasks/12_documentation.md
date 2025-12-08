@@ -13,6 +13,7 @@ Create comprehensive documentation for installation, usage, development, and dem
 - Development guide (setup, testing, contributing)
 - API documentation (tool schemas, data models)
 - Demo procedures and scenarios
+- Add Apache 2.0 license file
 
 ## Acceptance Criteria
 

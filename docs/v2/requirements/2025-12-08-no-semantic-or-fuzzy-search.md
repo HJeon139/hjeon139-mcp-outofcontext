@@ -1,9 +1,10 @@
-# Issue: No semantic or fuzzy search fallback (keyword-only retrieval)
+# V2 Requirement: No semantic or fuzzy search fallback (keyword-only retrieval)
 
 **Date**: 2025-12-08  
 **Severity**: Low  
 **Component**: retrieval  
-**Status**: Open
+**Status**: Deferred to V2
+**Classification**: V2 - Semantic search explicitly deferred per architectural decisions
 
 ## Description
 Search is keyword + metadata only. There is no semantic similarity or fuzzy matching, so near-miss queries or typos may fail to retrieve relevant stashed context. This limits recall for less precise queries.
