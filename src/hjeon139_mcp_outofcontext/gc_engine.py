@@ -111,10 +111,13 @@ class GCEngine(IGCEngine):
             # Generate reason
             reason = self._generate_reason(segment, score, age_hours)
 
+            # Handle None tokens (use 0 as default)
+            tokens = segment.tokens if segment.tokens is not None else 0
+
             candidate = PruningCandidate(
                 segment_id=segment.segment_id,
                 score=score,
-                tokens=segment.tokens,
+                tokens=tokens,
                 reason=reason,
                 segment_type=segment.type,
                 age_hours=age_hours,

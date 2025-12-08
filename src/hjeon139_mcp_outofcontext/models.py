@@ -81,7 +81,9 @@ class ContextSegment(BaseModel):
     topic_id: str | None = Field(None, description="Topic identifier")
 
     # Storage
-    tokens: int = Field(description="Token count")
+    tokens: int | None = Field(None, description="Token count (cached)")
+    tokens_computed_at: datetime | None = Field(None, description="When token count was computed")
+    text_hash: str | None = Field(None, description="Hash of text for cache invalidation")
     tier: Literal["working", "stashed", "archive"] = Field("working", description="Storage tier")
 
 

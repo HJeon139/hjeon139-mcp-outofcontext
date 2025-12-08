@@ -221,8 +221,10 @@ class ContextManager(IContextManager):
         # Sort by last_touched_at (most recent first)
         working_segments.sort(key=lambda s: s.last_touched_at, reverse=True)
 
-        # Calculate total tokens
-        total_tokens = sum(segment.tokens for segment in working_segments)
+        # Calculate total tokens (handle None values)
+        total_tokens = sum(
+            segment.tokens if segment.tokens is not None else 0 for segment in working_segments
+        )
 
         # Create working set
         working_set = WorkingSet(
@@ -284,7 +286,9 @@ class ContextManager(IContextManager):
                 # Stash the segment
                 self.storage.stash_segment(segment, project_id)
                 stashed_ids.append(segment.segment_id)
-                total_tokens_freed += segment.tokens
+                # Handle None tokens (use 0 as default)
+                tokens = segment.tokens if segment.tokens is not None else 0
+                total_tokens_freed += tokens
         except Exception as e:
             logger.error(f"Error during stash operation: {e}")
             # In a real implementation, we might want to rollback
@@ -366,6 +370,8 @@ class ContextManager(IContextManager):
                 tags=[],
                 topic_id=None,
                 tokens=tokens,
+                tokens_computed_at=None,
+                text_hash=None,
                 tier="working",
             )
             segments.append(segment)
@@ -402,6 +408,8 @@ class ContextManager(IContextManager):
                 tags=[],
                 topic_id=None,
                 tokens=tokens,
+                tokens_computed_at=None,
+                text_hash=None,
                 tier="working",
             )
             segments.append(segment)
@@ -434,6 +442,8 @@ class ContextManager(IContextManager):
                 tags=[],
                 topic_id=None,
                 tokens=summary.tokens,
+                tokens_computed_at=None,
+                text_hash=None,
                 tier="working",
             )
             segments.append(segment)

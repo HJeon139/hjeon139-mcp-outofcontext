@@ -41,6 +41,13 @@ See: `docs/steering/08_commit_version_workflow.md`
 - Type hints required for all functions
 - All tests must pass before committing
 - Follow FastAPI/MCP best practices (no globals, dependency injection)
+- **File Size Rule**: When a file exceeds 200 lines of code, split it into separate files following the "one file per declaration" principle
+  - File names should match the declaration name (class/function) following PEP 8 standards (snake_case)
+  - Example: If `storage.py` has `InvertedIndex`, `LRUSegmentCache`, and `StorageLayer` classes, split into:
+    - `inverted_index.py` (contains `InvertedIndex` class)
+    - `lru_segment_cache.py` (contains `LRUSegmentCache` class)
+    - `storage.py` (contains `StorageLayer` class)
+  - Maintain backward compatibility by re-exporting from the main module if needed
 
 ## File Organization
 

@@ -16,7 +16,7 @@ def temp_storage_path(tmp_path: Path) -> Path:
     """Create a temporary storage path for testing."""
     storage_dir = tmp_path / "storage"
     storage_dir.mkdir()
-    return storage_dir / "storage.json"
+    return storage_dir
 
 
 @pytest.fixture
@@ -79,9 +79,11 @@ class TestInMemoryStorage:
     ) -> None:
         """Test storing a segment in memory."""
         storage_layer.store_segment(sample_segment, "proj-1")
-        assert "proj-1" in storage_layer.active_segments
-        assert "seg-1" in storage_layer.active_segments["proj-1"]
-        assert storage_layer.active_segments["proj-1"]["seg-1"] == sample_segment
+        assert "proj-1" in storage_layer.active_segment_ids
+        assert "seg-1" in storage_layer.active_segment_ids["proj-1"]
+        loaded = storage_layer.active_segments.get("seg-1")
+        assert loaded is not None
+        assert loaded.segment_id == sample_segment.segment_id
 
     @pytest.mark.unit
     def test_store_multiple_segments(
@@ -94,9 +96,9 @@ class TestInMemoryStorage:
         storage_layer.store_segment(sample_segment, "proj-1")
         storage_layer.store_segment(sample_segment_2, "proj-1")
 
-        assert len(storage_layer.active_segments["proj-1"]) == 2
-        assert "seg-1" in storage_layer.active_segments["proj-1"]
-        assert "seg-2" in storage_layer.active_segments["proj-1"]
+        assert len(storage_layer.active_segment_ids["proj-1"]) == 2
+        assert "seg-1" in storage_layer.active_segment_ids["proj-1"]
+        assert "seg-2" in storage_layer.active_segment_ids["proj-1"]
 
     @pytest.mark.unit
     def test_store_different_projects(
@@ -118,11 +120,12 @@ class TestInMemoryStorage:
         storage_layer.store_segment(sample_segment, "proj-1")
         storage_layer.store_segment(segment_proj2, "proj-2")
 
-        assert len(storage_layer.active_segments) == 2
-        assert "proj-1" in storage_layer.active_segments
-        assert "proj-2" in storage_layer.active_segments
-        assert storage_layer.active_segments["proj-1"]["seg-1"].project_id == "proj-1"
-        assert storage_layer.active_segments["proj-2"]["seg-1"].project_id == "proj-2"
+        assert len(storage_layer.active_segment_ids) == 2
+        assert "proj-1" in storage_layer.active_segment_ids
+        assert "proj-2" in storage_layer.active_segment_ids
+        seg1 = storage_layer.active_segments.get("seg-1")
+        assert seg1 is not None
+        assert seg1.project_id in ("proj-1", "proj-2")
 
     @pytest.mark.unit
     def test_load_segments_active_only(
@@ -150,17 +153,17 @@ class TestJSONPersistence:
         """Test that stashing a segment persists to JSON."""
         storage_layer.stash_segment(sample_segment, "proj-1")
 
-        # Verify file exists
-        assert temp_storage_path.exists()
+        # Verify sharded file exists
+        stashed_file = temp_storage_path / "stashed" / "proj-1.json"
+        assert stashed_file.exists()
 
         # Load and verify
-        with open(temp_storage_path) as f:
+        with open(stashed_file) as f:
             data = json.load(f)
 
-        assert "projects" in data
-        assert "proj-1" in data["projects"]
-        assert len(data["projects"]["proj-1"]["segments"]) == 1
-        assert data["projects"]["proj-1"]["segments"][0]["segment_id"] == "seg-1"
+        assert "segments" in data
+        assert len(data["segments"]) == 1
+        assert data["segments"][0]["segment_id"] == "seg-1"
 
     @pytest.mark.unit
     def test_stash_segment_updates_tier(
@@ -194,10 +197,10 @@ class TestJSONPersistence:
     ) -> None:
         """Test that stashing removes segment from active storage."""
         storage_layer.store_segment(sample_segment, "proj-1")
-        assert "seg-1" in storage_layer.active_segments["proj-1"]
+        assert "seg-1" in storage_layer.active_segment_ids.get("proj-1", set())
 
         storage_layer.stash_segment(sample_segment, "proj-1")
-        assert "seg-1" not in storage_layer.active_segments.get("proj-1", {})
+        assert "seg-1" not in storage_layer.active_segment_ids.get("proj-1", set())
 
     @pytest.mark.unit
     def test_persistence_survives_restart(
@@ -233,9 +236,10 @@ class TestAtomicOperations:
         storage_layer.stash_segment(sample_segment, "proj-1")
 
         # Temp file should not exist after successful write
-        temp_path = temp_storage_path.with_suffix(".json.tmp")
+        stashed_file = temp_storage_path / "stashed" / "proj-1.json"
+        temp_path = stashed_file.with_suffix(".json.tmp")
         assert not temp_path.exists()
-        assert temp_storage_path.exists()
+        assert stashed_file.exists()
 
     @pytest.mark.unit
     def test_handles_incomplete_write(
@@ -245,7 +249,9 @@ class TestAtomicOperations:
     ) -> None:
         """Test handling of incomplete write (temp file exists)."""
         # Create a temp file (simulating crash during write)
-        temp_path = temp_storage_path.with_suffix(".json.tmp")
+        stashed_dir = temp_storage_path / "stashed"
+        stashed_dir.mkdir(exist_ok=True)
+        temp_path = stashed_dir / "proj-1.json.tmp"
         temp_path.write_text('{"incomplete": true}')
 
         # Create storage layer (should clean up temp file)
@@ -255,7 +261,8 @@ class TestAtomicOperations:
         # Temp file should be gone
         assert not temp_path.exists()
         # Main file should exist with correct data
-        assert temp_storage_path.exists()
+        stashed_file = stashed_dir / "proj-1.json"
+        assert stashed_file.exists()
 
 
 class TestErrorHandling:
@@ -269,13 +276,14 @@ class TestErrorHandling:
     ) -> None:
         """Test handling of missing JSON file."""
         # File doesn't exist yet
-        assert not temp_storage_path.exists()
+        stashed_file = temp_storage_path / "stashed" / "proj-1.json"
+        assert not stashed_file.exists()
 
         storage = StorageLayer(storage_path=str(temp_storage_path))
         storage.stash_segment(sample_segment, "proj-1")
 
         # Should create file successfully
-        assert temp_storage_path.exists()
+        assert stashed_file.exists()
 
     @pytest.mark.unit
     def test_handles_corrupt_json_file(
@@ -285,19 +293,22 @@ class TestErrorHandling:
     ) -> None:
         """Test handling of corrupt JSON file."""
         # Create corrupt JSON file
-        temp_storage_path.write_text("not valid json {")
+        stashed_dir = temp_storage_path / "stashed"
+        stashed_dir.mkdir(parents=True, exist_ok=True)
+        stashed_file = stashed_dir / "proj-1.json"
+        stashed_file.write_text("not valid json {")
 
         storage = StorageLayer(storage_path=str(temp_storage_path))
         storage.stash_segment(sample_segment, "proj-1")
 
         # Should create backup and start fresh
-        backup_path = temp_storage_path.with_suffix(".json.corrupt")
+        backup_path = stashed_file.with_suffix(".json.corrupt")
         assert backup_path.exists()
         # Should have valid data now
-        assert temp_storage_path.exists()
-        with open(temp_storage_path) as f:
+        assert stashed_file.exists()
+        with open(stashed_file) as f:
             data = json.load(f)
-            assert "projects" in data
+            assert "segments" in data
 
     @pytest.mark.unit
     @patch("hjeon139_mcp_outofcontext.storage.open")
@@ -310,11 +321,14 @@ class TestErrorHandling:
         # Create storage layer first (file doesn't exist yet, so init succeeds)
         storage = StorageLayer(storage_path=str(temp_storage_path))
 
-        # Create file so exists() returns True when load_segments is called
-        temp_storage_path.touch()
+        # Create stashed file so exists() returns True when load_segments is called
+        stashed_dir = temp_storage_path / "stashed"
+        stashed_dir.mkdir(exist_ok=True)
+        stashed_file = stashed_dir / "proj-1.json"
+        stashed_file.write_text('{"segments": []}')
 
         # Mock open to raise PermissionError when load_segments calls
-        # _load_stashed_data
+        # _load_stashed_file
         mock_open.side_effect = PermissionError("Permission denied")
 
         # Should raise PermissionError
@@ -398,10 +412,9 @@ class TestMetadataIndexing:
         """Test that indexes are created when stashing."""
         storage_layer.stash_segment(sample_segment, "proj-1")
 
-        with open(temp_storage_path) as f:
-            data = json.load(f)
-
-        indexes = data["projects"]["proj-1"]["indexes"]
+        # Check in-memory metadata indexes
+        assert "proj-1" in storage_layer.metadata_indexes
+        indexes = storage_layer.metadata_indexes["proj-1"]
         assert "by_task" in indexes
         assert "by_file" in indexes
         assert "by_tag" in indexes
@@ -422,14 +435,12 @@ class TestMetadataIndexing:
         storage_layer.stash_segment(sample_segment, "proj-1")
         storage_layer.delete_segment("seg-1", "proj-1")
 
-        with open(temp_storage_path) as f:
-            data = json.load(f)
-
-        indexes = data["projects"]["proj-1"]["indexes"]
+        # Check in-memory metadata indexes
+        indexes = storage_layer.metadata_indexes.get("proj-1", {})
         # Indexes should be cleaned up
-        assert "task-1" not in indexes["by_task"]
-        assert "test.py" not in indexes["by_file"]
-        assert "test" not in indexes["by_tag"]
+        assert "task-1" not in indexes.get("by_task", {})
+        assert "test.py" not in indexes.get("by_file", {})
+        assert "test" not in indexes.get("by_tag", {})
 
 
 class TestSearchFunctionality:
@@ -553,10 +564,10 @@ class TestDeleteOperations:
     ) -> None:
         """Test deleting from active storage."""
         storage_layer.store_segment(sample_segment, "proj-1")
-        assert "seg-1" in storage_layer.active_segments["proj-1"]
+        assert "seg-1" in storage_layer.active_segment_ids.get("proj-1", set())
 
         storage_layer.delete_segment("seg-1", "proj-1")
-        assert "seg-1" not in storage_layer.active_segments.get("proj-1", {})
+        assert "seg-1" not in storage_layer.active_segment_ids.get("proj-1", set())
 
     @pytest.mark.unit
     def test_delete_from_stashed(
@@ -569,10 +580,11 @@ class TestDeleteOperations:
         storage_layer.stash_segment(sample_segment, "proj-1")
         storage_layer.delete_segment("seg-1", "proj-1")
 
-        with open(temp_storage_path) as f:
+        stashed_file = temp_storage_path / "stashed" / "proj-1.json"
+        with open(stashed_file) as f:
             data = json.load(f)
 
-        assert len(data["projects"]["proj-1"]["segments"]) == 0
+        assert len(data["segments"]) == 0
 
     @pytest.mark.unit
     def test_delete_nonexistent_segment(

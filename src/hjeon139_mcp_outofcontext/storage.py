@@ -3,78 +3,63 @@
 import json
 import logging
 import os
-from abc import ABC, abstractmethod
 from pathlib import Path
 
+from .i_storage_layer import IStorageLayer
+from .inverted_index import InvertedIndex
+from .lru_segment_cache import LRUSegmentCache
 from .models import ContextSegment
 
+# Re-export for backward compatibility
+__all__ = ["IStorageLayer", "InvertedIndex", "LRUSegmentCache", "StorageLayer"]
+
 logger = logging.getLogger(__name__)
-
-
-class IStorageLayer(ABC):
-    """Interface for storage layer operations."""
-
-    @abstractmethod
-    def store_segment(
-        self,
-        segment: ContextSegment,
-        project_id: str,
-    ) -> None:
-        """Store segment in active storage."""
-
-    @abstractmethod
-    def load_segments(
-        self,
-        project_id: str,
-    ) -> list[ContextSegment]:
-        """Load all segments for a project."""
-
-    @abstractmethod
-    def stash_segment(
-        self,
-        segment: ContextSegment,
-        project_id: str,
-    ) -> None:
-        """Move segment to stashed storage."""
-
-    @abstractmethod
-    def search_stashed(
-        self,
-        query: str,
-        filters: dict,
-        project_id: str,
-    ) -> list[ContextSegment]:
-        """Search stashed segments by keyword and metadata."""
-
-    @abstractmethod
-    def delete_segment(
-        self,
-        segment_id: str,
-        project_id: str,
-    ) -> None:
-        """Delete segment from storage."""
 
 
 class StorageLayer(IStorageLayer):
     """Storage layer implementation with in-memory and JSON persistence."""
 
-    def __init__(self, storage_path: str | None = None) -> None:
+    def __init__(self, storage_path: str | None = None, max_active_segments: int = 10000) -> None:
         """Initialize storage layer.
 
         Args:
-            storage_path: Path to storage JSON file. Defaults to ~/.out_of_context/storage.json
+            storage_path: Path to storage directory. Defaults to ~/.out_of_context/
+            max_active_segments: Maximum number of active segments in memory
         """
         if storage_path is None:
             storage_path = os.getenv(
                 "OUT_OF_CONTEXT_STORAGE_PATH",
-                str(Path.home() / ".out_of_context" / "storage.json"),
+                str(Path.home() / ".out_of_context"),
             )
 
         self.storage_path = Path(storage_path)
-        self.storage_path.parent.mkdir(parents=True, exist_ok=True)
+        self.storage_path.mkdir(parents=True, exist_ok=True)
 
-        # In-memory storage: project_id -> segment_id -> segment
-        self.active_segments: dict[str, dict[str, ContextSegment]] = {}
+        # Sharded storage: one file per project
+        # Format: storage_path / "stashed" / f"{project_id}.json"
+        self.stashed_dir = self.storage_path / "stashed"
+        self.stashed_dir.mkdir(exist_ok=True)
+
+        # Legacy single file support (for backward compatibility)
+        self.legacy_storage_path = self.storage_path / "storage.json"
+
+        # In-memory storage: Use LRU cache for active segments
+        self.active_segments: LRUSegmentCache = LRUSegmentCache(
+            maxsize=max_active_segments, storage=self
+        )
+
+        # Track active segments by project (for load_segments)
+        self.active_segment_ids: dict[str, set[str]] = {}
+
+        # Keyword indexes: project_id -> InvertedIndex
+        self.keyword_index: dict[str, InvertedIndex] = {}
+
+        # Metadata indexes: project_id -> {by_file, by_task, by_tag, by_type} -> {value: set(segment_ids)}
+        self.metadata_indexes: dict[str, dict[str, dict[str, set[str]]]] = {}
+
+        # Evicted segments storage: segment_id -> segment (for LRU eviction)
+        self.evicted_dir = self.storage_path / "evicted"
+        self.evicted_dir.mkdir(exist_ok=True)
 
         # Load persisted data on startup
         self._load_persisted_data()
@@ -85,19 +70,33 @@ class StorageLayer(IStorageLayer):
         project_id: str,
     ) -> None:
         """Store segment in active storage."""
-        if project_id not in self.active_segments:
-            self.active_segments[project_id] = {}
+        # Use LRU cache for active segments
+        self.active_segments.put(segment.segment_id, segment)
 
-        self.active_segments[project_id][segment.segment_id] = segment
+        # Track active segment IDs by project
+        if project_id not in self.active_segment_ids:
+            self.active_segment_ids[project_id] = set()
+        self.active_segment_ids[project_id].add(segment.segment_id)
 
     def load_segments(
         self,
         project_id: str,
     ) -> list[ContextSegment]:
         """Load all segments for a project."""
-        active = list(self.active_segments.get(project_id, {}).values())
+        segments: list[ContextSegment] = []
+
+        # Load active segments from LRU cache
+        active_ids = self.active_segment_ids.get(project_id, set())
+        for segment_id in active_ids:
+            segment = self.active_segments.get(segment_id)
+            if segment:
+                segments.append(segment)
+
+        # Load stashed segments
         stashed = self._load_stashed_segments(project_id)
-        return active + stashed
+        segments.extend(stashed)
+
+        return segments
 
     def stash_segment(
         self,
@@ -106,37 +105,38 @@ class StorageLayer(IStorageLayer):
     ) -> None:
         """Move segment to stashed storage."""
         # Remove from active storage if present
-        if project_id in self.active_segments:
-            self.active_segments[project_id].pop(segment.segment_id, None)
+        self.active_segments.remove(segment.segment_id)
+
+        # Remove from active tracking
+        if project_id in self.active_segment_ids:
+            self.active_segment_ids[project_id].discard(segment.segment_id)
 
         # Update segment tier
         segment.tier = "stashed"
 
-        # Load existing stashed data
-        stashed_data = self._load_stashed_data()
+        # Get project-specific file path
+        file_path = self._get_stashed_file_path(project_id)
 
-        # Initialize project if needed
-        if "projects" not in stashed_data:
-            stashed_data["projects"] = {}
-        if project_id not in stashed_data["projects"]:
-            stashed_data["projects"][project_id] = {"segments": [], "indexes": {}}
-
-        project_data = stashed_data["projects"][project_id]
+        # Load existing stashed segments
+        stashed = self._load_stashed_file(file_path)
 
         # Remove segment if it already exists (update case)
-        project_data["segments"] = [
-            s for s in project_data["segments"] if s.get("segment_id") != segment.segment_id
-        ]
+        stashed = [s for s in stashed if s.get("segment_id") != segment.segment_id]
 
         # Add segment
         segment_dict = segment.model_dump(mode="json")
-        project_data["segments"].append(segment_dict)
+        stashed.append(segment_dict)
+
+        # Save to sharded file
+        self._save_stashed_file(file_path, stashed)
 
         # Update indexes
-        self._update_indexes(project_data, segment, add=True)
+        self._update_metadata_indexes(segment, project_id, add=True)
 
-        # Persist to file
-        self._save_stashed_data(stashed_data)
+        # Update keyword index
+        if project_id not in self.keyword_index:
+            self.keyword_index[project_id] = InvertedIndex()
+        self.keyword_index[project_id].add_segment(segment.segment_id, segment.text)
 
     def search_stashed(
         self,
@@ -144,37 +144,27 @@ class StorageLayer(IStorageLayer):
         filters: dict,
         project_id: str,
     ) -> list[ContextSegment]:
-        """Search stashed segments by keyword and metadata."""
-        stashed_data = self._load_stashed_data()
-        segments: list[ContextSegment] = []
+        """Search stashed segments by keyword and metadata using indexes."""
+        # Start with all stashed segment IDs for this project
+        candidate_ids: set[str] | None = None
 
-        if "projects" not in stashed_data:
-            return segments
+        # Use keyword index for query
+        if query and project_id in self.keyword_index:
+            candidate_ids = self.keyword_index[project_id].search(query)
+        else:
+            # No query or no index: get all stashed segment IDs
+            candidate_ids = self._get_all_stashed_ids(project_id)
 
-        project_data = stashed_data["projects"].get(project_id, {})
-        project_segments = project_data.get("segments", [])
-
-        # Filter by metadata if provided
+        # Apply metadata filters using hash maps
         if filters:
-            project_segments = self._filter_segments(project_segments, filters)
+            candidate_ids = self._apply_metadata_filters(candidate_ids, filters, project_id)
 
-        # Search by keyword if provided
-        if query:
-            query_lower = query.lower()
-            project_segments = [
-                s
-                for s in project_segments
-                if query_lower in s.get("text", "").lower()
-                or query_lower in s.get("segment_id", "").lower()
-            ]
-
-        # Convert to ContextSegment objects
-        for seg_dict in project_segments:
-            try:
-                segment = ContextSegment.model_validate(seg_dict)
+        # Load only matching segments
+        segments: list[ContextSegment] = []
+        for seg_id in candidate_ids:
+            segment = self._load_stashed_segment(seg_id, project_id)
+            if segment:
                 segments.append(segment)
-            except Exception as e:
-                logger.warning(f"Failed to deserialize segment {seg_dict.get('segment_id')}: {e}")
 
         return segments
 
@@ -185,48 +175,71 @@ class StorageLayer(IStorageLayer):
     ) -> None:
         """Delete segment from storage."""
         # Remove from active storage
-        if project_id in self.active_segments:
-            self.active_segments[project_id].pop(segment_id, None)
+        self.active_segments.remove(segment_id)
 
-        # Remove from stashed storage
-        stashed_data = self._load_stashed_data()
-        if "projects" in stashed_data and project_id in stashed_data["projects"]:
-            project_data = stashed_data["projects"][project_id]
-            segments = project_data.get("segments", [])
+        # Remove from active tracking
+        if project_id in self.active_segment_ids:
+            self.active_segment_ids[project_id].discard(segment_id)
 
-            # Find and remove segment
-            removed_segment = None
-            for seg_dict in segments:
-                if seg_dict.get("segment_id") == segment_id:
-                    removed_segment = seg_dict
-                    break
+        # Load stashed file
+        file_path = self._get_stashed_file_path(project_id)
+        stashed = self._load_stashed_file(file_path)
 
-            if removed_segment:
-                project_data["segments"] = [
-                    s for s in segments if s.get("segment_id") != segment_id
-                ]
+        # Find and remove segment
+        removed_segment = None
+        for seg_dict in stashed:
+            if seg_dict.get("segment_id") == segment_id:
+                removed_segment = seg_dict
+                break
 
-                # Update indexes (remove)
-                try:
-                    segment = ContextSegment.model_validate(removed_segment)
-                    self._update_indexes(project_data, segment, add=False)
-                except Exception as e:
-                    logger.warning(f"Failed to deserialize segment for index update: {e}")
+        if removed_segment:
+            # Remove from list
+            stashed = [s for s in stashed if s.get("segment_id") != segment_id]
 
-                # Persist changes
-                self._save_stashed_data(stashed_data)
+            # Save updated file
+            self._save_stashed_file(file_path, stashed)
+
+            # Update indexes (remove)
+            try:
+                segment = ContextSegment.model_validate(removed_segment)
+                self._update_metadata_indexes(segment, project_id, add=False)
+
+                # Remove from keyword index
+                if project_id in self.keyword_index:
+                    self.keyword_index[project_id].remove_segment(segment_id)
+            except Exception as e:
+                logger.warning(f"Failed to deserialize segment for index update: {e}")
 
     def _load_persisted_data(self) -> None:
         """Load persisted data on startup."""
-        # Load stashed segments into memory (optional, for faster access)
-        # For now, we'll load on-demand via load_segments
-        # Just verify the file is readable
-        self._load_stashed_data()
+        # Rebuild indexes from stashed files
+        self._rebuild_indexes()
 
-    def _load_stashed_data(self) -> dict:
-        """Load stashed data from JSON file."""
+    def _get_stashed_file_path(self, project_id: str) -> Path:
+        """Get file path for project's stashed segments.
+
+        Args:
+            project_id: Project identifier
+
+        Returns:
+            Path to project's stashed file
+        """
+        return self.stashed_dir / f"{project_id}.json"
+
+    def _load_stashed_file(self, file_path: Path) -> list[dict]:
+        """Load stashed segments from file.
+
+        Args:
+            file_path: Path to stashed file
+
+        Returns:
+            List of segment dictionaries
+        """
+        if not file_path.exists():
+            return []
+
         # Check for temp file (incomplete write)
-        temp_path = self.storage_path.with_suffix(".json.tmp")
+        temp_path = file_path.with_suffix(".json.tmp")
         if temp_path.exists():
             logger.warning(f"Found incomplete write at {temp_path}, removing it")
             try:
@@ -234,57 +247,53 @@ class StorageLayer(IStorageLayer):
             except Exception as e:
                 logger.error(f"Failed to remove temp file: {e}")
 
-        # Load main file
-        if not self.storage_path.exists():
-            return {"version": "1.0", "projects": {}}
-
         try:
-            with open(self.storage_path, encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 data = json.load(f)
-                # Ensure structure
-                if "version" not in data:
-                    data["version"] = "1.0"
-                if "projects" not in data:
-                    data["projects"] = {}
-                return data
+                return data.get("segments", [])
         except json.JSONDecodeError as e:
-            logger.error(f"Corrupt JSON file at {self.storage_path}: {e}")
+            logger.error(f"Corrupt JSON file at {file_path}: {e}")
             # Backup corrupt file
-            backup_path = self.storage_path.with_suffix(".json.corrupt")
+            backup_path = file_path.with_suffix(".json.corrupt")
             try:
-                self.storage_path.rename(backup_path)
+                file_path.rename(backup_path)
                 logger.info(f"Backed up corrupt file to {backup_path}")
             except Exception as backup_error:
                 logger.error(f"Failed to backup corrupt file: {backup_error}")
-            return {"version": "1.0", "projects": {}}
+            return []
         except PermissionError as e:
-            logger.error(f"Permission error reading {self.storage_path}: {e}")
+            logger.error(f"Permission error reading {file_path}: {e}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error loading {self.storage_path}: {e}")
+            logger.error(f"Unexpected error loading {file_path}: {e}")
             raise
 
-    def _save_stashed_data(self, data: dict) -> None:
-        """Save stashed data to JSON file atomically."""
-        temp_path = self.storage_path.with_suffix(".json.tmp")
+    def _save_stashed_file(self, file_path: Path, segments: list[dict]) -> None:
+        """Save stashed segments to file atomically.
+
+        Args:
+            file_path: Path to stashed file
+            segments: List of segment dictionaries
+        """
+        temp_path = file_path.with_suffix(".json.tmp")
 
         try:
             # Write to temp file
             with open(temp_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, default=str)
+                json.dump({"segments": segments}, f, indent=2, default=str)
 
             # Atomic rename
-            temp_path.replace(self.storage_path)
+            temp_path.replace(file_path)
         except PermissionError as e:
-            logger.error(f"Permission error writing to {self.storage_path}: {e}")
+            logger.error(f"Permission error writing to {file_path}: {e}")
             raise
         except OSError as e:
             if e.errno == 28:  # No space left on device
-                logger.error(f"Disk full when writing to {self.storage_path}: {e}")
+                logger.error(f"Disk full when writing to {file_path}: {e}")
                 raise
             raise
         except Exception as e:
-            logger.error(f"Unexpected error saving to {self.storage_path}: {e}")
+            logger.error(f"Unexpected error saving to {file_path}: {e}")
             # Clean up temp file on error
             try:
                 if temp_path.exists():
@@ -294,17 +303,19 @@ class StorageLayer(IStorageLayer):
             raise
 
     def _load_stashed_segments(self, project_id: str) -> list[ContextSegment]:
-        """Load stashed segments for a project."""
-        stashed_data = self._load_stashed_data()
+        """Load all stashed segments for a project.
+
+        Args:
+            project_id: Project identifier
+
+        Returns:
+            List of ContextSegment objects
+        """
+        file_path = self._get_stashed_file_path(project_id)
+        stashed = self._load_stashed_file(file_path)
+
         segments: list[ContextSegment] = []
-
-        if "projects" not in stashed_data:
-            return segments
-
-        project_data = stashed_data["projects"].get(project_id, {})
-        project_segments = project_data.get("segments", [])
-
-        for seg_dict in project_segments:
+        for seg_dict in stashed:
             try:
                 segment = ContextSegment.model_validate(seg_dict)
                 segments.append(segment)
@@ -313,95 +324,206 @@ class StorageLayer(IStorageLayer):
 
         return segments
 
-    def _update_indexes(
+    def _load_stashed_segment(self, segment_id: str, project_id: str) -> ContextSegment | None:
+        """Load a single stashed segment by ID.
+
+        Args:
+            segment_id: Segment identifier
+            project_id: Project identifier
+
+        Returns:
+            ContextSegment if found, None otherwise
+        """
+        file_path = self._get_stashed_file_path(project_id)
+        stashed = self._load_stashed_file(file_path)
+
+        for seg_dict in stashed:
+            if seg_dict.get("segment_id") == segment_id:
+                try:
+                    return ContextSegment.model_validate(seg_dict)
+                except Exception as e:
+                    logger.warning(f"Failed to deserialize segment {segment_id}: {e}")
+                    return None
+
+        return None
+
+    def _get_all_stashed_ids(self, project_id: str) -> set[str]:
+        """Get all stashed segment IDs for a project.
+
+        Args:
+            project_id: Project identifier
+
+        Returns:
+            Set of segment IDs
+        """
+        file_path = self._get_stashed_file_path(project_id)
+        stashed = self._load_stashed_file(file_path)
+        return {seg_id for seg in stashed if (seg_id := seg.get("segment_id")) is not None}
+
+    def _update_metadata_indexes(
         self,
-        project_data: dict,
         segment: ContextSegment,
+        project_id: str,
         add: bool,
     ) -> None:
-        """Update metadata indexes for a segment."""
-        if "indexes" not in project_data:
-            project_data["indexes"] = {}
+        """Update metadata indexes for a segment using sets.
 
-        indexes = project_data["indexes"]
+        Args:
+            segment: Context segment
+            project_id: Project identifier
+            add: True to add, False to remove
+        """
+        if project_id not in self.metadata_indexes:
+            self.metadata_indexes[project_id] = {
+                "by_file": {},
+                "by_task": {},
+                "by_tag": {},
+                "by_type": {},
+            }
 
-        # Initialize index structures
-        if "by_task" not in indexes:
-            indexes["by_task"] = {}
-        if "by_file" not in indexes:
-            indexes["by_file"] = {}
-        if "by_tag" not in indexes:
-            indexes["by_tag"] = {}
-
+        indexes = self.metadata_indexes[project_id]
         segment_id = segment.segment_id
 
-        # Update task index
-        if segment.task_id:
-            if add:
-                if segment.task_id not in indexes["by_task"]:
-                    indexes["by_task"][segment.task_id] = []
-                if segment_id not in indexes["by_task"][segment.task_id]:
-                    indexes["by_task"][segment.task_id].append(segment_id)
-            else:
-                if segment.task_id in indexes["by_task"]:
-                    indexes["by_task"][segment.task_id] = [
-                        sid for sid in indexes["by_task"][segment.task_id] if sid != segment_id
-                    ]
-                    if not indexes["by_task"][segment.task_id]:
-                        del indexes["by_task"][segment.task_id]
-
-        # Update file index
+        # Update file_path index
         if segment.file_path:
             if add:
-                if segment.file_path not in indexes["by_file"]:
-                    indexes["by_file"][segment.file_path] = []
-                if segment_id not in indexes["by_file"][segment.file_path]:
-                    indexes["by_file"][segment.file_path].append(segment_id)
+                indexes["by_file"].setdefault(segment.file_path, set()).add(segment_id)
             else:
                 if segment.file_path in indexes["by_file"]:
-                    indexes["by_file"][segment.file_path] = [
-                        sid for sid in indexes["by_file"][segment.file_path] if sid != segment_id
-                    ]
+                    indexes["by_file"][segment.file_path].discard(segment_id)
                     if not indexes["by_file"][segment.file_path]:
                         del indexes["by_file"][segment.file_path]
 
-        # Update tag index
+        # Update task_id index
+        if segment.task_id:
+            if add:
+                indexes["by_task"].setdefault(segment.task_id, set()).add(segment_id)
+            else:
+                if segment.task_id in indexes["by_task"]:
+                    indexes["by_task"][segment.task_id].discard(segment_id)
+                    if not indexes["by_task"][segment.task_id]:
+                        del indexes["by_task"][segment.task_id]
+
+        # Update tags index
         for tag in segment.tags:
             if add:
-                if tag not in indexes["by_tag"]:
-                    indexes["by_tag"][tag] = []
-                if segment_id not in indexes["by_tag"][tag]:
-                    indexes["by_tag"][tag].append(segment_id)
+                indexes["by_tag"].setdefault(tag, set()).add(segment_id)
             else:
                 if tag in indexes["by_tag"]:
-                    indexes["by_tag"][tag] = [
-                        sid for sid in indexes["by_tag"][tag] if sid != segment_id
-                    ]
+                    indexes["by_tag"][tag].discard(segment_id)
                     if not indexes["by_tag"][tag]:
                         del indexes["by_tag"][tag]
 
-    def _filter_segments(
-        self,
-        segments: list[dict],
-        filters: dict,
-    ) -> list[dict]:
-        """Filter segments by metadata."""
-        filtered = segments
+        # Update type index
+        if add:
+            indexes["by_type"].setdefault(segment.type, set()).add(segment_id)
+        else:
+            if segment.type in indexes["by_type"]:
+                indexes["by_type"][segment.type].discard(segment_id)
+                if not indexes["by_type"][segment.type]:
+                    del indexes["by_type"][segment.type]
 
-        if "task_id" in filters:
-            task_id = filters["task_id"]
-            filtered = [s for s in filtered if s.get("task_id") == task_id]
+    def _apply_metadata_filters(
+        self, candidate_ids: set[str], filters: dict, project_id: str
+    ) -> set[str]:
+        """Apply metadata filters using hash-based indexes.
 
+        Args:
+            candidate_ids: Set of candidate segment IDs
+            filters: Filter dictionary
+            project_id: Project identifier
+
+        Returns:
+            Filtered set of segment IDs
+        """
+        if project_id not in self.metadata_indexes:
+            return candidate_ids
+
+        indexes = self.metadata_indexes[project_id]
+
+        # Apply file_path filter
         if "file_path" in filters:
             file_path = filters["file_path"]
-            filtered = [s for s in filtered if s.get("file_path") == file_path]
+            file_ids = indexes["by_file"].get(file_path, set())
+            candidate_ids &= file_ids
 
+        # Apply task_id filter
+        if "task_id" in filters:
+            task_id = filters["task_id"]
+            task_ids = indexes["by_task"].get(task_id, set())
+            candidate_ids &= task_ids
+
+        # Apply tag filter
         if "tag" in filters:
             tag = filters["tag"]
-            filtered = [s for s in filtered if tag in s.get("tags", [])]
+            tag_ids = indexes["by_tag"].get(tag, set())
+            candidate_ids &= tag_ids
 
+        # Apply type filter
         if "type" in filters:
             seg_type = filters["type"]
-            filtered = [s for s in filtered if s.get("type") == seg_type]
+            type_ids = indexes["by_type"].get(seg_type, set())
+            candidate_ids &= type_ids
 
-        return filtered
+        return candidate_ids
+
+    def _rebuild_indexes(self) -> None:
+        """Rebuild all indexes from stashed files."""
+        # Rebuild keyword indexes and metadata indexes from all stashed files
+        for file_path in self.stashed_dir.glob("*.json"):
+            if file_path.suffix == ".json" and not file_path.name.endswith(".tmp"):
+                # Extract project_id from filename
+                project_id = file_path.stem
+                stashed = self._load_stashed_file(file_path)
+
+                # Initialize indexes for this project
+                if project_id not in self.keyword_index:
+                    self.keyword_index[project_id] = InvertedIndex()
+
+                # Rebuild indexes from segments
+                for seg_dict in stashed:
+                    try:
+                        segment = ContextSegment.model_validate(seg_dict)
+                        # Add to keyword index
+                        self.keyword_index[project_id].add_segment(segment.segment_id, segment.text)
+                        # Add to metadata indexes
+                        self._update_metadata_indexes(segment, project_id, add=True)
+                    except Exception as e:
+                        logger.warning(
+                            f"Failed to rebuild index for segment {seg_dict.get('segment_id')}: {e}"
+                        )
+
+    def _save_evicted_segment(self, segment_id: str, segment: ContextSegment) -> None:
+        """Save evicted segment to disk.
+
+        Args:
+            segment_id: Segment identifier
+            segment: Segment to save
+        """
+        evicted_file = self.evicted_dir / f"{segment_id}.json"
+        try:
+            with open(evicted_file, "w", encoding="utf-8") as f:
+                json.dump(segment.model_dump(mode="json"), f, indent=2, default=str)
+        except Exception as e:
+            logger.error(f"Failed to save evicted segment {segment_id}: {e}")
+
+    def _load_evicted_segment(self, segment_id: str) -> ContextSegment | None:
+        """Load evicted segment from disk.
+
+        Args:
+            segment_id: Segment identifier
+
+        Returns:
+            ContextSegment if found, None otherwise
+        """
+        evicted_file = self.evicted_dir / f"{segment_id}.json"
+        if not evicted_file.exists():
+            return None
+
+        try:
+            with open(evicted_file, encoding="utf-8") as f:
+                data = json.load(f)
+                return ContextSegment.model_validate(data)
+        except Exception as e:
+            logger.error(f"Failed to load evicted segment {segment_id}: {e}")
+            return None
