@@ -208,10 +208,13 @@ class TestWorkingSet:
                 tokens=100,
             )
         ]
-        working_set = WorkingSet(segments=segments, total_tokens=100, project_id="proj-1")
+        working_set = WorkingSet(
+            segments=segments, total_tokens=100, project_id="proj-1", last_updated=now
+        )
         assert len(working_set.segments) == 1
         assert working_set.total_tokens == 100
         assert working_set.project_id == "proj-1"
+        assert working_set.last_updated == now
 
 
 @pytest.mark.unit

@@ -210,6 +210,7 @@ def test_get_working_set_basic(
     assert len(working_set.segments) == 1
     assert working_set.segments[0].segment_id == "seg-1"
     assert working_set.total_tokens == 100
+    assert isinstance(working_set.last_updated, datetime)
 
 
 @pytest.mark.unit
@@ -456,6 +457,7 @@ def test_stash_segments_invalidates_cache(
             total_tokens=100,
             project_id="proj-1",
             task_id="task-1",
+            last_updated=datetime.now(),
         )
     }
 

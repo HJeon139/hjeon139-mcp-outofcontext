@@ -232,6 +232,7 @@ class ContextManager(IContextManager):
             total_tokens=total_tokens,
             project_id=project_id,
             task_id=effective_task_id,
+            last_updated=datetime.now(),
         )
 
         # Cache working set
