@@ -7,7 +7,7 @@
 This document translates the research in `docs/research/human_memory_models.md` into **actionable design patterns** for the Context Management MCP server. The goal is to make context management:
 
 - More **human-like** (focus, forget, and recall like a good collaborator).
-- Consistent with our **lightweight**, 32k–64k token, minimal-dependency constraints.
+- Consistent with our **lightweight**, millions of token, minimal-dependency constraints.
 - Complementary to existing designs:
   - `gc_heuristic_pruning_patterns.md`
   - `llm_driven_context_compression.md`

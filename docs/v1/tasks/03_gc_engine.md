@@ -22,7 +22,7 @@ Implement the GC (Garbage Collection) engine that performs heuristic pruning ana
 - Scoring function produces reasonable prune scores
 - Pruning plans meet target token reduction
 - Pinned segments are never pruned
-- Performance: analysis completes in < 2s for 32k tokens
+- Performance: analysis completes in < 2s for millions of tokens
 
 ## Implementation Details
 
@@ -137,7 +137,7 @@ class PruningPlan:
 
 ### Performance Tests
 
-- Test analysis time for 32k token context (< 2s requirement)
+- Test analysis time for millions of token context (< 2s requirement)
 - Test with maximum expected segments (1000+ segments)
 - Profile and optimize if needed
 

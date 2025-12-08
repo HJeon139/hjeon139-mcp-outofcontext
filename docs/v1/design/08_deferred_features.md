@@ -9,7 +9,7 @@ Features and approaches deferred to v2 with rationale.
 **Deferred:** Embedding-based semantic similarity search, vector databases (FAISS, Qdrant)
 
 **Rationale:**
-- Keyword + metadata search sufficient for 32k-64k token volumes
+- Keyword + metadata search sufficient for millions of token volumes
 - Adds significant complexity and dependencies
 - Can be added incrementally without refactoring core architecture
 - Should only be added if keyword search proves insufficient
@@ -60,7 +60,7 @@ Features and approaches deferred to v2 with rationale.
 **Deferred:** Advanced GC algorithms (generational collection optimizations, incremental GC with background threads)
 
 **Rationale:**
-- Simple mark-and-sweep sufficient for 32k-64k tokens
+- Simple mark-and-sweep sufficient for millions of tokens
 - Advanced optimizations not needed at current scale
 - Can be added when performance becomes bottleneck
 

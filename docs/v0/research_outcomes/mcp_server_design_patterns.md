@@ -86,7 +86,7 @@ Examples:
   - `CONTEXT_ENABLE_ADVANCED_GC=true|false`
 - **Storage + limits**
   - `CONTEXT_STORAGE_DIR=~/.context-mcp/`
-  - `CONTEXT_MAX_TOKENS_PER_PROJECT=32000` (or 64000)
+  - `CONTEXT_MAX_TOKENS_PER_PROJECT=1000000` (millions of tokens)
   - `CONTEXT_MAX_SEGMENT_TOKENS=512` (or similar)
 - **Integrations (opt-in)**
   - `CONTEXT_EMBEDDING_MODEL=...`
@@ -251,7 +251,7 @@ Key ideas (from `gc_heuristic_pruning_patterns.md` and `garbage_collection_patte
   - Working-set token estimate exceeds thresholds.
   - Host explicitly calls `context_prune_gc`.
 
-This is the MVP strategy and should work well for 32k–64k token ranges.
+This is the MVP strategy and should work well for millions of token ranges.
 
 ---
 

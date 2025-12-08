@@ -22,23 +22,23 @@ This document covers technical constraints, performance requirements, dependency
 
 ### Storage Constraints
 
-**32k-64k token volumes:**
-- Small-medium scale
-- In-memory + JSON sufficient, no database required
-- Linear search acceptable for retrieval
+**Millions of token volumes:**
+- Large scale
+- In-memory + JSON sufficient for active context, may require database for stashed context
+- Linear search acceptable for retrieval at this scale
 
 ---
 
 ## Performance Requirements
 
 **From Requirements Document:**
-- Context analysis: < 2 seconds for 32k-64k token contexts
+- Context analysis: < 2 seconds for millions of token contexts
 - Token counting: < 100ms for typical context
 - Storage operations: Non-blocking, async where possible
-- Keyword search: < 500ms for 32k tokens
+- Keyword search: < 500ms for millions of tokens
 
 **Scalability Considerations:**
-- Designed for 32k-64k token volumes
+- Designed for millions of token volumes
 - Linear algorithms acceptable at this scale
 - Architecture supports migration to more efficient algorithms if volumes grow
 

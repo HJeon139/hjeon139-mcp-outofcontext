@@ -88,6 +88,13 @@ Create comprehensive documentation for installation, usage, development, and dem
    - What to stash
    - Task organization
    - Performance tips
+   - Scalability considerations (millions of tokens)
+
+6. **Scalability:**
+   - System designed for millions of tokens
+   - Indexing ensures fast search
+   - Token caching improves performance
+   - File sharding handles large datasets
 
 6. **Troubleshooting:**
    - Common issues
@@ -222,4 +229,6 @@ docs/
 - [Integration Patterns](../design/05_integration_patterns.md) - Usage patterns
 - [Interfaces and Data Models](../design/09_interfaces.md) - API specifications
 - [Demo Procedures](../design/implementation_plan.md#demo-procedures) - Demo scenarios
+- [Scalability Analysis](../design/10_scalability_analysis.md) - Scalability features and considerations
+- [Storage Scalability Enhancements](06a_storage_scalability_enhancements.md) - Scalability implementation details
 

@@ -6,7 +6,7 @@ The Context Management MCP Server is an MCP-native solution that enables AI agen
 
 **Key Architectural Principles:**
 - **MCP-Native**: Protocol-based, works across all MCP-compatible platforms
-- **Lightweight**: Minimal dependencies, in-memory + JSON storage for 32k-64k token volumes
+- **Lightweight**: Minimal dependencies, in-memory + JSON storage for millions of token volumes
 - **Agent-Driven**: Tools enable agents to proactively manage context
 - **Advisory Mode**: Server provides recommendations; platforms apply decisions
 - **Heuristic-First**: GC-inspired pruning as primary strategy, with optional advanced features
@@ -76,11 +76,11 @@ This architecture is documented across multiple focused documents for better org
 **Pruning Strategy:** GC-inspired heuristic pruning (primary)
 - Lightweight, no ML dependencies
 - Explainable decisions
-- Sufficient for 32k-64k token volumes
+- Sufficient for millions of token volumes
 
 **Storage Strategy:** In-memory + JSON file persistence
 - Zero external dependencies
-- Fast enough for small-medium volumes
+- Fast enough for large volumes
 - Human-readable format
 
 **Platform Integration:** Advisory mode via MCP tools

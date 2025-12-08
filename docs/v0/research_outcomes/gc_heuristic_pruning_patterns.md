@@ -7,7 +7,7 @@
 This design document translates the research in `docs/research/garbage_collection_patterns.md` into **actionable design patterns** and **concrete implementation building blocks** for the Context Management MCP server, with a focus on:
 
 - GC-inspired context pruning using **lightweight heuristics**.
-- Operating at **32k–64k tokens** without heavy infrastructure (no vector DBs, no large ML deps).
+- Operating at **millions of tokens** without heavy infrastructure (no vector DBs, no large ML deps).
 - In-memory + JSON-based storage that is easy to reason about and debug.
 - Clear MCP tools that expose GC-style capabilities to the agent.
 
@@ -156,7 +156,7 @@ def mark_reachable(roots: set[str]) -> set[str]:
 Inputs:
 
 - `reachable`: result of mark phase.
-- Token budget: from requirements (e.g. 32k window with soft limit at ~24k).
+- Token budget: from requirements (e.g. millions of tokens window with soft limit).
 - Simple scoring function (Section 5).
 
 Steps:
@@ -169,7 +169,7 @@ Steps:
    - Prefer **stashing** over deletion.
    - For medium-score but verbose segments, use **compression pattern** (LLM-driven).
 
-This is implemented as a **single pass + sort** over at most a few thousand segments, which is acceptable for 32k–64k tokens.
+This is implemented as a **single pass + sort** over at most a few thousand segments, which is acceptable for millions of tokens.
 
 ---
 
@@ -352,6 +352,6 @@ This design defines a **GC-inspired, heuristic-first pruning layer** for the Con
 - Relies on a **simple scoring function**, not embeddings or vector DBs.
 - Exposes clear, explainable MCP tools for analysis and pruning.
 
-It should be treated as a **baseline pruning pattern** that we can layer more advanced techniques (compression, RAG) on top of, while staying faithful to the lightweight dependency and 32k–64k token constraints in `docs/requirements.md`.
+It should be treated as a **baseline pruning pattern** that we can layer more advanced techniques (compression, RAG) on top of, while staying faithful to the lightweight dependency and millions of token constraints in `docs/requirements.md`.
 
 

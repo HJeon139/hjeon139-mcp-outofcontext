@@ -3,6 +3,7 @@
 ## Dependencies
 
 - Task 05: Context Manager Implementation
+- Task 06a: Storage Layer Scalability Enhancements (for indexing implementation)
 
 ## Scope
 
@@ -20,7 +21,7 @@ Implement MCP tools for stashing context segments and retrieving them. This incl
 - Keyword search finds relevant segments
 - Metadata filters work correctly
 - Retrieval returns segments in correct format
-- Search performance < 500ms for 32k tokens
+- Search performance < 500ms for millions of tokens
 - Search handles empty queries and no results gracefully
 
 ## Implementation Details
@@ -118,21 +119,39 @@ Implement MCP tools for stashing context segments and retrieving them. This incl
 2. If move_to_active, move segments back
 3. Return segments
 
-### Keyword Search Implementation (`src/out_of_context/search.py`)
+### Keyword Search Implementation
 
-Implement simple keyword matching:
+**Scalability Note:** Keyword search must use inverted index (from Task 06a), not linear search.
+
+**Storage Layer Integration:**
+
+The storage layer (enhanced in Task 06a) provides indexed search:
 
 ```python
-def keyword_search(text: str, query: str) -> bool:
-    """Case-insensitive substring matching."""
-    return query.lower() in text.lower()
-
-def search_segments(segments: List[ContextSegment], query: str) -> List[ContextSegment]:
-    """Search segments by keyword."""
-    if not query:
-        return segments
-    return [seg for seg in segments if keyword_search(seg.text, query)]
+# Storage layer uses inverted index internally
+def search_stashed(self, query: str, filters: Dict, project_id: str) -> List[ContextSegment]:
+    """Search using inverted index (not linear search)."""
+    # Implementation in Task 06a uses InvertedIndex class
+    # This provides O(1) lookup per word instead of O(n) linear scan
+    pass
 ```
+
+**Tool Implementation:**
+
+```python
+def context_search_stashed(params: Dict) -> Dict:
+    """Search stashed segments using indexed search."""
+    # Storage layer handles indexing internally
+    # Tool just validates parameters and calls storage
+    project_id = params["project_id"]
+    query = params.get("query", "")
+    filters = params.get("filters", {})
+    
+    segments = storage_layer.search_stashed(query, filters, project_id)
+    return {"segments": segments, "total_matches": len(segments)}
+```
+
+**Performance:** With inverted index, search is O(k) where k is number of query words, not O(n) where n is total segments.
 
 ### Metadata Filtering
 
@@ -169,12 +188,27 @@ def apply_filters(segments: List[ContextSegment], filters: Dict) -> List[Context
 
 ### Search Performance
 
-Optimize for < 500ms requirement:
+**Critical:** Search must use indexing to meet < 500ms requirement for millions of tokens.
 
-- Use indexes for metadata filtering (by task, file, tag)
-- Linear search acceptable for 32k tokens
-- Limit results to prevent large responses
-- Cache search results if needed
+**Optimization Strategy:**
+
+1. **Inverted Index for Keywords** (from Task 06a):
+   - O(1) lookup per word instead of O(n) linear scan
+   - Intersection of word sets for multi-word queries
+   - Handles millions of segments efficiently
+
+2. **Hash-based Metadata Indexes** (from Task 06a):
+   - O(1) lookup for file_path, task_id, tags
+   - Set intersection for multiple filters
+   - No linear scanning required
+
+3. **Result Limiting:**
+   - Limit results to prevent large responses
+   - Return top-k most relevant results
+
+4. **Performance Target:**
+   - < 500ms for millions of tokens (with indexing)
+   - Linear search would take minutes, indexing makes it feasible
 
 ### Empty Query Handling
 
@@ -200,7 +234,7 @@ Optimize for < 500ms requirement:
 
 ### Performance Tests
 
-- Test search performance (< 500ms for 32k tokens)
+- Test search performance (< 500ms for millions of tokens)
 - Test with maximum expected segments
 - Profile and optimize if needed
 
@@ -227,4 +261,6 @@ Optimize for < 500ms requirement:
 - [Components](../design/04_components.md) - Storage Layer component
 - [Architectural Decisions](../design/03_architectural_decisions.md) - Retrieval strategy decision
 - [Constraints and Requirements](../design/07_constraints_requirements.md) - Performance requirements
+- [Scalability Analysis](../design/10_scalability_analysis.md) - Search performance issues
+- [Storage Scalability Enhancements](06a_storage_scalability_enhancements.md) - Indexing implementation
 

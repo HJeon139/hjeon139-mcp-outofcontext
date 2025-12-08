@@ -17,7 +17,7 @@ See [Research Findings](02_research_findings.md) for the research that informed 
 
 **Rationale:**
 - Aligns with lightweight dependency requirements (no embeddings, no vector DBs)
-- Proven effectiveness for 32k-64k token volumes
+- Proven effectiveness for millions of token volumes
 - Explainable decisions (agents can understand why segments were pruned)
 - Fast execution (< 2s for analysis)
 - Addresses the core requirement of identifying unused/irrelevant context
@@ -42,9 +42,9 @@ See [Research Findings](02_research_findings.md) for the research that informed 
 **Decision: Primary Strategy - In-Memory + JSON File Persistence**
 
 **Rationale:**
-- Meets 32k-64k token volume requirement without database overhead
+- Meets millions of token volume requirement without database overhead
 - Zero external dependencies for storage
-- Fast enough for small-medium volumes (linear search acceptable)
+- Fast enough for large volumes (linear search acceptable)
 - Human-readable format for debugging
 - Simple backup and recovery
 
@@ -138,7 +138,7 @@ Platform → Calls MCP Tool with Context Metadata → Server Analyzes → Return
 **Decision: Primary Strategy - Keyword + Metadata Filtering**
 
 **Rationale:**
-- Sufficient for 32k-64k token volumes
+- Sufficient for millions of token volumes
 - Zero ML dependencies
 - Fast execution (< 500ms per search)
 - Simple implementation and debugging

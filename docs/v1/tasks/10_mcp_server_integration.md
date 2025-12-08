@@ -3,6 +3,7 @@
 ## Dependencies
 
 - Task 06: Monitoring Tools Implementation
+- Task 06a: Storage Layer Scalability Enhancements
 - Task 07: Pruning Tools Implementation
 - Task 08: Stashing and Retrieval Tools Implementation
 - Task 09: Task Management Tools Implementation
@@ -136,9 +137,12 @@ Load configuration from:
 @dataclass
 class Config:
     storage_path: str = "~/.out_of_context/storage.json"
-    token_limit: int = 32000
+    token_limit: int = 1000000  # Millions of tokens
     default_model: str = "gpt-4"
     log_level: str = "INFO"
+    max_active_segments: int = 10000  # LRU cache size
+    enable_indexing: bool = True  # Enable inverted index
+    enable_file_sharding: bool = True  # Enable file sharding
 
 def load_config() -> Config:
     """Load configuration from environment and files."""

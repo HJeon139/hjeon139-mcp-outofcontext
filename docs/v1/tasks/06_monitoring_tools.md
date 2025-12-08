@@ -3,6 +3,7 @@
 ## Dependencies
 
 - Task 05: Context Manager Implementation
+- Task 06a: Storage Layer Scalability Enhancements (token caching affects metrics)
 
 ## Scope
 
@@ -51,8 +52,12 @@ Implement MCP tools for context monitoring and analysis. This includes:
 **Implementation:**
 1. Validate parameters
 2. Call `context_manager.analyze_context()`
+   - Analysis engine uses cached token counts (from Task 06a)
+   - Metrics computation is fast even with millions of tokens
 3. Format results for MCP response
 4. Return structured response
+
+**Scalability Note:** Token counting uses cached values from segment metadata, ensuring < 100ms performance requirement is met.
 
 ### Tool: `context_get_working_set`
 

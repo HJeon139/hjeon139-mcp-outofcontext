@@ -39,7 +39,7 @@ Understand how garbage collection patterns from programming languages can be app
 ## Deliverables
 
 - [x] **Pattern Mapping**: GC concepts mapped to context management
-- [x] **Algorithm Selection**: GC-style patterns suited for 32k–64k context
+- [x] **Algorithm Selection**: GC-style patterns suited for millions of token context
 - [x] **Implementation Design**: How to implement GC-inspired context pruning with lightweight heuristics
 - [x] **Performance Analysis**: Trade-offs and optimization opportunities
 - [x] **Hybrid Approach**: How GC combines with other pruning and compression strategies

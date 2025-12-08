@@ -20,7 +20,7 @@ This document provides a summary of key findings from research documents, with r
 
 **Key Finding:** While transformer attention mechanisms provide inspiration, we cannot access true attention weights during inference. Semantic embeddings serve as an effective proxy for relevance scoring. Vector databases enable efficient nearest-neighbor retrieval for stashed context, following proven RAG patterns.
 
-**Design Recommendation:** For v1, defer vector databases and semantic embeddings. Start with keyword/metadata-based retrieval. RAG patterns are recommended for stashed context retrieval in future phases, but not required for MVP given the 32k-64k token constraint and lightweight dependency requirements.
+**Design Recommendation:** For v1, defer vector databases and semantic embeddings. Start with keyword/metadata-based retrieval. RAG patterns are recommended for stashed context retrieval in future phases, but not required for MVP given the millions of token constraint and lightweight dependency requirements.
 
 **Reference:** See [Attention Pruning Research](../../v0/research/attention_pruning_transformer_patterns.md) and [RAG Patterns Design](../../v0/research_outcomes/rag_patterns_context_management.md) for details.
 

@@ -94,7 +94,7 @@ Remember, the documents above are recommended in isolation. So the recommendatio
 
 4.2. **What are the performance requirements?**
    - Define performance targets for key operations (context analysis, pruning, retrieval)
-   - Document scalability considerations (32k-64k token volumes)
+   - Document scalability considerations (millions of token volumes)
    - Specify latency requirements for tool execution
    - Define throughput expectations
 

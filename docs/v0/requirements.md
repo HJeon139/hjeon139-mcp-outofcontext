@@ -37,7 +37,7 @@ An MCP server that enables agents to manage context more like human intelligence
 * [Hatch](https://hatch.pypa.io/latest/) - Python project management and packaging
 * [Pydantic](https://docs.pydantic.dev/) - Data validation and serialization for MCP tool schemas
 * Token counting: `tiktoken` (lightweight, fast, accurate)
-* Storage: JSON file or in-memory (lightweight for 32k-64k token volumes)
+* Storage: JSON file or in-memory (lightweight for millions of token volumes)
 * Embedding model (optional): Only if needed for semantic search; prioritize simple text matching first
 
 ### Key References
@@ -101,7 +101,7 @@ An MCP server that enables agents to manage context more like human intelligence
 
 9. The server **MUST** maintain a lightweight storage layer for stashed/archived context segments:
    - **Primary**: In-memory storage with optional JSON file persistence
-   - **Rationale**: For 32k-64k token volumes, full database systems are overkill
+   - **Rationale**: For millions of token volumes, full database systems may be beneficial but in-memory + JSON can still work
    - Store: Stashed segments, basic metadata (timestamp, type, tags)
    - **Avoid**: Heavy databases (SQL, vector DBs) unless volumes grow significantly
 
@@ -154,10 +154,10 @@ An MCP server that enables agents to manage context more like human intelligence
 2. The server **MUST** implement the MCP protocol specification correctly
 
 3. The server **MUST** be performant:
-   - Context analysis operations should complete in < 2 seconds for 32k-64k token contexts
+   - Context analysis operations should complete in < 2 seconds for millions of token contexts
    - Token counting should be fast (< 100ms for typical context)
    - Storage operations should not block tool execution
-   - Simple keyword search should be fast enough (< 500ms for 32k tokens)
+   - Simple keyword search should be fast enough (< 500ms for millions of tokens)
 
 4. The server **MUST** handle errors gracefully:
    - Invalid tool parameters should return clear error messages
@@ -179,7 +179,7 @@ An MCP server that enables agents to manage context more like human intelligence
    - Minimize dependencies (avoid heavy libraries when simple alternatives exist)
    - Use built-in Python libraries where possible (json, sqlite3, pathlib)
    - Only add complex dependencies (vector DBs, embedding models) if proven necessary
-   - Design for 32k-64k token volumes (optimize for small-medium context sizes)
+   - Design for millions of token volumes (optimize for large context sizes)
 
 ## Non-Goals
 
@@ -195,10 +195,10 @@ An MCP server that enables agents to manage context more like human intelligence
 
 ### Token Volume Assumptions
 
-**Expected Context Sizes**: 32k-64k tokens total
-- Typical session: 20k-40k tokens
-- Stashed context: 10k-20k tokens
-- **Implication**: Solutions designed for millions of tokens are overkill
+**Expected Context Sizes**: Millions of tokens total
+- Typical session: hundreds of thousands to millions of tokens
+- Stashed context: hundreds of thousands to millions of tokens
+- **Implication**: Solutions designed for millions of tokens are appropriate
 
 **Scale Considerations**:
 - Small enough for in-memory processing
@@ -220,7 +220,7 @@ An MCP server that enables agents to manage context more like human intelligence
 
 #### Storage Solutions
 
-| Solution | Cost | Benefit at 32k-64k | Decision |
+| Solution | Cost | Benefit at millions of tokens | Decision |
 |----------|------|-------------------|----------|
 | **In-memory dict** | Very Low | High (fast, simple) | ✅ **MVP** |
 | **JSON file** | Very Low | High (persistence, no deps) | ✅ **MVP** |
@@ -229,7 +229,7 @@ An MCP server that enables agents to manage context more like human intelligence
 | **Vector DB (FAISS)** | High | Low-Medium (unnecessary for small volume) | ❌ **DEFER** - Start simple |
 | **Vector DB (Qdrant)** | Very High | Low (overkill) | ❌ **AVOID** |
 
-**Rationale**: For 32k-64k tokens, in-memory + JSON files are sufficient. Vector DBs add significant complexity for minimal benefit.
+**Rationale**: For millions of tokens, in-memory + JSON files may still work, but vector DBs could provide significant benefit for retrieval.
 
 #### Retrieval Solutions
 
@@ -240,7 +240,7 @@ An MCP server that enables agents to manage context more like human intelligence
 | **Semantic embeddings** | High (large model) | Medium (better matching) | ❌ **DEFER** - Test keyword first |
 | **Vector similarity search** | High (DB + model) | Medium | ❌ **DEFER** - Only if keyword insufficient |
 
-**Rationale**: Keyword matching is sufficient for 32k tokens. Semantic search can be added later if needed.
+**Rationale**: Keyword matching is sufficient for millions of tokens. Semantic search can be added later if needed.
 
 #### Embedding Solutions
 
@@ -254,7 +254,7 @@ An MCP server that enables agents to manage context more like human intelligence
 
 ### Simplified MVP Storage Strategy
 
-**Approach for 32k-64k tokens**:
+**Approach for millions of tokens**:
 
 ```python
 # In-memory storage (fast, simple)
@@ -277,7 +277,7 @@ stashed_context: Dict[str, ContextSegment] = {}
 def search_stashed(query: str) -> List[ContextSegment]:
     # Keyword matching in text
     # Metadata filtering
-    # Simple linear search (fast enough for 32k tokens)
+    # Simple linear search (fast enough for millions of tokens)
     return [seg for seg in stashed_context.values() 
             if query.lower() in seg.text.lower() 
             or matches_metadata(seg, filters)]

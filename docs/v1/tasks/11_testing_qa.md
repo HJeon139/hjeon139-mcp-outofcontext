@@ -52,12 +52,13 @@ Create end-to-end test scenarios:
 
 ### Performance Tests
 
-Test all performance requirements:
+Test all performance requirements at scale (millions of tokens):
 
-1. **Context Analysis:** < 2s for 32k tokens
-2. **Token Counting:** < 100ms for typical context
-3. **Search:** < 500ms for 32k tokens
+1. **Context Analysis:** < 2s for millions of tokens
+2. **Token Counting:** < 100ms for typical context (with caching)
+3. **Search:** < 500ms for millions of tokens (with indexing)
 4. **Storage Operations:** Non-blocking
+5. **GC Analysis:** < 2s for millions of segments (with heap-based selection)
 
 Create performance test suite:
 
@@ -65,11 +66,103 @@ Create performance test suite:
 @pytest.mark.performance
 def test_context_analysis_performance():
     """Test context analysis completes in < 2s."""
-    segments = create_large_context(32000)  # 32k tokens
+    segments = create_large_context(1000000)  # millions of tokens
     start = time.time()
     result = analysis_engine.analyze_context_usage(segments)
     duration = time.time() - start
     assert duration < 2.0
+
+@pytest.mark.performance
+def test_search_with_indexing():
+    """Test search performance with inverted index."""
+    # Create 1M segments with stashed storage
+    storage = StorageLayer("/tmp/test")
+    segments = create_test_segments(count=1000000, tokens_per_segment=10)
+    
+    # Index all segments
+    for seg in segments:
+        storage.stash_segment(seg, "test_project")
+    
+    # Search should be fast with indexing
+    start = time.time()
+    results = storage.search_stashed("test query", {}, "test_project")
+    duration = time.time() - start
+    
+    assert duration < 0.5  # < 500ms
+    assert len(results) > 0
+
+@pytest.mark.performance
+def test_token_counting_with_cache():
+    """Test token counting uses cache for performance."""
+    segment = ContextSegment(segment_id="1", text="test " * 10000)
+    tokenizer = Tokenizer()
+    
+    # First count (no cache)
+    start = time.time()
+    count1 = tokenizer.count_segment_tokens(segment)
+    duration1 = time.time() - start
+    
+    # Second count (cached)
+    start = time.time()
+    count2 = tokenizer.count_segment_tokens(segment)
+    duration2 = time.time() - start
+    
+    assert count1 == count2
+    assert duration2 < duration1  # Cached should be faster
+    assert duration2 < 0.001  # Cache lookup should be < 1ms
+
+@pytest.mark.performance
+def test_gc_analysis_with_heap():
+    """Test GC analysis uses heap-based selection."""
+    # Create 1M segments
+    segments = create_test_segments(count=1000000)
+    gc_engine = GCEngine()
+    
+    # Analyze pruning candidates
+    start = time.time()
+    candidates = gc_engine.analyze_pruning_candidates(segments, roots=set())
+    plan = gc_engine.generate_pruning_plan(candidates, target_tokens=100000)
+    duration = time.time() - start
+    
+    assert duration < 2.0  # < 2s with heap-based selection
+    assert len(plan.segments) > 0
+```
+
+### Scalability Tests
+
+Test system behavior at scale:
+
+```python
+@pytest.mark.scalability
+def test_memory_usage_at_scale():
+    """Test memory usage with LRU eviction."""
+    storage = StorageLayer("/tmp/test", max_active_segments=10000)
+    
+    # Add 100k segments (should evict to disk)
+    segments = create_test_segments(count=100000)
+    for seg in segments:
+        storage.store_segment(seg, "test_project")
+    
+    # Check memory usage
+    import sys
+    memory_mb = sys.getsizeof(storage.active_segments) / (1024 * 1024)
+    assert memory_mb < 500  # Should be reasonable with eviction
+
+@pytest.mark.scalability
+def test_file_sharding():
+    """Test JSON file sharding works correctly."""
+    storage = StorageLayer("/tmp/test")
+    
+    # Stash segments for multiple projects
+    for project_id in ["proj1", "proj2", "proj3"]:
+        segments = create_test_segments(count=10000)
+        for seg in segments:
+            storage.stash_segment(seg, project_id)
+    
+    # Verify separate files exist
+    assert (Path("/tmp/test/stashed/proj1.json")).exists()
+    assert (Path("/tmp/test/stashed/proj2.json")).exists()
+    assert (Path("/tmp/test/stashed/proj3.json")).exists()
 ```
 
 ### Error Handling Tests
@@ -220,6 +313,8 @@ hatch run test --cov=src/out_of_context --cov-report=html
 
 - [Constraints and Requirements](../design/07_constraints_requirements.md) - Performance requirements
 - [Components](../design/04_components.md) - All components to test
+- [Scalability Analysis](../design/10_scalability_analysis.md) - Scalability issues and test requirements
+- [Storage Scalability Enhancements](06a_storage_scalability_enhancements.md) - Scalability features to test
 - [pytest Documentation](https://docs.pytest.org/) - Testing framework
 - [pytest-cov Documentation](https://pytest-cov.readthedocs.io/) - Coverage plugin
 
