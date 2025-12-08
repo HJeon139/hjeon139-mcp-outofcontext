@@ -95,13 +95,16 @@ class TestMCPServerIntegration:
 
         async with server.lifespan():
             tools = server.tool_registry.list_tools()
-            # Should have 2 monitoring tools + 4 pruning tools + 3 stashing tools + 1 test tool = 10 total
-            assert len(tools) == 10
+            # Should have 2 monitoring tools + 4 pruning tools + 3 stashing tools + 3 task management tools + 1 test tool = 13 total
+            assert len(tools) == 13
             tool_names = {tool.name for tool in tools}
             assert "test_tool" in tool_names
             assert "context_analyze_usage" in tool_names
             assert "context_get_working_set" in tool_names
             assert "context_gc_analyze" in tool_names
+            assert "context_set_current_task" in tool_names
+            assert "context_get_task_context" in tool_names
+            assert "context_create_task_snapshot" in tool_names
             assert "context_gc_prune" in tool_names
             assert "context_gc_pin" in tool_names
             assert "context_gc_unpin" in tool_names
