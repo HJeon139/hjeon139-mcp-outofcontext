@@ -69,7 +69,9 @@ class StashParams(BaseModel):
 class SearchStashedParams(BaseModel):
     """Parameters for context_search_stashed tool."""
 
-    project_id: str = Field(description="Project identifier")
+    project_id: str | None = Field(
+        None, description="Optional project identifier. If omitted, searches across all projects."
+    )
     query: str | None = Field(None, description="Keyword search query")
     filters: dict | None = Field(
         None,

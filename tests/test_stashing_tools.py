@@ -355,7 +355,7 @@ class TestContextSearchStashed:
 
     @pytest.mark.asyncio
     async def test_search_missing_project_id(self) -> None:
-        """Test search with missing project_id."""
+        """Test search without project_id searches across all projects."""
         # Arrange
         app_state = AppState()
 
@@ -365,10 +365,11 @@ class TestContextSearchStashed:
             project_id=None,
         )
 
-        # Assert
-        assert "error" in result
-        assert result["error"]["code"] == "INVALID_PARAMETER"
-        assert result["error"]["message"] == "project_id is required"
+        # Assert - should search across all projects (empty result if no projects)
+        assert "error" not in result
+        assert "segments" in result
+        assert "total_matches" in result
+        assert result["total_matches"] == 0  # No projects exist in empty storage
 
     @pytest.mark.asyncio
     async def test_search_invalid_datetime_format(self) -> None:

@@ -2,6 +2,7 @@
 
 from ...app_state import AppState
 from ...tool_registry import ToolRegistry
+from .context_list_projects import handle_list_projects
 from .context_retrieve_stashed import handle_retrieve_stashed
 from .context_search_stashed import handle_search_stashed
 from .context_stash import handle_stash
@@ -34,6 +35,19 @@ def register_stashing_tools(
         ),
     )
 
+    # Register context_list_projects tool
+    registry.register(
+        name="context_list_projects",
+        handler=handle_list_projects,
+        description=(
+            "List all available project IDs from stashed storage. "
+            "Use this tool to discover available projects when you don't know the project_id "
+            "or need to search across multiple projects. "
+            "Example: Call without parameters to get a list of all projects with stashed context. "
+            "No parameters required."
+        ),
+    )
+
     # Register context_search_stashed tool
     registry.register(
         name="context_search_stashed",
@@ -42,10 +56,12 @@ def register_stashing_tools(
             "Search stashed segments by keyword and metadata filters. "
             "Use this tool to find stashed segments using keyword search and/or metadata filters. "
             "Supports filtering by file_path, task_id, tags, type, and time range. "
+            "Can search within a specific project or across all projects. "
             "Example: Call with project_id='my-project', query='function', "
-            "filters={'file_path': 'src/main.py'} to search for segments. "
-            "Required parameters: project_id. "
-            "Optional parameters: query (keyword search), filters (metadata filters), limit (max results)."
+            "filters={'file_path': 'src/main.py'} to search within a project. "
+            "Or call without project_id to search across all projects. "
+            "Optional parameters: project_id (omit to search all projects), "
+            "query (keyword search), filters (metadata filters), limit (max results)."
         ),
     )
 

@@ -89,8 +89,24 @@ class StorageLayer(IStorageLayer):
         """Move segment to stashed storage."""
         return self.segment_ops.stash_segment(segment, project_id)
 
-    def search_stashed(self, query: str, filters: dict, project_id: str) -> list:
-        """Search stashed segments by keyword and metadata."""
+    def search_stashed(self, query: str, filters: dict, project_id: str | None = None) -> list:
+        """Search stashed segments by keyword and metadata.
+
+        Args:
+            query: Keyword search query
+            filters: Metadata filters dictionary
+            project_id: Optional project identifier. If None, searches across all projects.
+
+        Returns:
+            List of matching segments
+        """
+        if project_id is None:
+            # Search across all projects
+            all_segments: list = []
+            for proj_id in self.list_projects():
+                segments = self.segment_ops.search_stashed(query, filters, proj_id)
+                all_segments.extend(segments)
+            return all_segments
         return self.segment_ops.search_stashed(query, filters, project_id)
 
     def delete_segment(self, segment_id: str, project_id: str) -> None:
@@ -118,3 +134,17 @@ class StorageLayer(IStorageLayer):
     def _load_evicted_segment(self, segment_id: str):
         """Load evicted segment from disk (called by LRU cache)."""
         return self.file_ops.load_evicted_segment(segment_id)
+
+    def list_projects(self) -> list[str]:
+        """List all available project IDs from stashed storage.
+
+        Returns:
+            List of project IDs that have stashed segments
+        """
+        project_ids: list[str] = []
+        for file_path in self.stashed_dir.glob("*.json"):
+            if file_path.suffix == ".json" and not file_path.name.endswith(".tmp"):
+                # Extract project_id from filename (remove .json extension)
+                project_id = file_path.stem
+                project_ids.append(project_id)
+        return sorted(project_ids)

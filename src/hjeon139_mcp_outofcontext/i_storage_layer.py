@@ -63,3 +63,11 @@ class IStorageLayer(ABC):
         project_id: str,
     ) -> None:
         """Move segment from stashed storage back to active storage."""
+
+    @abstractmethod
+    def list_projects(self) -> list[str]:
+        """List all available project IDs from stashed storage.
+
+        Returns:
+            List of project IDs that have stashed segments
+        """

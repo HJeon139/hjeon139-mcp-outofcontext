@@ -106,8 +106,8 @@ class TestMCPServerIntegration:
 
         async with server.lifespan():
             tools = server.tool_registry.list_tools()
-            # 2 monitoring + 4 pruning + 3 stashing + 3 task + 1 test = 13
-            assert len(tools) == 13
+            # 2 monitoring + 4 pruning + 4 stashing + 3 task + 1 test = 14
+            assert len(tools) == 14
             tool_names = {tool.name for tool in tools}
             assert "test_tool" in tool_names
             assert "context_analyze_usage" in tool_names

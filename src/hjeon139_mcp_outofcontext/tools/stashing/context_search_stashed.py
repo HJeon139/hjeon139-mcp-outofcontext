@@ -26,7 +26,7 @@ async def handle_search_stashed(
 
     Args:
         app_state: Application state with all components
-        project_id: Project identifier (required)
+        project_id: Optional project identifier. If omitted, searches across all projects.
         query: Optional keyword search query
         filters: Optional metadata filters dictionary
         limit: Optional maximum number of results (default: 50)
@@ -48,6 +48,8 @@ async def handle_search_stashed(
 
     params = params_result["params"]
 
+    # project_id is now optional - if None, search across all projects
+
     try:
         # Parse and validate filters
         filters_result = _parse_search_filters(params.filters)
@@ -57,7 +59,7 @@ async def handle_search_stashed(
         filters_dict = filters_result["filters"]
         search_query = params.query or ""
 
-        # Search stashed segments
+        # Search stashed segments (project_id is optional - None searches all projects)
         segments = app_state.storage.search_stashed(
             query=search_query,
             filters=filters_dict,
@@ -101,7 +103,7 @@ def _validate_search_params(
     """
     try:
         params = SearchStashedParams(
-            project_id=project_id or "",
+            project_id=project_id,  # Can be None to search all projects
             query=query,
             filters=filters,
             limit=limit,
@@ -116,15 +118,7 @@ def _validate_search_params(
             }
         }
 
-    if not params.project_id:
-        return {
-            "error": {
-                "code": "INVALID_PARAMETER",
-                "message": "project_id is required",
-                "details": {},
-            }
-        }
-
+    # project_id is now optional - no validation needed
     return {"params": params}
 
 

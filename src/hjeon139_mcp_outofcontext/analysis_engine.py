@@ -221,33 +221,35 @@ class AnalysisEngine(IAnalysisEngine):
         Returns:
             List of usage-based recommendations
         """
+        # Define thresholds in descending order with their recommendations
+        # Each tuple: (threshold, priority, message, action)
+        thresholds = [
+            (90.0, "urgent", "Urgent: Prune context immediately", "prune"),
+            (80.0, "high", "Consider pruning old segments to free space", "prune"),
+            (
+                60.0,
+                "medium",
+                "Context usage at 60%+ - monitor closely and consider stashing old segments",
+                "stash",
+            ),
+            (50.0, "low", "Context usage at 50%+ - monitor usage", None),
+        ]
+
         recommendations: list[Recommendation] = []
 
-        if metrics.usage_percent >= 90.0:
-            recommendations.append(
-                Recommendation(
-                    priority="urgent",
-                    message="Urgent: Prune context immediately",
-                    action="prune",
+        # Find first matching threshold
+        for threshold, priority, message, action in thresholds:
+            if metrics.usage_percent >= threshold:
+                recommendations.append(
+                    Recommendation(
+                        priority=priority,
+                        message=message,
+                        action=action,
+                    )
                 )
-            )
-        elif metrics.usage_percent >= 80.0:
-            recommendations.append(
-                Recommendation(
-                    priority="high",
-                    message="Consider pruning old segments to free space",
-                    action="prune",
-                )
-            )
-        elif metrics.usage_percent >= 60.0:
-            recommendations.append(
-                Recommendation(
-                    priority="medium",
-                    message="Context usage at 60%+ - monitor closely and consider stashing old segments",
-                    action="stash",
-                )
-            )
-        elif metrics.usage_percent < 50.0:
+                break
+        else:
+            # If no threshold matched (usage < 50%), add healthy status
             recommendations.append(
                 Recommendation(
                     priority="low",
