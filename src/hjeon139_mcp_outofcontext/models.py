@@ -195,3 +195,21 @@ class Recommendation(BaseModel):
     priority: Literal["low", "medium", "high", "urgent"] = Field(description="Priority level")
     message: str = Field(description="Recommendation message")
     action: str | None = Field(None, description="Suggested action")
+
+
+class AnalyzeUsageParams(BaseModel):
+    """Parameters for context_analyze_usage tool."""
+
+    context_descriptors: ContextDescriptors | None = Field(
+        None, description="Optional context descriptors from platform"
+    )
+    project_id: str = Field(description="Project identifier")
+    task_id: str | None = Field(None, description="Optional task identifier")
+    token_limit: int | None = Field(32000, description="Token limit (default: 32000)")
+
+
+class GetWorkingSetParams(BaseModel):
+    """Parameters for context_get_working_set tool."""
+
+    project_id: str = Field(description="Project identifier")
+    task_id: str | None = Field(None, description="Optional task identifier")

@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from typing import Any
 
 from hjeon139_mcp_outofcontext.app_state import AppState
+from hjeon139_mcp_outofcontext.monitoring_tools import register_monitoring_tools
 from hjeon139_mcp_outofcontext.tool_registry import ToolRegistry
 
 
@@ -31,6 +32,8 @@ class MCPServer:
         self.app_state = AppState(config=self.config)
         # Create tool registry
         self.tool_registry = ToolRegistry()
+        # Register all tools
+        self._register_tools()
         self._running = False
 
     @asynccontextmanager
@@ -80,6 +83,15 @@ class MCPServer:
             ToolRegistry instance
         """
         return self.tool_registry
+
+    def _register_tools(self) -> None:
+        """
+        Register all tools with the tool registry.
+
+        This method is called during initialization to register all available tools.
+        """
+        # Register monitoring tools
+        register_monitoring_tools(self.tool_registry, self.app_state)
 
 
 async def create_server(config: dict[str, Any] | None = None) -> MCPServer:
