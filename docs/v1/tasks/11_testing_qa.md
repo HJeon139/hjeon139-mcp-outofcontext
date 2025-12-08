@@ -6,13 +6,16 @@
 
 ## Scope
 
-Achieve comprehensive test coverage and quality assurance. This includes:
+Achieve comprehensive test coverage, quality assurance, and high standards for code readability and maintainability. This includes:
 
 - Achieve 80% test coverage target
 - Integration tests for end-to-end workflows
 - Performance tests for all operations
 - Error handling and edge case testing
 - Test documentation and examples
+- Code readability standards (naming, documentation, structure)
+- Maintainability standards (complexity metrics, refactoring guidelines)
+- Code review criteria and quality gates
 
 ## Acceptance Criteria
 
@@ -21,6 +24,10 @@ Achieve comprehensive test coverage and quality assurance. This includes:
 - All error cases handled gracefully
 - Integration tests pass
 - Tests are maintainable and well-documented
+- All code meets readability standards (documentation, naming, structure)
+- All code meets maintainability standards (complexity, file size, organization)
+- Code review checklist passes for all changes
+- Static analysis tools pass (ruff, mypy) with zero errors
 
 ## Implementation Details
 
@@ -241,6 +248,384 @@ Document test approach:
 - Performance benchmarks
 - Known limitations
 
+## Code Readability Standards
+
+### Documentation Requirements
+
+**All public APIs must be documented:**
+
+1. **Module-level docstrings:**
+   - Purpose and responsibility of the module
+   - Key concepts and usage patterns
+   - Example usage when appropriate
+
+2. **Class docstrings:**
+   - Purpose and responsibility of the class
+   - Key methods and their roles
+   - Usage examples for complex classes
+
+3. **Function/method docstrings:**
+   - Clear description of what the function does
+   - Parameter descriptions (type and purpose)
+   - Return value description
+   - Raises section for exceptions
+   - Example usage for complex functions
+
+**Example:**
+```python
+def analyze_context_usage(
+    segments: list[ContextSegment],
+    analysis_params: AnalysisParams,
+) -> ContextUsageAnalysis:
+    """
+    Analyze context usage patterns to identify pruning candidates.
+    
+    Analyzes segment access patterns, recency, and importance to
+    determine which segments are candidates for pruning.
+    
+    Args:
+        segments: List of context segments to analyze
+        analysis_params: Parameters controlling analysis behavior
+        
+    Returns:
+        ContextUsageAnalysis containing pruning candidates and metrics
+        
+    Raises:
+        ValueError: If segments list is empty or analysis_params invalid
+        
+    Example:
+        >>> segments = [ContextSegment(...), ...]
+        >>> params = AnalysisParams(max_age_days=7)
+        >>> analysis = analyze_context_usage(segments, params)
+        >>> print(f"Found {len(analysis.candidates)} candidates")
+    """
+    ...
+```
+
+### Naming Conventions
+
+**Follow PEP 8 naming standards:**
+
+1. **Functions and variables:** `snake_case`
+2. **Classes:** `PascalCase`
+3. **Constants:** `UPPER_SNAKE_CASE`
+4. **Private attributes/methods:** `_leading_underscore`
+5. **Type variables:** `T`, `K`, `V` for simple generics; `DescriptiveName` for complex
+
+**Naming guidelines:**
+
+- **Descriptive names:** Names should clearly indicate purpose
+  - ✅ Good: `analyze_pruning_candidates`, `get_segment_by_id`
+  - ❌ Bad: `analyze`, `get_seg`, `do_stuff`
+
+- **Verb-noun pattern for functions:** Use verbs for actions
+  - ✅ Good: `create_segment`, `update_metadata`, `delete_stashed`
+  - ❌ Bad: `segment_creator`, `metadata_updater`
+
+- **Noun pattern for classes:** Use nouns for entities
+  - ✅ Good: `ContextManager`, `StorageLayer`, `GCEngine`
+  - ❌ Bad: `ManageContext`, `StoreData`
+
+- **Boolean names:** Use `is_`, `has_`, `should_` prefixes
+  - ✅ Good: `is_pinned`, `has_children`, `should_prune`
+  - ❌ Bad: `pinned`, `children`, `prune_flag`
+
+- **Avoid abbreviations:** Use full words unless abbreviation is widely understood
+  - ✅ Good: `context_manager`, `storage_layer`
+  - ❌ Bad: `ctx_mgr`, `stg_lyr`
+
+### Code Structure and Organization
+
+**File organization:**
+
+1. **File size limit:** Keep files under ~400 lines of code
+   - Split large files into logical modules
+   - Use subdirectories for related functionality
+   - Group related handlers/functions into separate modules
+
+2. **Import organization:**
+   - Standard library imports
+   - Third-party imports
+   - Local application imports
+   - Use `ruff` to enforce import sorting
+
+3. **Class organization:**
+   - Class docstring
+   - Class constants
+   - `__init__` and lifecycle methods
+   - Public methods
+   - Private methods
+   - Properties
+
+4. **Function organization:**
+   - Keep functions focused on single responsibility
+   - Extract complex logic into helper functions
+   - Use early returns to reduce nesting
+
+**Example structure:**
+```python
+"""Module docstring explaining purpose."""
+
+from typing import ...
+import ...
+
+# Constants
+DEFAULT_MAX_SIZE = 1000
+
+class ExampleClass:
+    """Class docstring."""
+    
+    def __init__(self, ...) -> None:
+        """Initialize instance."""
+        ...
+    
+    def public_method(self, ...) -> ...:
+        """Public method docstring."""
+        ...
+    
+    def _private_helper(self, ...) -> ...:
+        """Private helper method."""
+        ...
+```
+
+### Type Hints
+
+**All functions must have complete type hints:**
+
+1. **Function signatures:** All parameters and return types
+2. **Variable annotations:** For complex types or when clarity is needed
+3. **Generic types:** Use `typing` generics appropriately
+4. **Type aliases:** Create aliases for complex repeated types
+
+**Example:**
+```python
+from typing import TypeVar, Generic
+
+T = TypeVar('T')
+SegmentList = list[ContextSegment]
+
+def process_segments(
+    segments: SegmentList,
+    filter_fn: Callable[[ContextSegment], bool],
+) -> SegmentList:
+    """Process segments with filter function."""
+    return [s for s in segments if filter_fn(s)]
+```
+
+## Code Maintainability Standards
+
+### Complexity Metrics
+
+**Enforce complexity limits:**
+
+1. **Cyclomatic complexity:** ≤ 10 per function
+   - Use `ruff` rule `C901` to detect complex functions
+   - Refactor complex functions into smaller, focused functions
+
+2. **Function length:** ≤ 50 lines per function
+   - Extract logic into helper functions
+   - Use descriptive helper function names
+
+3. **Class complexity:** ≤ 20 methods per class
+   - Split large classes into focused components
+   - Use composition over inheritance
+
+4. **File size:** ≤ 400 lines per file
+   - Split into logical modules
+   - Use subdirectories for related functionality
+
+**Measuring complexity:**
+```bash
+# Use ruff to check complexity
+ruff check --select C901 src/
+
+# Use radon for detailed complexity analysis
+pip install radon
+radon cc src/ --min B  # Show functions with complexity >= B
+radon mi src/  # Maintainability index
+```
+
+### Refactoring Guidelines
+
+**When to refactor:**
+
+1. **Complexity threshold exceeded:** Function/class exceeds limits
+2. **Code duplication:** DRY principle violations
+3. **Unclear intent:** Code requires comments to understand
+4. **Testability issues:** Difficult to test in isolation
+5. **Performance concerns:** Identified bottlenecks
+
+**Refactoring patterns:**
+
+1. **Extract method:** Break complex functions into smaller functions
+2. **Extract class:** Split large classes into focused components
+3. **Rename for clarity:** Improve naming to reflect intent
+4. **Simplify conditionals:** Use early returns, guard clauses
+5. **Eliminate duplication:** Extract common logic
+
+**Example refactoring:**
+```python
+# Before: Complex function
+def analyze_and_prune(segments, params):
+    candidates = []
+    for seg in segments:
+        if seg.last_accessed < params.max_age:
+            score = calculate_score(seg)
+            if score < params.threshold:
+                candidates.append(seg)
+    return candidates
+
+# After: Extracted and simplified
+def analyze_and_prune(
+    segments: list[ContextSegment],
+    params: AnalysisParams,
+) -> list[ContextSegment]:
+    """Analyze segments and return pruning candidates."""
+    return [
+        seg
+        for seg in segments
+        if _is_pruning_candidate(seg, params)
+    ]
+
+def _is_pruning_candidate(
+    segment: ContextSegment,
+    params: AnalysisParams,
+) -> bool:
+    """Check if segment is a pruning candidate."""
+    if segment.last_accessed >= params.max_age:
+        return False
+    score = _calculate_score(segment)
+    return score < params.threshold
+```
+
+### Code Organization Patterns
+
+**Follow established patterns:**
+
+1. **Dependency injection:** No global state, inject dependencies
+2. **Interface segregation:** Small, focused interfaces
+3. **Single responsibility:** Each class/function has one job
+4. **Testable design:** Easy to test in isolation with mocks
+
+**Example:**
+```python
+# Good: Dependency injection, testable
+class ContextManager:
+    def __init__(
+        self,
+        storage: IStorageLayer,
+        analysis_engine: AnalysisEngine,
+    ) -> None:
+        self._storage = storage
+        self._analysis = analysis_engine
+
+# Bad: Global state, hard to test
+class ContextManager:
+    def __init__(self) -> None:
+        self._storage = StorageLayer()  # Hard-coded dependency
+```
+
+### Static Analysis Requirements
+
+**All code must pass static analysis:**
+
+1. **Ruff linting:** Zero errors, zero warnings
+   ```bash
+   hatch run lint-fix  # Must pass with zero issues
+   ```
+
+2. **Ruff formatting:** Consistent code style
+   ```bash
+   hatch run fmt-fix  # Must pass
+   ```
+
+3. **MyPy type checking:** Zero type errors
+   ```bash
+   hatch run typecheck  # Must pass
+   ```
+
+4. **Complexity checks:** No functions exceeding limits
+   ```bash
+   ruff check --select C901 src/  # Must pass
+   ```
+
+### Code Review Checklist
+
+**All code changes must pass this checklist:**
+
+- [ ] **Documentation:**
+  - [ ] All public functions have docstrings
+  - [ ] Complex logic has inline comments explaining "why"
+  - [ ] Module docstrings explain purpose
+
+- [ ] **Naming:**
+  - [ ] Names are descriptive and follow conventions
+  - [ ] No abbreviations unless widely understood
+  - [ ] Boolean names use `is_`/`has_`/`should_` prefixes
+
+- [ ] **Type hints:**
+  - [ ] All functions have complete type hints
+  - [ ] Complex types use type aliases
+  - [ ] Generic types used appropriately
+
+- [ ] **Structure:**
+  - [ ] File size ≤ 400 lines
+  - [ ] Functions ≤ 50 lines
+  - [ ] Cyclomatic complexity ≤ 10 per function
+  - [ ] Imports organized correctly
+
+- [ ] **Maintainability:**
+  - [ ] No code duplication (DRY principle)
+  - [ ] Functions have single responsibility
+  - [ ] Dependencies injected (no globals)
+  - [ ] Code is testable in isolation
+
+- [ ] **Static analysis:**
+  - [ ] Ruff linting passes (zero errors)
+  - [ ] Ruff formatting passes
+  - [ ] MyPy type checking passes
+  - [ ] Complexity checks pass
+
+- [ ] **Testing:**
+  - [ ] New code has unit tests
+  - [ ] Edge cases covered
+  - [ ] Error cases tested
+  - [ ] Tests are maintainable
+
+### Quality Metrics and Reporting
+
+**Track and report quality metrics:**
+
+1. **Coverage metrics:**
+   ```bash
+   pytest --cov=src/hjeon139_mcp_outofcontext --cov-report=html
+   ```
+
+2. **Complexity metrics:**
+   ```bash
+   radon cc src/ --min B
+   radon mi src/
+   ```
+
+3. **Static analysis results:**
+   ```bash
+   ruff check src/
+   mypy src/
+   ```
+
+4. **File size analysis:**
+   ```bash
+   find src/ -name "*.py" -exec wc -l {} + | sort -rn
+   ```
+
+**Quality gates:**
+
+- Coverage must be ≥ 80%
+- All static analysis tools must pass
+- No functions with complexity > 10
+- No files > 400 lines
+- All public APIs documented
+
 ### Continuous Integration
 
 Ensure tests run in CI:
@@ -258,6 +643,15 @@ Ensure tests run in CI:
 2. Identify gaps
 3. Add missing tests
 4. Verify ≥ 80% coverage
+
+### Code Quality Analysis
+
+1. Run static analysis tools (ruff, mypy)
+2. Check complexity metrics (cyclomatic complexity, file size)
+3. Review code documentation coverage
+4. Identify refactoring opportunities
+5. Address all quality issues
+6. Verify all quality gates pass
 
 ### Integration Test Scenarios
 
@@ -288,6 +682,13 @@ Ensure tests run in CI:
 - `tests/test_performance.py` (new, performance tests)
 - `tests/conftest.py` (shared fixtures)
 
+### Code Quality Files to Create/Update
+
+- `.pre-commit-config.yaml` (pre-commit hooks for quality checks)
+- `docs/code_quality_standards.md` (detailed quality standards document)
+- Update `pyproject.toml` with additional ruff rules for complexity
+- Add complexity checking to CI pipeline
+
 ### Test Execution
 
 Run comprehensive test suite:
@@ -306,8 +707,89 @@ hatch run test -m integration
 hatch run test -m performance
 
 # Coverage report
-hatch run test --cov=src/out_of_context --cov-report=html
+hatch run test --cov=src/hjeon139_mcp_outofcontext --cov-report=html
 ```
+
+### Quality Checks
+
+Run comprehensive quality checks:
+
+```bash
+# Linting (must pass with zero errors)
+hatch run lint-fix
+
+# Formatting (must pass)
+hatch run fmt-fix
+
+# Type checking (must pass)
+hatch run typecheck
+
+# Complexity checking
+ruff check --select C901 src/hjeon139_mcp_outofcontext
+
+# Full quality pipeline
+hatch run release  # Runs lint, format, typecheck, tests, build
+```
+
+### Pre-Commit Quality Gates
+
+Set up pre-commit hooks to enforce quality:
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-all]
+  - repo: local
+    hooks:
+      - id: complexity-check
+        name: Complexity Check
+        entry: ruff check --select C901
+        language: system
+        pass_filenames: false
+```
+
+## Implementation Checklist
+
+### Testing Tasks
+
+- [ ] Achieve ≥ 80% test coverage
+- [ ] Create integration test suite
+- [ ] Create performance test suite
+- [ ] Test all error cases
+- [ ] Document test strategy
+- [ ] Set up CI test pipeline
+
+### Code Quality Tasks
+
+- [ ] Review all code for documentation completeness
+- [ ] Ensure all functions have type hints
+- [ ] Verify naming conventions across codebase
+- [ ] Check and fix complexity violations
+- [ ] Refactor files exceeding 400 lines
+- [ ] Set up complexity checking in CI
+- [ ] Create code review checklist document
+- [ ] Set up pre-commit hooks for quality gates
+- [ ] Document code quality standards
+- [ ] Run full quality analysis and fix issues
+
+### Quality Metrics to Track
+
+- [ ] Test coverage percentage (target: ≥ 80%)
+- [ ] Static analysis pass rate (target: 100%)
+- [ ] Average cyclomatic complexity (target: ≤ 10)
+- [ ] Files exceeding size limit (target: 0)
+- [ ] Documentation coverage (target: 100% public APIs)
+- [ ] Type hint coverage (target: 100%)
 
 ## References
 
@@ -317,4 +799,9 @@ hatch run test --cov=src/out_of_context --cov-report=html
 - [Storage Scalability Enhancements](06a_storage_scalability_enhancements.md) - Scalability features to test
 - [pytest Documentation](https://docs.pytest.org/) - Testing framework
 - [pytest-cov Documentation](https://pytest-cov.readthedocs.io/) - Coverage plugin
+- [Ruff Documentation](https://docs.astral.sh/ruff/) - Linting and formatting
+- [MyPy Documentation](https://mypy.readthedocs.io/) - Type checking
+- [Radon Documentation](https://radon.readthedocs.io/) - Complexity analysis
+- [PEP 8 Style Guide](https://peps.python.org/pep-0008/) - Python style conventions
+- [PEP 257 Docstring Conventions](https://peps.python.org/pep-0257/) - Docstring standards
 

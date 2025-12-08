@@ -99,6 +99,35 @@ def test_with_patch_decorator(mock_service: MagicMock) -> None:
 
 **When in doubt, prefer clean APIs over backwards compatibility.** Update tests and documentation to match the new design rather than maintaining legacy support.
 
+## Jupyter Notebooks
+
+**⚠️ CRITICAL**: When working with Jupyter notebooks via MCP tools:
+
+- **Jupyter notebooks MUST be created (can be empty) before editing using MCP tools**
+- **NEVER use MCP notebook editing tools on a non-existent notebook file**
+- **DO NOT use `mcp_notebook_notebook_create`** - this tool does not work reliably
+- Always create the notebook file first using one of these methods:
+  1. **Command line**: `touch notebooks/my_notebook.ipynb` (creates empty file)
+  2. **Manual creation**: Create a minimal valid JSON notebook file:
+     ```bash
+     echo '{"cells":[],"metadata":{},"nbformat":4,"nbformat_minor":5}' > notebooks/my_notebook.ipynb
+     ```
+
+**Required workflow:**
+1. **First**: Create the notebook file (empty is fine) using command line or manual creation
+2. **Then**: Use MCP notebook tools (`mcp_notebook_notebook_add_cell`, `mcp_notebook_notebook_edit_cell`, etc.) to add/edit cells
+
+**Example:**
+```bash
+# Step 1: Create empty notebook file
+touch notebooks/my_notebook.ipynb
+
+# Or create with minimal structure:
+echo '{"cells":[],"metadata":{},"nbformat":4,"nbformat_minor":5}' > notebooks/my_notebook.ipynb
+
+# Step 2: Then use MCP tools to populate it
+```
+
 ## File Organization
 
 - Source code: `src/out_of_context/`
