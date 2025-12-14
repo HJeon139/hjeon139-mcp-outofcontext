@@ -60,6 +60,7 @@ class TestMCPServer:
         # Components should be available immediately
         assert server.app_state.storage is not None
 
+    @pytest.mark.asyncio
     async def test_server_lifespan(self) -> None:
         """Test server lifespan context manager."""
         server = MCPServer()
@@ -71,6 +72,7 @@ class TestMCPServer:
 
         assert server._running is False
 
+    @pytest.mark.asyncio
     async def test_create_server(self) -> None:
         """Test create_server factory function."""
         server = await create_server()
@@ -78,6 +80,7 @@ class TestMCPServer:
         # Components should be initialized
         assert server.app_state.storage is not None
 
+    @pytest.mark.asyncio
     async def test_create_server_with_config(self) -> None:
         """Test create_server with config."""
         config = {"test": "value"}
@@ -91,6 +94,7 @@ class TestMCPServer:
 class TestMCPServerIntegration:
     """Integration tests for MCP server."""
 
+    @pytest.mark.asyncio
     async def test_server_with_tool_registry(self) -> None:
         """Test server with tool registry integration."""
         server = MCPServer()
@@ -112,6 +116,7 @@ class TestMCPServerIntegration:
             assert "search_context" in tool_names
             assert "delete_context" in tool_names
 
+    @pytest.mark.asyncio
     async def test_server_mcp_handlers_registered(self) -> None:
         """Test that MCP handlers are registered."""
         server = MCPServer()
@@ -121,6 +126,7 @@ class TestMCPServerIntegration:
         tools = server.tool_registry.list_tools()
         assert len(tools) == 5  # 5 CRUD tools
 
+    @pytest.mark.asyncio
     async def test_server_error_handling(self) -> None:
         """Test server error handling."""
         server = MCPServer()
@@ -132,6 +138,7 @@ class TestMCPServerIntegration:
         assert "Test error" in error_msg
         assert "ValueError" in error_msg
 
+    @pytest.mark.asyncio
     async def test_mcp_list_tools_handler(self) -> None:
         """Test MCP list_tools handler returns all registered tools."""
         server = MCPServer()
@@ -157,6 +164,7 @@ class TestMCPServerIntegration:
         }
         assert expected_tools == tool_names
 
+    @pytest.mark.asyncio
     async def test_mcp_call_tool_handler(self) -> None:
         """Test MCP call_tool handler dispatches tool calls correctly."""
         server = MCPServer()
@@ -174,6 +182,7 @@ class TestMCPServerIntegration:
         assert result["status"] == "ok"
         assert result["message"] == "test successful"
 
+    @pytest.mark.asyncio
     async def test_mcp_call_tool_handler_invalid_tool(self) -> None:
         """Test MCP call_tool handler handles invalid tool names."""
         server = MCPServer()
@@ -183,6 +192,7 @@ class TestMCPServerIntegration:
         with pytest.raises(ValueError, match="Tool 'nonexistent_tool' is not registered"):
             await server.tool_registry.dispatch("nonexistent_tool", {}, server.app_state)
 
+    @pytest.mark.asyncio
     async def test_mcp_server_initialization_options(self) -> None:
         """Test MCP server creates valid initialization options."""
         server = MCPServer()
@@ -193,6 +203,7 @@ class TestMCPServerIntegration:
         # Initialization options should be valid
         assert init_options is not None or hasattr(init_options, "capabilities")
 
+    @pytest.mark.asyncio
     async def test_mcp_batch_operations_json_strings(self) -> None:
         """Test batch operations with JSON string parameters (simulating MCP client behavior)."""
         import json
@@ -251,6 +262,7 @@ class TestMCPServerIntegration:
                 assert result["results"][1]["success"] is True
                 assert result["results"][2]["success"] is False  # nonexistent
 
+    @pytest.mark.asyncio
     async def test_mcp_batch_operations_python_repr_strings(self) -> None:
         """Test batch operations with Python repr() string parameters."""
         import tempfile
@@ -290,6 +302,7 @@ class TestMCPServerIntegration:
                 assert result["contexts"][0]["success"] is True
                 assert result["contexts"][1]["success"] is True
 
+    @pytest.mark.asyncio
     async def test_mcp_batch_operations_regular_lists(self) -> None:
         """Test batch operations with regular list parameters (direct objects)."""
         import tempfile
@@ -329,6 +342,7 @@ class TestMCPServerIntegration:
                 assert result["operation"] == "bulk"
                 assert len(result["contexts"]) == 2
 
+    @pytest.mark.asyncio
     async def test_mcp_schema_generation_for_batch_operations(self) -> None:
         """Test that schemas are properly generated and simplified for batch operations."""
         server = MCPServer()

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hjeon139-mcp-outofcontext"
-version = "0.14.2"
+version = "0.15.0"
 description = "Out of context project"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -44,7 +44,7 @@ dependencies = [
 features = ["dev"]
 
 [tool.hatch.envs.default.scripts]
-test = "pytest"
+test = "pytest -p pytest_asyncio"
 lint-fix = "ruff check --fix ."
 fmt-fix = "ruff format ."
 typecheck = "mypy src"
@@ -60,6 +60,15 @@ release = [
 [tool.hatch.envs.test]
 type = "virtual"
 features = ["dev"]
+dependencies = [
+  "pytest",
+  "pytest-asyncio",
+  "pytest-cov",
+]
+
+[tool.hatch.envs.test.scripts]
+test = "pytest -p pytest_asyncio"
+
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/hjeon139_mcp_outofcontext"]
@@ -121,12 +130,16 @@ minversion = "8.0"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-ra"
-asyncio_mode = "auto"
 markers = [
   "unit: fast unit tests for core logic",
   "integration: slower or integration tests",
   "experiment: research experiments (if applicable)",
   "performance: performance-sensitive test scenarios",
   "scalability: scale or load-focused test scenarios",
+  "asyncio: marks tests as async (deselect with '-m \"not asyncio\"')",
 ]
+
+[tool.pytest_asyncio]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 

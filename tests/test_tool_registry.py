@@ -49,6 +49,7 @@ class TestToolRegistry:
                 description="Another tool",
             )
 
+    @pytest.mark.asyncio
     async def test_dispatch_tool(self) -> None:
         """Test tool dispatch with dependency injection."""
         registry = ToolRegistry()
@@ -66,6 +67,7 @@ class TestToolRegistry:
         result = await registry.dispatch("echo", {"message": "hello"}, app_state)
         assert result == {"echo": "hello"}
 
+    @pytest.mark.asyncio
     async def test_dispatch_nonexistent_tool(self) -> None:
         """Test that dispatching nonexistent tool raises error."""
         registry = ToolRegistry()
@@ -102,6 +104,7 @@ class TestToolRegistry:
 class TestToolRegistryDependencyInjection:
     """Test tool registry dependency injection pattern."""
 
+    @pytest.mark.asyncio
     async def test_handler_receives_app_state(self) -> None:
         """Test that handlers receive app_state via dependency injection."""
         registry = ToolRegistry()
@@ -119,6 +122,7 @@ class TestToolRegistryDependencyInjection:
         result = await registry.dispatch("get_config", {}, app_state)
         assert result["config"] == {"test": "value"}
 
+    @pytest.mark.asyncio
     async def test_multiple_handlers_isolated_state(self) -> None:
         """Test that handlers don't share state incorrectly."""
         registry = ToolRegistry()
@@ -219,6 +223,7 @@ class TestToolRegistryParameterProcessing:
         assert processed["name"] == "regular-string"
         assert processed["text"] == "This is not JSON"
 
+    @pytest.mark.asyncio
     async def test_dispatch_with_json_string_contexts(self) -> None:
         """Test dispatch with JSON string contexts parameter."""
         from hjeon139_mcp_outofcontext.tools.crud.models import PutContextParams
