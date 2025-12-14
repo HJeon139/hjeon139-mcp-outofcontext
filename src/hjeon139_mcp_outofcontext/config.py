@@ -13,27 +13,13 @@ class Config:
     """Configuration for MCP server."""
 
     storage_path: str = ".out_of_context"
-    token_limit: int = 1000000  # Millions of tokens
-    model: str = "gpt-4"
     log_level: str = "INFO"
-    max_active_segments: int = 10000  # LRU cache size
-    enable_indexing: bool = True  # Enable inverted index
-    enable_file_sharding: bool = True  # Enable file sharding
-    recent_messages_count: int = 10
-    recent_decision_hours: int = 1
 
     def to_dict(self) -> dict[str, Any]:
         """Convert config to dictionary."""
         return {
             "storage_path": self.storage_path,
-            "token_limit": self.token_limit,
-            "model": self.model,
             "log_level": self.log_level,
-            "max_active_segments": self.max_active_segments,
-            "enable_indexing": self.enable_indexing,
-            "enable_file_sharding": self.enable_file_sharding,
-            "recent_messages_count": self.recent_messages_count,
-            "recent_decision_hours": self.recent_decision_hours,
         }
 
 
@@ -71,17 +57,7 @@ def load_config() -> Config:
     # Override with environment variables (highest priority)
     env_mappings: EnvMapping = {
         "OUT_OF_CONTEXT_STORAGE_PATH": "storage_path",
-        "OUT_OF_CONTEXT_TOKEN_LIMIT": ("token_limit", int),
-        "OUT_OF_CONTEXT_MODEL": "model",
         "OUT_OF_CONTEXT_LOG_LEVEL": "log_level",
-        "OUT_OF_CONTEXT_MAX_ACTIVE_SEGMENTS": ("max_active_segments", int),
-        "OUT_OF_CONTEXT_ENABLE_INDEXING": ("enable_indexing", lambda x: x.lower() == "true"),
-        "OUT_OF_CONTEXT_ENABLE_FILE_SHARDING": (
-            "enable_file_sharding",
-            lambda x: x.lower() == "true",
-        ),
-        "OUT_OF_CONTEXT_RECENT_MESSAGES_COUNT": ("recent_messages_count", int),
-        "OUT_OF_CONTEXT_RECENT_DECISION_HOURS": ("recent_decision_hours", int),
     }
 
     for env_var, mapping in env_mappings.items():

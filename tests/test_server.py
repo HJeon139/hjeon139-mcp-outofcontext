@@ -32,10 +32,9 @@ class TestMCPServer:
     def test_server_with_config_object(self) -> None:
         """Test server initialization with Config object."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            config = Config(storage_path=tmpdir, model="gpt-3.5-turbo")
+            config = Config(storage_path=tmpdir)
             server = MCPServer(config=config)
             assert server.config["storage_path"] == tmpdir
-            assert server.config["model"] == "gpt-3.5-turbo"
 
     def test_server_no_global_state(self) -> None:
         """Test that server instances don't share state."""
@@ -60,9 +59,6 @@ class TestMCPServer:
         server = MCPServer()
         # Components should be available immediately
         assert server.app_state.storage is not None
-        assert server.app_state.analysis_engine is not None
-        assert server.app_state.gc_engine is not None
-        assert server.app_state.context_manager is not None
 
     async def test_server_lifespan(self) -> None:
         """Test server lifespan context manager."""
@@ -106,19 +102,15 @@ class TestMCPServerIntegration:
 
         async with server.lifespan():
             tools = server.tool_registry.list_tools()
-            # 2 monitoring + 4 pruning + 4 stashing + 3 task + 1 test = 14
-            assert len(tools) == 14
+            # 5 CRUD tools + 1 test = 6
+            assert len(tools) == 6
             tool_names = {tool.name for tool in tools}
             assert "test_tool" in tool_names
-            assert "context_analyze_usage" in tool_names
-            assert "context_get_working_set" in tool_names
-            assert "context_gc_analyze" in tool_names
-            assert "context_set_current_task" in tool_names
-            assert "context_get_task_context" in tool_names
-            assert "context_create_task_snapshot" in tool_names
-            assert "context_gc_prune" in tool_names
-            assert "context_gc_pin" in tool_names
-            assert "context_gc_unpin" in tool_names
+            assert "put_context" in tool_names
+            assert "list_context" in tool_names
+            assert "get_context" in tool_names
+            assert "search_context" in tool_names
+            assert "delete_context" in tool_names
 
     async def test_server_mcp_handlers_registered(self) -> None:
         """Test that MCP handlers are registered."""
@@ -127,7 +119,7 @@ class TestMCPServerIntegration:
         assert server.mcp_server is not None
         # Tool registry should have tools
         tools = server.tool_registry.list_tools()
-        assert len(tools) >= 12  # At least all registered tools
+        assert len(tools) == 5  # 5 CRUD tools
 
     async def test_server_error_handling(self) -> None:
         """Test server error handling."""
@@ -152,25 +144,18 @@ class TestMCPServerIntegration:
         # Verify MCP server has tools registered
         # This tests that list_tools handler would return correct tools
         registered_tools = server.tool_registry.list_tools()
-        assert len(registered_tools) >= 12
+        assert len(registered_tools) == 5
 
         # Verify all expected tools are present
         tool_names = {tool.name for tool in registered_tools}
         expected_tools = {
-            "context_analyze_usage",
-            "context_get_working_set",
-            "context_gc_analyze",
-            "context_gc_prune",
-            "context_gc_pin",
-            "context_gc_unpin",
-            "context_stash",
-            "context_retrieve_stashed",
-            "context_search_stashed",
-            "context_set_current_task",
-            "context_get_task_context",
-            "context_create_task_snapshot",
+            "put_context",
+            "list_context",
+            "get_context",
+            "search_context",
+            "delete_context",
         }
-        assert expected_tools.issubset(tool_names)
+        assert expected_tools == tool_names
 
     async def test_mcp_call_tool_handler(self) -> None:
         """Test MCP call_tool handler dispatches tool calls correctly."""

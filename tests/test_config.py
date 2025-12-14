@@ -17,19 +17,14 @@ class TestConfig:
         """Test config with default values."""
         config = Config()
         assert config.storage_path == ".out_of_context"
-        assert config.token_limit == 1000000
-        assert config.model == "gpt-4"
         assert config.log_level == "INFO"
-        assert config.max_active_segments == 10000
-        assert config.enable_indexing is True
-        assert config.enable_file_sharding is True
 
     def test_config_to_dict(self) -> None:
         """Test config to_dict conversion."""
-        config = Config(storage_path="/test/path", model="gpt-3.5-turbo")
+        config = Config(storage_path="/test/path", log_level="DEBUG")
         config_dict = config.to_dict()
         assert config_dict["storage_path"] == "/test/path"
-        assert config_dict["model"] == "gpt-3.5-turbo"
+        assert config_dict["log_level"] == "DEBUG"
         assert isinstance(config_dict, dict)
 
 
@@ -42,8 +37,6 @@ class TestLoadConfig:
         # Clear environment variables
         env_vars = [
             "OUT_OF_CONTEXT_STORAGE_PATH",
-            "OUT_OF_CONTEXT_TOKEN_LIMIT",
-            "OUT_OF_CONTEXT_MODEL",
             "OUT_OF_CONTEXT_LOG_LEVEL",
         ]
         original_values = {}
@@ -56,7 +49,6 @@ class TestLoadConfig:
             config = load_config()
             # Default storage path is .out_of_context in project directory
             assert config.storage_path == ".out_of_context"
-            assert config.model == "gpt-4"
             assert config.log_level == "INFO"
         finally:
             # Restore environment variables
@@ -68,17 +60,17 @@ class TestLoadConfig:
         """Test loading config from environment variables."""
         # Save original values
         original_storage = os.environ.get("OUT_OF_CONTEXT_STORAGE_PATH")
-        original_model = os.environ.get("OUT_OF_CONTEXT_MODEL")
+        original_log_level = os.environ.get("OUT_OF_CONTEXT_LOG_LEVEL")
 
         try:
             # Set environment variables
             os.environ["OUT_OF_CONTEXT_STORAGE_PATH"] = "/test/storage"
-            os.environ["OUT_OF_CONTEXT_MODEL"] = "gpt-3.5-turbo"
+            os.environ["OUT_OF_CONTEXT_LOG_LEVEL"] = "DEBUG"
 
             config = load_config()
             # Storage path should be expanded
             assert "/test/storage" in config.storage_path
-            assert config.model == "gpt-3.5-turbo"
+            assert config.log_level == "DEBUG"
         finally:
             # Restore original values
             if original_storage:
@@ -86,10 +78,10 @@ class TestLoadConfig:
             elif "OUT_OF_CONTEXT_STORAGE_PATH" in os.environ:
                 del os.environ["OUT_OF_CONTEXT_STORAGE_PATH"]
 
-            if original_model:
-                os.environ["OUT_OF_CONTEXT_MODEL"] = original_model
-            elif "OUT_OF_CONTEXT_MODEL" in os.environ:
-                del os.environ["OUT_OF_CONTEXT_MODEL"]
+            if original_log_level:
+                os.environ["OUT_OF_CONTEXT_LOG_LEVEL"] = original_log_level
+            elif "OUT_OF_CONTEXT_LOG_LEVEL" in os.environ:
+                del os.environ["OUT_OF_CONTEXT_LOG_LEVEL"]
 
     def test_load_config_from_file(self) -> None:
         """Test loading config from config file."""
@@ -101,7 +93,6 @@ class TestLoadConfig:
 
             config_data = {
                 "storage_path": str(config_dir),
-                "model": "gpt-3.5-turbo",
                 "log_level": "DEBUG",
             }
 
@@ -121,7 +112,6 @@ class TestLoadConfig:
                     del os.environ["OUT_OF_CONTEXT_STORAGE_PATH"]
 
                 config = load_config()
-                assert config.model == "gpt-3.5-turbo"
                 assert config.log_level == "DEBUG"
             finally:
                 # Restore original values
@@ -138,7 +128,7 @@ class TestLoadConfig:
             config_dir.mkdir()
             config_file = config_dir / "config.json"
 
-            config_data = {"model": "gpt-3.5-turbo"}
+            config_data = {"log_level": "WARNING"}
 
             import json
 
@@ -147,21 +137,21 @@ class TestLoadConfig:
 
             # Save original values
             original_home = os.environ.get("HOME")
-            original_model = os.environ.get("OUT_OF_CONTEXT_MODEL")
+            original_log_level = os.environ.get("OUT_OF_CONTEXT_LOG_LEVEL")
 
             try:
                 # Set environment variable
                 os.environ["HOME"] = tmpdir
-                os.environ["OUT_OF_CONTEXT_MODEL"] = "gpt-4"
+                os.environ["OUT_OF_CONTEXT_LOG_LEVEL"] = "DEBUG"
 
                 config = load_config()
                 # Environment variable should override config file
-                assert config.model == "gpt-4"
+                assert config.log_level == "DEBUG"
             finally:
                 # Restore original values
                 if original_home:
                     os.environ["HOME"] = original_home
-                if original_model:
-                    os.environ["OUT_OF_CONTEXT_MODEL"] = original_model
-                elif "OUT_OF_CONTEXT_MODEL" in os.environ:
-                    del os.environ["OUT_OF_CONTEXT_MODEL"]
+                if original_log_level:
+                    os.environ["OUT_OF_CONTEXT_LOG_LEVEL"] = original_log_level
+                elif "OUT_OF_CONTEXT_LOG_LEVEL" in os.environ:
+                    del os.environ["OUT_OF_CONTEXT_LOG_LEVEL"]

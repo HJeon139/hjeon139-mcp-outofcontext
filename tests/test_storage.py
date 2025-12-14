@@ -1,14 +1,10 @@
-"""Tests for storage layer."""
+"""Tests for MDC storage layer."""
 
-import json
-from datetime import datetime
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 
-from hjeon139_mcp_outofcontext.models import ContextSegment
-from hjeon139_mcp_outofcontext.storage import IStorageLayer, StorageLayer
+from hjeon139_mcp_outofcontext.storage import MDCStorage
 
 
 @pytest.fixture
@@ -20,577 +16,215 @@ def temp_storage_path(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def storage_layer(temp_storage_path: Path) -> StorageLayer:
-    """Create a storage layer instance for testing."""
-    return StorageLayer(storage_path=str(temp_storage_path))
+def mdc_storage(temp_storage_path: Path) -> MDCStorage:
+    """Create an MDCStorage instance for testing."""
+    return MDCStorage(storage_path=str(temp_storage_path))
 
 
-@pytest.fixture
-def sample_segment() -> ContextSegment:
-    """Create a sample context segment for testing."""
-    return ContextSegment(
-        segment_id="seg-1",
-        text="Sample text content",
-        type="message",
-        project_id="proj-1",
-        task_id="task-1",
-        created_at=datetime.now(),
-        last_touched_at=datetime.now(),
-        tokens=100,
-        file_path="test.py",
-        tags=["test", "sample"],
-    )
+@pytest.mark.unit
+class TestMDCStorage:
+    """Test MDCStorage class."""
 
+    def test_save_and_load_context(self, mdc_storage: MDCStorage) -> None:
+        """Test saving and loading a context."""
+        name = "test-context"
+        text = "# Test Context\n\nThis is a test."
+        metadata = {"type": "note", "tags": ["test"]}
 
-@pytest.fixture
-def sample_segment_2() -> ContextSegment:
-    """Create another sample context segment for testing."""
-    return ContextSegment(
-        segment_id="seg-2",
-        text="Another text content",
-        type="code",
-        project_id="proj-1",
-        task_id="task-1",
-        created_at=datetime.now(),
-        last_touched_at=datetime.now(),
-        tokens=200,
-        file_path="test2.py",
-        tags=["code"],
-    )
+        mdc_storage.save_context(name, text, metadata)
 
+        result = mdc_storage.load_context(name)
+        assert result is not None
+        assert result["text"] == text
+        assert result["metadata"]["name"] == name
+        assert result["metadata"]["type"] == "note"
+        assert result["metadata"]["tags"] == ["test"]
+        assert "created_at" in result["metadata"]
 
-class TestStorageInterface:
-    """Test that StorageLayer implements IStorageLayer interface."""
+    def test_load_nonexistent_context(self, mdc_storage: MDCStorage) -> None:
+        """Test loading a non-existent context returns None."""
+        result = mdc_storage.load_context("nonexistent")
+        assert result is None
 
-    @pytest.mark.unit
-    def test_implements_interface(self, storage_layer: StorageLayer) -> None:
-        """Test that StorageLayer implements IStorageLayer."""
-        assert isinstance(storage_layer, IStorageLayer)
+    def test_save_context_overwrites(self, mdc_storage: MDCStorage) -> None:
+        """Test that saving to existing name overwrites."""
+        name = "test-context"
+        text1 = "First version"
+        text2 = "Second version"
 
+        mdc_storage.save_context(name, text1)
+        mdc_storage.save_context(name, text2)
 
-class TestInMemoryStorage:
-    """Test in-memory storage operations."""
+        result = mdc_storage.load_context(name)
+        assert result is not None
+        assert result["text"] == text2
 
-    @pytest.mark.unit
-    def test_store_segment(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test storing a segment in memory."""
-        storage_layer.store_segment(sample_segment, "proj-1")
-        assert "proj-1" in storage_layer.active_segment_ids
-        assert "seg-1" in storage_layer.active_segment_ids["proj-1"]
-        loaded = storage_layer.active_segments.get("seg-1")
-        assert loaded is not None
-        assert loaded.segment_id == sample_segment.segment_id
+    def test_save_contexts_bulk(self, mdc_storage: MDCStorage) -> None:
+        """Test bulk save operation."""
+        contexts = [
+            {"name": "context-1", "text": "Content 1", "metadata": {"type": "note"}},
+            {"name": "context-2", "text": "Content 2", "metadata": {"type": "code"}},
+        ]
 
-    @pytest.mark.unit
-    def test_store_multiple_segments(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-        sample_segment_2: ContextSegment,
-    ) -> None:
-        """Test storing multiple segments."""
-        storage_layer.store_segment(sample_segment, "proj-1")
-        storage_layer.store_segment(sample_segment_2, "proj-1")
+        results = mdc_storage.save_contexts(contexts)
+        assert len(results) == 2
+        assert all(r["success"] for r in results)
 
-        assert len(storage_layer.active_segment_ids["proj-1"]) == 2
-        assert "seg-1" in storage_layer.active_segment_ids["proj-1"]
-        assert "seg-2" in storage_layer.active_segment_ids["proj-1"]
+        # Verify both contexts were saved
+        assert mdc_storage.load_context("context-1") is not None
+        assert mdc_storage.load_context("context-2") is not None
 
-    @pytest.mark.unit
-    def test_store_different_projects(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test project isolation."""
-        segment_proj2 = ContextSegment(
-            segment_id="seg-1",
-            text="Different project",
-            type="message",
-            project_id="proj-2",
-            created_at=datetime.now(),
-            last_touched_at=datetime.now(),
-            tokens=50,
-        )
+    def test_load_contexts_bulk(self, mdc_storage: MDCStorage) -> None:
+        """Test bulk load operation."""
+        # Save some contexts
+        mdc_storage.save_context("context-1", "Content 1")
+        mdc_storage.save_context("context-2", "Content 2")
 
-        storage_layer.store_segment(sample_segment, "proj-1")
-        storage_layer.store_segment(segment_proj2, "proj-2")
+        results = mdc_storage.load_contexts(["context-1", "context-2", "nonexistent"])
+        assert len(results) == 3
+        assert results[0] is not None
+        assert results[1] is not None
+        assert results[2] is None  # nonexistent
 
-        assert len(storage_layer.active_segment_ids) == 2
-        assert "proj-1" in storage_layer.active_segment_ids
-        assert "proj-2" in storage_layer.active_segment_ids
-        seg1 = storage_layer.active_segments.get("seg-1")
-        assert seg1 is not None
-        assert seg1.project_id in ("proj-1", "proj-2")
+    def test_list_contexts(self, mdc_storage: MDCStorage) -> None:
+        """Test listing all contexts."""
+        # Save multiple contexts
+        mdc_storage.save_context("context-1", "Content 1")
+        mdc_storage.save_context("context-2", "Content 2")
+        mdc_storage.save_context("context-3", "Content 3")
 
-    @pytest.mark.unit
-    def test_load_segments_active_only(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test loading active segments."""
-        storage_layer.store_segment(sample_segment, "proj-1")
-        segments = storage_layer.load_segments("proj-1")
-        assert len(segments) == 1
-        assert segments[0].segment_id == "seg-1"
+        contexts = mdc_storage.list_contexts()
+        assert len(contexts) == 3
 
+        names = {ctx["name"] for ctx in contexts}
+        assert "context-1" in names
+        assert "context-2" in names
+        assert "context-3" in names
 
-class TestJSONPersistence:
-    """Test JSON file persistence."""
+        # Should have required fields
+        for ctx in contexts:
+            assert "name" in ctx
+            assert "created_at" in ctx
+            assert "preview" in ctx
 
-    @pytest.mark.unit
-    def test_stash_segment_persists(
-        self,
-        storage_layer: StorageLayer,
-        temp_storage_path: Path,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test that stashing a segment persists to JSON."""
-        storage_layer.stash_segment(sample_segment, "proj-1")
+    def test_list_contexts_sorted_newest_first(self, mdc_storage: MDCStorage) -> None:
+        """Test that contexts are sorted newest first."""
+        mdc_storage.save_context("old", "Old content")
+        mdc_storage.save_context("new", "New content")
 
-        # Verify sharded file exists
-        stashed_file = temp_storage_path / "stashed" / "proj-1.json"
-        assert stashed_file.exists()
+        contexts = mdc_storage.list_contexts()
+        assert len(contexts) == 2
+        # Newest should be first
+        assert contexts[0]["name"] == "new"
 
-        # Load and verify
-        with open(stashed_file) as f:
-            data = json.load(f)
+    def test_delete_context(self, mdc_storage: MDCStorage) -> None:
+        """Test deleting a context."""
+        name = "test-context"
+        mdc_storage.save_context(name, "Content")
 
-        assert "segments" in data
-        assert len(data["segments"]) == 1
-        assert data["segments"][0]["segment_id"] == "seg-1"
+        mdc_storage.delete_context(name)
 
-    @pytest.mark.unit
-    def test_stash_segment_updates_tier(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test that stashing updates segment tier."""
-        assert sample_segment.tier == "working"
-        storage_layer.stash_segment(sample_segment, "proj-1")
-        assert sample_segment.tier == "stashed"
+        assert mdc_storage.load_context(name) is None
 
-    @pytest.mark.unit
-    def test_load_segments_includes_stashed(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test that load_segments includes stashed segments."""
-        storage_layer.stash_segment(sample_segment, "proj-1")
-        segments = storage_layer.load_segments("proj-1")
-        assert len(segments) == 1
-        assert segments[0].segment_id == "seg-1"
-        assert segments[0].tier == "stashed"
+    def test_delete_nonexistent_context_raises(self, mdc_storage: MDCStorage) -> None:
+        """Test that deleting non-existent context raises ValueError."""
+        with pytest.raises(ValueError, match="not found"):
+            mdc_storage.delete_context("nonexistent")
 
-    @pytest.mark.unit
-    def test_stash_removes_from_active(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test that stashing removes segment from active storage."""
-        storage_layer.store_segment(sample_segment, "proj-1")
-        assert "seg-1" in storage_layer.active_segment_ids.get("proj-1", set())
+    def test_delete_contexts_bulk(self, mdc_storage: MDCStorage) -> None:
+        """Test bulk delete operation."""
+        # Save some contexts
+        mdc_storage.save_context("context-1", "Content 1")
+        mdc_storage.save_context("context-2", "Content 2")
+        mdc_storage.save_context("context-3", "Content 3")
 
-        storage_layer.stash_segment(sample_segment, "proj-1")
-        assert "seg-1" not in storage_layer.active_segment_ids.get("proj-1", set())
+        results = mdc_storage.delete_contexts(["context-1", "context-2", "nonexistent"])
+        assert len(results) == 3
+        assert results[0]["success"] is True
+        assert results[1]["success"] is True
+        assert results[2]["success"] is False  # nonexistent
 
-    @pytest.mark.unit
-    def test_persistence_survives_restart(
-        self,
-        temp_storage_path: Path,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test that storage survives server restart."""
-        # Create and stash
-        storage1 = StorageLayer(storage_path=str(temp_storage_path))
-        storage1.stash_segment(sample_segment, "proj-1")
+        # Verify deleted
+        assert mdc_storage.load_context("context-1") is None
+        assert mdc_storage.load_context("context-2") is None
+        assert mdc_storage.load_context("context-3") is not None  # Not deleted
 
-        # Create new instance (simulating restart)
-        storage2 = StorageLayer(storage_path=str(temp_storage_path))
-        segments = storage2.load_segments("proj-1")
+    def test_search_contexts(self, mdc_storage: MDCStorage) -> None:
+        """Test searching contexts."""
+        mdc_storage.save_context("python-code", "Python code example", {"tags": ["python"]})
+        mdc_storage.save_context("javascript-code", "JavaScript code example", {"tags": ["js"]})
+        mdc_storage.save_context("note", "Just a note", {})
 
-        assert len(segments) == 1
-        assert segments[0].segment_id == "seg-1"
-        assert segments[0].text == "Sample text content"
-
-
-class TestAtomicOperations:
-    """Test atomic write operations."""
-
-    @pytest.mark.unit
-    def test_atomic_write_creates_temp_file(
-        self,
-        storage_layer: StorageLayer,
-        temp_storage_path: Path,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test that atomic write uses temp file pattern."""
-        storage_layer.stash_segment(sample_segment, "proj-1")
-
-        # Temp file should not exist after successful write
-        stashed_file = temp_storage_path / "stashed" / "proj-1.json"
-        temp_path = stashed_file.with_suffix(".json.tmp")
-        assert not temp_path.exists()
-        assert stashed_file.exists()
-
-    @pytest.mark.unit
-    def test_handles_incomplete_write(
-        self,
-        temp_storage_path: Path,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test handling of incomplete write (temp file exists)."""
-        # Create a temp file (simulating crash during write)
-        stashed_dir = temp_storage_path / "stashed"
-        stashed_dir.mkdir(exist_ok=True)
-        temp_path = stashed_dir / "proj-1.json.tmp"
-        temp_path.write_text('{"incomplete": true}')
-
-        # Create storage layer (should clean up temp file)
-        storage = StorageLayer(storage_path=str(temp_storage_path))
-        storage.stash_segment(sample_segment, "proj-1")
-
-        # Temp file should be gone
-        assert not temp_path.exists()
-        # Main file should exist with correct data
-        stashed_file = stashed_dir / "proj-1.json"
-        assert stashed_file.exists()
-
-
-class TestErrorHandling:
-    """Test error handling scenarios."""
-
-    @pytest.mark.unit
-    def test_handles_missing_json_file(
-        self,
-        temp_storage_path: Path,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test handling of missing JSON file."""
-        # File doesn't exist yet
-        stashed_file = temp_storage_path / "stashed" / "proj-1.json"
-        assert not stashed_file.exists()
-
-        storage = StorageLayer(storage_path=str(temp_storage_path))
-        storage.stash_segment(sample_segment, "proj-1")
-
-        # Should create file successfully
-        assert stashed_file.exists()
-
-    @pytest.mark.unit
-    def test_handles_corrupt_json_file(
-        self,
-        temp_storage_path: Path,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test handling of corrupt JSON file."""
-        # Create corrupt JSON file
-        stashed_dir = temp_storage_path / "stashed"
-        stashed_dir.mkdir(parents=True, exist_ok=True)
-        stashed_file = stashed_dir / "proj-1.json"
-        stashed_file.write_text("not valid json {")
-
-        storage = StorageLayer(storage_path=str(temp_storage_path))
-        storage.stash_segment(sample_segment, "proj-1")
-
-        # Should create backup and start fresh
-        backup_path = stashed_file.with_suffix(".json.corrupt")
-        assert backup_path.exists()
-        # Should have valid data now
-        assert stashed_file.exists()
-        with open(stashed_file) as f:
-            data = json.load(f)
-            assert "segments" in data
-
-    @pytest.mark.unit
-    @patch("hjeon139_mcp_outofcontext.storage.file_operations.open")
-    def test_handles_permission_error_on_read(
-        self,
-        mock_open: MagicMock,
-        temp_storage_path: Path,
-    ) -> None:
-        """Test handling of permission errors on read."""
-        # Create storage layer first (file doesn't exist yet, so init succeeds)
-        storage = StorageLayer(storage_path=str(temp_storage_path))
-
-        # Create stashed file so exists() returns True when load_segments is called
-        stashed_dir = temp_storage_path / "stashed"
-        stashed_dir.mkdir(exist_ok=True)
-        stashed_file = stashed_dir / "proj-1.json"
-        stashed_file.write_text('{"segments": []}')
-
-        # Mock open to raise PermissionError when load_segments calls
-        # _load_stashed_file
-        mock_open.side_effect = PermissionError("Permission denied")
-
-        # Should raise PermissionError
-        with pytest.raises(PermissionError, match="Permission denied"):
-            storage.load_segments("proj-1")
-
-        # Verify open was called
-        mock_open.assert_called()
-
-
-class TestProjectIsolation:
-    """Test project isolation."""
-
-    @pytest.mark.unit
-    def test_segments_isolated_by_project(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test that segments are isolated by project."""
-        segment_proj2 = ContextSegment(
-            segment_id="seg-1",
-            text="Different project",
-            type="message",
-            project_id="proj-2",
-            created_at=datetime.now(),
-            last_touched_at=datetime.now(),
-            tokens=50,
-        )
-
-        storage_layer.stash_segment(sample_segment, "proj-1")
-        storage_layer.stash_segment(segment_proj2, "proj-2")
-
-        segments_proj1 = storage_layer.load_segments("proj-1")
-        segments_proj2 = storage_layer.load_segments("proj-2")
-
-        assert len(segments_proj1) == 1
-        assert len(segments_proj2) == 1
-        assert segments_proj1[0].project_id == "proj-1"
-        assert segments_proj2[0].project_id == "proj-2"
-
-    @pytest.mark.unit
-    def test_search_stashed_project_isolation(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test that search respects project isolation."""
-        segment_proj2 = ContextSegment(
-            segment_id="seg-2",
-            text="Different project",
-            type="message",
-            project_id="proj-2",
-            created_at=datetime.now(),
-            last_touched_at=datetime.now(),
-            tokens=50,
-        )
-
-        storage_layer.stash_segment(sample_segment, "proj-1")
-        storage_layer.stash_segment(segment_proj2, "proj-2")
-
-        results = storage_layer.search_stashed("Sample", {}, "proj-1")
+        # Search in text
+        results = mdc_storage.search_contexts("Python")
         assert len(results) == 1
-        assert results[0].segment_id == "seg-1"
+        assert results[0]["name"] == "python-code"
 
-        results = storage_layer.search_stashed("Different", {}, "proj-2")
+        # Search in metadata
+        results = mdc_storage.search_contexts("python")
         assert len(results) == 1
-        assert results[0].segment_id == "seg-2"
+        assert results[0]["name"] == "python-code"
 
-
-class TestMetadataIndexing:
-    """Test metadata indexing."""
-
-    @pytest.mark.unit
-    def test_indexes_created_on_stash(
-        self,
-        storage_layer: StorageLayer,
-        temp_storage_path: Path,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test that indexes are created when stashing."""
-        storage_layer.stash_segment(sample_segment, "proj-1")
-
-        # Check in-memory metadata indexes
-        assert "proj-1" in storage_layer.metadata_indexes
-        indexes = storage_layer.metadata_indexes["proj-1"]
-        assert "by_task" in indexes
-        assert "by_file" in indexes
-        assert "by_tag" in indexes
-
-        assert "task-1" in indexes["by_task"]
-        assert "test.py" in indexes["by_file"]
-        assert "test" in indexes["by_tag"]
-        assert "sample" in indexes["by_tag"]
-
-    @pytest.mark.unit
-    def test_indexes_updated_on_delete(
-        self,
-        storage_layer: StorageLayer,
-        temp_storage_path: Path,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test that indexes are updated when deleting."""
-        storage_layer.stash_segment(sample_segment, "proj-1")
-        storage_layer.delete_segment("seg-1", "proj-1")
-
-        # Check in-memory metadata indexes
-        indexes = storage_layer.metadata_indexes.get("proj-1", {})
-        # Indexes should be cleaned up
-        assert "task-1" not in indexes.get("by_task", {})
-        assert "test.py" not in indexes.get("by_file", {})
-        assert "test" not in indexes.get("by_tag", {})
-
-
-class TestSearchFunctionality:
-    """Test search functionality."""
-
-    @pytest.mark.unit
-    def test_search_by_keyword(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-        sample_segment_2: ContextSegment,
-    ) -> None:
-        """Test searching by keyword."""
-        storage_layer.stash_segment(sample_segment, "proj-1")
-        storage_layer.stash_segment(sample_segment_2, "proj-1")
-
-        results = storage_layer.search_stashed("Sample", {}, "proj-1")
-        assert len(results) == 1
-        assert results[0].segment_id == "seg-1"
-
-        results = storage_layer.search_stashed("Another", {}, "proj-1")
-        assert len(results) == 1
-        assert results[0].segment_id == "seg-2"
-
-    @pytest.mark.unit
-    def test_search_by_task_id(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-        sample_segment_2: ContextSegment,
-    ) -> None:
-        """Test searching by task_id filter."""
-        storage_layer.stash_segment(sample_segment, "proj-1")
-        storage_layer.stash_segment(sample_segment_2, "proj-1")
-
-        results = storage_layer.search_stashed("", {"task_id": "task-1"}, "proj-1")
+        # Search that matches multiple
+        results = mdc_storage.search_contexts("code")
         assert len(results) == 2
 
-        results = storage_layer.search_stashed("", {"task_id": "task-2"}, "proj-1")
-        assert len(results) == 0
+    def test_search_contexts_empty_query(self, mdc_storage: MDCStorage) -> None:
+        """Test that empty query returns empty list."""
+        mdc_storage.save_context("test", "Content")
+        results = mdc_storage.search_contexts("")
+        assert results == []
 
-    @pytest.mark.unit
-    def test_search_by_file_path(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-        sample_segment_2: ContextSegment,
-    ) -> None:
-        """Test searching by file_path filter."""
-        storage_layer.stash_segment(sample_segment, "proj-1")
-        storage_layer.stash_segment(sample_segment_2, "proj-1")
+    def test_name_validation(self, mdc_storage: MDCStorage) -> None:
+        """Test that invalid names raise ValueError."""
+        # Empty name
+        with pytest.raises(ValueError, match="cannot be empty"):
+            mdc_storage.save_context("", "Content")
 
-        results = storage_layer.search_stashed("", {"file_path": "test.py"}, "proj-1")
-        assert len(results) == 1
-        assert results[0].segment_id == "seg-1"
+        # Invalid characters
+        with pytest.raises(ValueError, match="must contain only"):
+            mdc_storage.save_context("invalid name!", "Content")
 
-    @pytest.mark.unit
-    def test_search_by_tag(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-        sample_segment_2: ContextSegment,
-    ) -> None:
-        """Test searching by tags filter."""
-        storage_layer.stash_segment(sample_segment, "proj-1")
-        storage_layer.stash_segment(sample_segment_2, "proj-1")
+        with pytest.raises(ValueError, match="must contain only"):
+            mdc_storage.save_context("test@context", "Content")
 
-        results = storage_layer.search_stashed("", {"tags": ["test"]}, "proj-1")
-        assert len(results) == 1
-        assert results[0].segment_id == "seg-1"
+    def test_markdown_format_preserved(self, mdc_storage: MDCStorage) -> None:
+        """Test that markdown formatting is preserved."""
+        name = "markdown-test"
+        text = """# Heading
 
-        results = storage_layer.search_stashed("", {"tags": ["code"]}, "proj-1")
-        assert len(results) == 1
-        assert results[0].segment_id == "seg-2"
+**Bold text** and *italic text*
 
-    @pytest.mark.unit
-    def test_search_by_type(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-        sample_segment_2: ContextSegment,
-    ) -> None:
-        """Test searching by type filter."""
-        storage_layer.stash_segment(sample_segment, "proj-1")
-        storage_layer.stash_segment(sample_segment_2, "proj-1")
+- List item 1
+- List item 2
 
-        results = storage_layer.search_stashed("", {"type": "message"}, "proj-1")
-        assert len(results) == 1
-        assert results[0].segment_id == "seg-1"
+```python
+def hello():
+    print("world")
+```
+"""
 
-        results = storage_layer.search_stashed("", {"type": "code"}, "proj-1")
-        assert len(results) == 1
-        assert results[0].segment_id == "seg-2"
+        mdc_storage.save_context(name, text)
+        result = mdc_storage.load_context(name)
+        assert result is not None
+        assert result["text"] == text
 
-    @pytest.mark.unit
-    def test_search_combines_filters(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-        sample_segment_2: ContextSegment,
-    ) -> None:
-        """Test that multiple filters are combined."""
-        storage_layer.stash_segment(sample_segment, "proj-1")
-        storage_layer.stash_segment(sample_segment_2, "proj-1")
+    def test_yaml_frontmatter_parsing(self, mdc_storage: MDCStorage) -> None:
+        """Test that YAML frontmatter is correctly parsed."""
+        name = "metadata-test"
+        text = "Content"
+        metadata = {
+            "type": "note",
+            "tags": ["test", "example"],
+            "custom_field": "custom_value",
+        }
 
-        results = storage_layer.search_stashed(
-            "", {"task_id": "task-1", "type": "message"}, "proj-1"
-        )
-        assert len(results) == 1
-        assert results[0].segment_id == "seg-1"
+        mdc_storage.save_context(name, text, metadata)
+        result = mdc_storage.load_context(name)
 
-
-class TestDeleteOperations:
-    """Test delete operations."""
-
-    @pytest.mark.unit
-    def test_delete_from_active(
-        self,
-        storage_layer: StorageLayer,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test deleting from active storage."""
-        storage_layer.store_segment(sample_segment, "proj-1")
-        assert "seg-1" in storage_layer.active_segment_ids.get("proj-1", set())
-
-        storage_layer.delete_segment("seg-1", "proj-1")
-        assert "seg-1" not in storage_layer.active_segment_ids.get("proj-1", set())
-
-    @pytest.mark.unit
-    def test_delete_from_stashed(
-        self,
-        storage_layer: StorageLayer,
-        temp_storage_path: Path,
-        sample_segment: ContextSegment,
-    ) -> None:
-        """Test deleting from stashed storage."""
-        storage_layer.stash_segment(sample_segment, "proj-1")
-        storage_layer.delete_segment("seg-1", "proj-1")
-
-        stashed_file = temp_storage_path / "stashed" / "proj-1.json"
-        with open(stashed_file) as f:
-            data = json.load(f)
-
-        assert len(data["segments"]) == 0
-
-    @pytest.mark.unit
-    def test_delete_nonexistent_segment(
-        self,
-        storage_layer: StorageLayer,
-    ) -> None:
-        """Test deleting a segment that doesn't exist."""
-        # Should not raise an error
-        storage_layer.delete_segment("nonexistent", "proj-1")
+        assert result is not None
+        assert result["metadata"]["type"] == "note"
+        assert result["metadata"]["tags"] == ["test", "example"]
+        assert result["metadata"]["custom_field"] == "custom_value"
+        assert result["metadata"]["name"] == name
+        assert "created_at" in result["metadata"]

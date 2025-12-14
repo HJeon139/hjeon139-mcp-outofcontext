@@ -3,11 +3,7 @@
 from contextlib import asynccontextmanager
 from typing import Any
 
-from .analysis_engine import AnalysisEngine
-from .context_manager import ContextManager
-from .gc_engine import GCEngine
-from .storage import StorageLayer
-from .tokenizer import Tokenizer
+from .storage import MDCStorage
 
 
 class AppState:
@@ -31,39 +27,9 @@ class AppState:
         """
         self.config = config or {}
 
-        # Extract token_limit from config (default: 1 million)
-        self.token_limit = self.config.get("token_limit", 1000000)
-
-        # 1. Initialize Storage Layer (no dependencies)
+        # Initialize Storage Layer (MDCStorage for markdown files)
         storage_path = self.config.get("storage_path")
-        max_active_segments = self.config.get("max_active_segments", 10000)
-        self.storage = StorageLayer(
-            storage_path=storage_path,
-            max_active_segments=max_active_segments,
-        )
-
-        # 2. Initialize Tokenizer (no dependencies)
-        model = self.config.get("model", "gpt-4")
-        tokenizer = Tokenizer(model=model)
-
-        # 3. Initialize Analysis Engine (depends on tokenizer)
-        self.analysis_engine = AnalysisEngine(tokenizer=tokenizer, model=model)
-
-        # 4. Initialize GC Engine (no dependencies)
-        recent_messages_count = self.config.get("recent_messages_count", 10)
-        recent_decision_hours = self.config.get("recent_decision_hours", 1)
-        self.gc_engine = GCEngine(
-            recent_messages_count=recent_messages_count,
-            recent_decision_hours=recent_decision_hours,
-        )
-
-        # 5. Initialize Context Manager (depends on all above)
-        self.context_manager = ContextManager(
-            storage=self.storage,
-            gc_engine=self.gc_engine,
-            analysis_engine=self.analysis_engine,
-            tokenizer=tokenizer,
-        )
+        self.storage = MDCStorage(storage_path=storage_path)
 
     @asynccontextmanager
     async def lifespan(self) -> Any:

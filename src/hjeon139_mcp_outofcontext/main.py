@@ -29,7 +29,6 @@ async def main() -> None:
 
         logger.info("Starting MCP server...")
         logger.info(f"Storage path: {config.storage_path}")
-        logger.info(f"Model: {config.model}")
         logger.info(f"Log level: {config.log_level}")
 
         # Create and run server

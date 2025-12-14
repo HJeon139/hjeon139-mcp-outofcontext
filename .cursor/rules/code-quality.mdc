@@ -14,7 +14,7 @@ alwaysApply: true
 
 ## Testing
 
-- Run tests: `hatch run test`
+- Run tests: `hatch run pytest -m 'unit'` (for unit tests) or `hatch run pytest -m 'integration'` (for integration tests)
 - Use pytest markers: `@pytest.mark.unit`, `@pytest.mark.integration`
 - All tests must pass as part of pre-commit checklist
 - **All test functions must be marked** with `@pytest.mark.unit` or `@pytest.mark.integration`

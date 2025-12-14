@@ -12,12 +12,7 @@ from mcp.types import TextContent, Tool
 from hjeon139_mcp_outofcontext.app_state import AppState
 from hjeon139_mcp_outofcontext.config import Config, load_config
 from hjeon139_mcp_outofcontext.tool_registry import ToolRegistry
-from hjeon139_mcp_outofcontext.tools import (
-    register_monitoring_tools,
-    register_pruning_tools,
-    register_stashing_tools,
-    register_task_management_tools,
-)
+from hjeon139_mcp_outofcontext.tools.crud import register_crud_tools
 
 logger = logging.getLogger(__name__)
 
@@ -122,14 +117,8 @@ class MCPServer:
 
         Called during initialization to register all available tools.
         """
-        # Register monitoring tools
-        register_monitoring_tools(self.tool_registry, self.app_state)
-        # Register pruning tools
-        register_pruning_tools(self.tool_registry, self.app_state)
-        # Register stashing tools
-        register_stashing_tools(self.tool_registry, self.app_state)
-        # Register task management tools
-        register_task_management_tools(self.tool_registry, self.app_state)
+        # Register CRUD tools
+        register_crud_tools(self.tool_registry, self.app_state)
 
     def _register_mcp_handlers(self) -> None:
         """
