@@ -1,5 +1,7 @@
 """Unit tests for tool registry."""
 
+import json
+
 import pytest
 
 from hjeon139_mcp_outofcontext.app_state import AppState
@@ -133,3 +135,113 @@ class TestToolRegistryDependencyInjection:
 
         assert result1["app"] == "1"
         assert result2["app"] == "2"
+
+
+@pytest.mark.unit
+class TestToolRegistryParameterProcessing:
+    """Test tool registry parameter processing (JSON strings, Python repr, etc.)."""
+
+    def test_process_json_string_argument(self) -> None:
+        """Test processing JSON string arguments."""
+        registry = ToolRegistry()
+
+        # Test JSON string for contexts
+        arguments = {
+            "contexts": '[{"name": "test-1", "text": "Content 1", "metadata": {"type": "test"}}]'
+        }
+
+        processed = registry._process_arguments(arguments)
+        assert isinstance(processed["contexts"], list)
+        assert len(processed["contexts"]) == 1
+        assert processed["contexts"][0]["name"] == "test-1"
+        assert processed["contexts"][0]["text"] == "Content 1"
+        assert processed["contexts"][0]["metadata"] == {"type": "test"}
+
+    def test_process_python_repr_string_argument(self) -> None:
+        """Test processing Python repr() string arguments."""
+        registry = ToolRegistry()
+
+        # Test Python repr string for contexts
+        contexts_list = [
+            {"name": "test-1", "text": "Content 1", "metadata": {"type": "test"}},
+            {"name": "test-2", "text": "Content 2"},
+        ]
+        contexts_repr = repr(contexts_list)
+
+        arguments = {"contexts": contexts_repr}
+
+        processed = registry._process_arguments(arguments)
+        assert isinstance(processed["contexts"], list)
+        assert len(processed["contexts"]) == 2
+        assert processed["contexts"][0]["name"] == "test-1"
+        assert processed["contexts"][1]["name"] == "test-2"
+
+    def test_process_nested_json_strings(self) -> None:
+        """Test processing nested JSON strings."""
+        registry = ToolRegistry()
+
+        # Test nested structure with JSON strings
+        arguments = {
+            "contexts": json.dumps(
+                [{"name": "test-1", "text": "Content 1", "metadata": json.dumps({"type": "test"})}]
+            )
+        }
+
+        processed = registry._process_arguments(arguments)
+        assert isinstance(processed["contexts"], list)
+        # The nested metadata JSON string should also be parsed
+        assert isinstance(processed["contexts"][0]["metadata"], dict)
+        assert processed["contexts"][0]["metadata"]["type"] == "test"
+
+    def test_process_regular_list_argument(self) -> None:
+        """Test that regular list arguments pass through unchanged."""
+        registry = ToolRegistry()
+
+        arguments = {
+            "contexts": [
+                {"name": "test-1", "text": "Content 1"},
+                {"name": "test-2", "text": "Content 2"},
+            ]
+        }
+
+        processed = registry._process_arguments(arguments)
+        assert isinstance(processed["contexts"], list)
+        assert len(processed["contexts"]) == 2
+        assert processed["contexts"][0]["name"] == "test-1"
+
+    def test_process_non_json_string(self) -> None:
+        """Test that non-JSON strings are left as-is."""
+        registry = ToolRegistry()
+
+        arguments = {"name": "regular-string", "text": "This is not JSON"}
+
+        processed = registry._process_arguments(arguments)
+        assert processed["name"] == "regular-string"
+        assert processed["text"] == "This is not JSON"
+
+    async def test_dispatch_with_json_string_contexts(self) -> None:
+        """Test dispatch with JSON string contexts parameter."""
+        from hjeon139_mcp_outofcontext.tools.crud.models import PutContextParams
+
+        registry = ToolRegistry()
+        app_state = AppState()
+
+        async def test_handler(app_state: AppState, **kwargs: dict) -> dict:
+            return {"received": kwargs}
+
+        registry.register(
+            name="test_tool",
+            handler=test_handler,
+            description="Test tool",
+            params_model=PutContextParams,
+        )
+
+        # Dispatch with JSON string
+        arguments = {"contexts": '[{"name": "test-1", "text": "Content 1"}]'}
+
+        result = await registry.dispatch("test_tool", arguments, app_state)
+        # Should succeed and convert JSON string to list
+        assert "error" not in result
+        assert "received" in result
+        assert isinstance(result["received"]["contexts"], list)
+        assert len(result["received"]["contexts"]) == 1

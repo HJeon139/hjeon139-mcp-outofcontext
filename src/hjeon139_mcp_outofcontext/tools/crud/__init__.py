@@ -5,6 +5,13 @@ from ...tool_registry import ToolRegistry
 from .delete_context import handle_delete_context
 from .get_context import handle_get_context
 from .list_context import handle_list_context
+from .models import (
+    DeleteContextParams,
+    GetContextParams,
+    ListContextParams,
+    PutContextParams,
+    SearchContextParams,
+)
 from .put_context import handle_put_context
 from .search_context import handle_search_context
 
@@ -30,6 +37,7 @@ def register_crud_tools(registry: ToolRegistry, app_state: AppState) -> None:
             "Overwrites existing contexts with a warning. "
             "Contexts are stored as .mdc files (markdown with YAML frontmatter)."
         ),
+        params_model=PutContextParams,
     )
 
     # Register list_context tool
@@ -41,6 +49,7 @@ def register_crud_tools(registry: ToolRegistry, app_state: AppState) -> None:
             "Returns list of contexts with 'name', 'created_at', and 'preview' (first 100 chars). "
             "Optional 'limit' parameter to limit number of results."
         ),
+        params_model=ListContextParams,
     )
 
     # Register get_context tool
@@ -54,6 +63,7 @@ def register_crud_tools(registry: ToolRegistry, app_state: AppState) -> None:
             "Returns context with 'text' (markdown body) and 'metadata' (from frontmatter). "
             "For bulk operations, returns list of results with errors for missing contexts."
         ),
+        params_model=GetContextParams,
     )
 
     # Register search_context tool
@@ -66,6 +76,7 @@ def register_crud_tools(registry: ToolRegistry, app_state: AppState) -> None:
             "Returns matching contexts with 'name', 'text', 'metadata', and 'matches' (where query was found). "
             "Optional 'limit' parameter to limit number of results."
         ),
+        params_model=SearchContextParams,
     )
 
     # Register delete_context tool
@@ -78,4 +89,5 @@ def register_crud_tools(registry: ToolRegistry, app_state: AppState) -> None:
             "Bulk: provide 'names' (list[str]) or 'name' as list[str]. "
             "For bulk operations, returns list of results with errors for missing contexts."
         ),
+        params_model=DeleteContextParams,
     )

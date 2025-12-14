@@ -135,18 +135,31 @@ class MCPServer:
             """List all available tools."""
             tools = []
             for tool_handler in self.tool_registry.list_tools():
-                # Convert tool handler to MCP Tool format
-                # Note: We need to extract input schema from tool handlers
-                # For now, we'll create a basic tool definition
+                # Generate input schema from Pydantic model if available
+                if tool_handler.params_model:
+                    schema = tool_handler.params_model.model_json_schema()
+                    # Resolve $ref references to inline definitions for MCP compatibility
+                    schema = self._resolve_schema_refs(schema)
+                    # Simplify schema for better MCP client compatibility
+                    schema = self._simplify_schema(schema)
+                    # Remove title and other metadata that MCP doesn't need
+                    schema.pop("title", None)
+                    # Ensure required fields are properly set
+                    required = schema.get("required", [])
+                    if not required:
+                        schema.pop("required", None)
+                else:
+                    # Fallback to empty schema
+                    schema = {
+                        "type": "object",
+                        "properties": {},
+                    }
+
                 tools.append(
                     Tool(
                         name=tool_handler.name,
                         description=tool_handler.description,
-                        inputSchema={
-                            "type": "object",
-                            "properties": {},
-                            "required": [],
-                        },
+                        inputSchema=schema,
                     )
                 )
             return tools
@@ -197,6 +210,131 @@ class MCPServer:
             }
         }
         return json.dumps(error_dict)
+
+    def _resolve_schema_refs(self, schema: dict[str, Any]) -> dict[str, Any]:
+        """
+        Resolve $ref references in JSON schema to inline definitions.
+
+        MCP clients may not properly resolve $ref references, so we inline
+        the definitions directly into the schema.
+
+        Args:
+            schema: JSON schema with potential $ref references
+
+        Returns:
+            Schema with $ref references resolved to inline definitions
+        """
+        if not isinstance(schema, dict):
+            return schema
+
+        # Get definitions if they exist
+        defs = schema.get("$defs", {})
+
+        # Recursively resolve references
+        def resolve_value(value: Any) -> Any:
+            if isinstance(value, dict):
+                # Check if this is a $ref
+                if "$ref" in value:
+                    ref_path = value["$ref"]
+                    # Handle #/$defs/ModelName format
+                    if ref_path.startswith("#/$defs/"):
+                        def_name = ref_path.replace("#/$defs/", "")
+                        if def_name in defs:
+                            # Resolve the referenced definition
+                            resolved = defs[def_name].copy()
+                            # Recursively resolve any nested refs
+                            return resolve_value(resolved)
+                    return value
+                else:
+                    # Recursively process dict
+                    return {k: resolve_value(v) for k, v in value.items()}
+            elif isinstance(value, list):
+                # Recursively process list items
+                return [resolve_value(item) for item in value]
+            else:
+                return value
+
+        # Resolve the schema
+        resolved = resolve_value(schema)
+        # Remove $defs since we've inlined everything
+        if isinstance(resolved, dict):
+            resolved.pop("$defs", None)
+
+        return resolved
+
+    def _simplify_schema(self, schema: dict[str, Any]) -> dict[str, Any]:
+        """
+        Simplify schema for better MCP client compatibility.
+
+        Some MCP clients have issues with anyOf/oneOf structures.
+        This method simplifies nullable types by making them optional instead.
+
+        Args:
+            schema: JSON schema to simplify
+
+        Returns:
+            Simplified schema
+        """
+        if not isinstance(schema, dict):
+            return schema
+
+        simplified: dict[str, Any] = {}
+        for key, value in schema.items():
+            if key == "properties" and isinstance(value, dict):
+                # Simplify properties
+                simplified_props: dict[str, Any] = {}
+                for prop_name, prop_schema in value.items():
+                    simplified_props[prop_name] = self._simplify_property(prop_schema)
+                simplified[key] = simplified_props
+            elif key == "$defs":
+                # Keep $defs but simplify them too
+                simplified[key] = {k: self._simplify_schema(v) for k, v in value.items()}
+            else:
+                simplified[key] = value
+
+        return simplified
+
+    def _simplify_property(self, prop: Any) -> Any:
+        """
+        Simplify a property schema, handling anyOf for nullable types.
+
+        Args:
+            prop: Property schema
+
+        Returns:
+            Simplified property schema
+        """
+        if not isinstance(prop, dict):
+            return prop
+
+        # If it's an anyOf with string/null or object/null, simplify it
+        if "anyOf" in prop:
+            any_of = prop["anyOf"]
+            if len(any_of) == 2:
+                # Check if one is null and the other is a concrete type
+                types = [item.get("type") for item in any_of if isinstance(item, dict)]
+                if "null" in types:
+                    # Find the non-null type
+                    non_null = next((item for item in any_of if item.get("type") != "null"), None)
+                    if non_null:
+                        # Make it optional (remove required constraint) instead of nullable
+                        simplified = non_null.copy()
+                        # Keep description and other metadata
+                        if "description" in prop:
+                            simplified["description"] = prop["description"]
+                        # Remove title to keep schema clean
+                        simplified.pop("title", None)
+                        return simplified
+
+        # Recursively simplify nested structures
+        if "items" in prop:
+            prop["items"] = self._simplify_property(prop["items"])
+        if "properties" in prop:
+            prop["properties"] = {
+                k: self._simplify_property(v) for k, v in prop["properties"].items()
+            }
+
+        return prop
 
 
 async def create_server(

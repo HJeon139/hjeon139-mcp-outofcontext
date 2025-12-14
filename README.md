@@ -1,16 +1,17 @@
 # Out of Context
 
-An MCP (Model Context Protocol) server for managing large context windows in AI agent platforms. Helps agents handle context that exceeds token limits by analyzing usage, pruning old segments, and stashing context for later retrieval.
+An MCP (Model Context Protocol) server for managing context using simple CRUD operations. Stores contexts as markdown files (.mdc) with YAML frontmatter, allowing agents to save, retrieve, search, and manage context by name.
 
 ---
 
 ## Features
 
-- **Context Analysis**: Monitor token usage, segment distribution, and context health
-- **Garbage Collection**: Automatically identify and prune old or unused segments using GC heuristics
-- **Stashing & Retrieval**: Archive context segments and retrieve them when needed
-- **Task Management**: Organize context by tasks and switch between them seamlessly
-- **Scalability**: Designed for millions of tokens with indexing and file sharding
+- **Simple CRUD Operations**: 5 basic tools for context management (put, list, get, search, delete)
+- **Markdown Storage**: Contexts stored as .mdc files (markdown with YAML frontmatter)
+- **Agent-Recognizable Names**: Use meaningful names instead of UUIDs
+- **Bulk Operations**: Support for bulk put, get, and delete operations with robust parameter handling
+- **Pydantic Validation**: Type-safe parameter validation with automatic schema generation
+- **Text Search**: Search contexts by query string across metadata and content
 - **MCP Integration**: Works with any MCP-compatible platform (Cursor, Claude Desktop, etc.)
 
 ---
@@ -34,8 +35,7 @@ Add to your MCP platform configuration (e.g., Cursor or Claude Desktop):
       "command": "python",
       "args": ["-m", "hjeon139_mcp_outofcontext.main"],
       "env": {
-        "OUT_OF_CONTEXT_STORAGE_PATH": ".out_of_context",
-        "OUT_OF_CONTEXT_TOKEN_LIMIT": "1000000"
+        "OUT_OF_CONTEXT_STORAGE_PATH": ".out_of_context"
       }
     }
   }
@@ -44,113 +44,181 @@ Add to your MCP platform configuration (e.g., Cursor or Claude Desktop):
 
 ### Verify Installation
 
-In your MCP platform, check that tools like `context_analyze_usage` are available.
+In your MCP platform, check that tools like `put_context`, `list_context`, `get_context`, `search_context`, and `delete_context` are available.
 
 ---
 
 ## Usage Examples
 
-### Monitor Context Usage
+### Add Context
 
+**Single operation:**
 ```json
 {
-  "tool": "context_analyze_usage",
+  "tool": "put_context",
   "arguments": {
-    "project_id": "my-project"
-  }
-}
-```
-
-Returns usage metrics, health score, and recommendations.
-
-### Prune Old Context
-
-```json
-{
-  "tool": "context_gc_analyze",
-  "arguments": {
-    "project_id": "my-project",
-    "target_tokens": 100000
-  }
-}
-```
-
-Analyzes pruning candidates and generates a plan to free tokens.
-
-### Stash Context
-
-```json
-{
-  "tool": "context_stash",
-  "arguments": {
-    "query": "old documentation",
-    "filters": {
+    "name": "api-design-notes",
+    "text": "# API Design Notes\n\nKey decisions about the REST API...",
+    "metadata": {
       "type": "note",
-      "created_before": "2024-01-01T00:00:00Z"
+      "tags": ["api", "design"]
     }
   }
 }
 ```
 
-Moves matching segments to stashed storage.
-
-### Retrieve Stashed Context
-
+**Bulk operation:**
 ```json
 {
-  "tool": "context_retrieve_stashed",
+  "tool": "put_context",
   "arguments": {
-    "query": "important function",
-    "move_to_active": true
+    "contexts": [
+      {
+        "name": "context-1",
+        "text": "First context",
+        "metadata": {"type": "note"}
+      },
+      {
+        "name": "context-2",
+        "text": "Second context"
+      }
+    ]
   }
 }
 ```
 
-Retrieves and restores stashed segments to active context.
+### List Contexts
+
+```json
+{
+  "tool": "list_context",
+  "arguments": {
+    "limit": 10
+  }
+}
+```
+
+Returns list of contexts sorted by creation date (newest first).
+
+### Get Context
+
+**Single operation:**
+```json
+{
+  "tool": "get_context",
+  "arguments": {
+    "name": "api-design-notes"
+  }
+}
+```
+
+**Bulk operation:**
+```json
+{
+  "tool": "get_context",
+  "arguments": {
+    "names": ["context-1", "context-2", "context-3"]
+  }
+}
+```
+
+### Search Contexts
+
+```json
+{
+  "tool": "search_context",
+  "arguments": {
+    "query": "API design",
+    "limit": 5
+  }
+}
+```
+
+Searches in both YAML frontmatter (metadata) and markdown body (text content).
+
+### Delete Context
+
+**Single operation:**
+```json
+{
+  "tool": "delete_context",
+  "arguments": {
+    "name": "old-context"
+  }
+}
+```
+
+**Bulk operation:**
+```json
+{
+  "tool": "delete_context",
+  "arguments": {
+    "names": ["context-1", "context-2"]
+  }
+}
+```
+
+---
+
+## Storage Format
+
+Contexts are stored as `.mdc` files (markdown with YAML frontmatter) in the `.out_of_context/contexts/` directory.
+
+**File format:**
+```markdown
+---
+name: api-design-notes
+created_at: 2025-12-14T12:51:27.123456
+type: note
+tags: [api, design]
+---
+
+# API Design Notes
+
+Key decisions about the REST API design...
+
+- Use RESTful conventions
+- Version in URL path
+```
+
+**Name requirements:**
+- Filename-safe: alphanumeric characters, hyphens, and underscores only
+- Unique: overwriting an existing name replaces the old context (with warning)
 
 ---
 
 ## Documentation
 
 - **[Installation Guide](docs/installation.md)** - Setup and configuration
-- **[Usage Guide](docs/usage.md)** - Detailed usage instructions and workflows
+- **[Usage Guide](docs/usage.md)** - Detailed usage instructions
 - **[Development Guide](docs/development.md)** - Development setup and contribution guidelines
-- **[API Documentation](docs/api/tools.md)** - Complete tool and model reference
-- **[Demo Guide](docs/demo.md)** - Step-by-step demonstration scenarios
+- **[API Documentation](docs/api/tools.md)** - Complete tool reference
 
 ---
 
 ## Key Concepts
 
-- **Segments**: Individual pieces of context (messages, code, logs, etc.)
-- **Working Set**: Active segments currently in use
-- **Stashed Storage**: Archived segments that can be retrieved later
-- **Projects**: Isolated context spaces (typically one per codebase)
-- **Tasks**: Sub-divisions within a project for organizing work
+- **Context**: A markdown document with YAML frontmatter (metadata) and markdown body (content)
+- **Name**: Agent-recognizable identifier (e.g., "api-design-notes", "bug-fix-context")
+- **Storage**: Individual .mdc files in `.out_of_context/contexts/` directory
+- **Bulk Operations**: Process multiple contexts in a single call (put, get, delete)
 
 ---
 
 ## Architecture
 
-The server operates in **advisory mode**: platforms call tools with context metadata, the server analyzes and returns recommendations, and platforms apply changes to their own context.
+The server provides a simple file-based storage system:
 
 **Key Components:**
-- **Context Manager**: Orchestrates context operations
-- **Analysis Engine**: Analyzes usage and generates recommendations
-- **GC Engine**: Identifies pruning candidates using garbage collection heuristics
-- **Storage Layer**: Manages segment storage with indexing and sharding
-- **Tool Handlers**: MCP tool implementations
+- **MDCStorage**: Manages .mdc file operations (save, load, list, search, delete)
+- **CRUD Tools**: 5 tool handlers for context operations
+- **MCP Server**: Standard MCP protocol implementation
 
----
-
-## Scalability
-
-Designed for **millions of tokens**:
-
-- **Inverted Index**: Fast keyword search (< 500ms for millions of tokens)
-- **Token Caching**: Token counts cached in segment metadata
-- **File Sharding**: Stashed segments stored in sharded files
-- **LRU Cache**: Active segments use LRU eviction (max 10k segments)
+**Storage:**
+- Each context is one .mdc file
+- YAML frontmatter for metadata
+- Markdown body for content
+- Simple text-based search
 
 ---
 
@@ -173,7 +241,11 @@ hatch run update-deps
 ### Run Tests
 
 ```bash
-hatch run test
+# Unit tests
+hatch run pytest -m 'unit'
+
+# Integration tests
+hatch run pytest -m 'integration'
 ```
 
 ### Code Quality
@@ -199,13 +271,12 @@ See [Development Guide](docs/development.md) for detailed setup and contribution
 ```
 out_of_context/
 ├── src/hjeon139_mcp_outofcontext/  # Main package
-│   ├── tools/                      # MCP tool handlers
-│   ├── models/                     # Data models
-│   ├── storage/                    # Storage layer
+│   ├── tools/crud/                  # CRUD tool handlers
+│   ├── storage/                     # MDC storage layer
 │   └── ...
-├── tests/                          # Test files
-├── docs/                           # Documentation
-└── pyproject.toml                  # Project configuration
+├── tests/                           # Test files
+├── docs/                            # Documentation
+└── pyproject.toml                   # Project configuration
 ```
 
 ---
@@ -233,27 +304,23 @@ Apache 2.0 - See [LICENSE](LICENSE) file for details.
 
 - **MCP Protocol**: [Model Context Protocol](https://modelcontextprotocol.io/)
 - **Steering Documentation**: [docs/steering/](docs/steering/) - Development guidelines
-- **Design Documentation**: [docs/v1/design/](docs/v1/design/) - Architecture and design decisions
 
 ---
 
 ## Status
 
-**Version:** 0.13.0
+**Version:** 0.14.2
 
 **Status:** Active development
 
 **Features:**
-- ✅ Context analysis and monitoring
-- ✅ Garbage collection pruning
-- ✅ Stashing and retrieval
-- ✅ Task management
-- ✅ Scalability enhancements (indexing, sharding, caching)
-
-**Roadmap:**
-- Vector DB for semantic search (v2)
-- Advanced compression techniques (v2)
-- Multi-server support (v2)
+- ✅ Basic CRUD operations (put, list, get, search, delete)
+- ✅ Markdown file storage (.mdc format)
+- ✅ Agent-recognizable names
+- ✅ Bulk operations support with robust parameter handling
+- ✅ Pydantic validation for type-safe parameters
+- ✅ Automatic JSON schema generation for MCP clients
+- ✅ Text search across metadata and content
 
 ---
 
@@ -270,4 +337,4 @@ Apache 2.0 - See [LICENSE](LICENSE) file for details.
 Built with:
 - [MCP](https://github.com/modelcontextprotocol) - Model Context Protocol
 - [Pydantic](https://pydantic.dev/) - Data validation
-- [tiktoken](https://github.com/openai/tiktoken) - Token counting
+- [PyYAML](https://pyyaml.org/) - YAML parsing

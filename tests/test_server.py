@@ -192,3 +192,178 @@ class TestMCPServerIntegration:
         assert init_options is not None
         # Initialization options should be valid
         assert init_options is not None or hasattr(init_options, "capabilities")
+
+    async def test_mcp_batch_operations_json_strings(self) -> None:
+        """Test batch operations with JSON string parameters (simulating MCP client behavior)."""
+        import json
+        import tempfile
+
+        from hjeon139_mcp_outofcontext.config import Config
+
+        # Create server with temp storage
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config = Config(storage_path=tmpdir)
+            server = MCPServer(config=config.to_dict())
+
+            async with server.lifespan():
+                # Test 1: Batch put_context with JSON string
+                contexts_list = [
+                    {"name": "batch-json-1", "text": "Content 1", "metadata": {"type": "test"}},
+                    {"name": "batch-json-2", "text": "Content 2", "metadata": {"type": "test"}},
+                ]
+                contexts_json = json.dumps(contexts_list)
+
+                result = await server.tool_registry.dispatch(
+                    "put_context", {"contexts": contexts_json}, server.app_state
+                )
+
+                assert result["success"] is True
+                assert result["operation"] == "bulk"
+                assert result["count"] == 2
+                assert all(r["success"] for r in result["results"])
+
+                # Test 2: Batch get_context with list
+                result = await server.tool_registry.dispatch(
+                    "get_context",
+                    {"names": ["batch-json-1", "batch-json-2", "nonexistent"]},
+                    server.app_state,
+                )
+
+                assert result["success"] is True
+                assert result["operation"] == "bulk"
+                assert result["count"] == 3
+                assert len(result["contexts"]) == 3
+                assert result["contexts"][0]["success"] is True
+                assert result["contexts"][1]["success"] is True
+                assert result["contexts"][2]["success"] is False  # nonexistent
+
+                # Test 3: Batch delete_context
+                result = await server.tool_registry.dispatch(
+                    "delete_context",
+                    {"names": ["batch-json-1", "batch-json-2", "nonexistent"]},
+                    server.app_state,
+                )
+
+                assert result["success"] is True
+                assert result["operation"] == "bulk"
+                assert result["count"] == 3
+                assert result["results"][0]["success"] is True
+                assert result["results"][1]["success"] is True
+                assert result["results"][2]["success"] is False  # nonexistent
+
+    async def test_mcp_batch_operations_python_repr_strings(self) -> None:
+        """Test batch operations with Python repr() string parameters."""
+        import tempfile
+
+        from hjeon139_mcp_outofcontext.config import Config
+
+        # Create server with temp storage
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config = Config(storage_path=tmpdir)
+            server = MCPServer(config=config.to_dict())
+
+            async with server.lifespan():
+                # Test batch put_context with Python repr string
+                contexts_list = [
+                    {"name": "batch-repr-1", "text": "Content 1", "metadata": {"type": "test"}},
+                    {"name": "batch-repr-2", "text": "Content 2"},
+                ]
+                contexts_repr = repr(contexts_list)
+
+                result = await server.tool_registry.dispatch(
+                    "put_context", {"contexts": contexts_repr}, server.app_state
+                )
+
+                assert result["success"] is True
+                assert result["operation"] == "bulk"
+                assert result["count"] == 2
+                assert all(r["success"] for r in result["results"])
+
+                # Verify contexts were saved
+                result = await server.tool_registry.dispatch(
+                    "get_context",
+                    {"names": ["batch-repr-1", "batch-repr-2"]},
+                    server.app_state,
+                )
+
+                assert result["success"] is True
+                assert result["contexts"][0]["success"] is True
+                assert result["contexts"][1]["success"] is True
+
+    async def test_mcp_batch_operations_regular_lists(self) -> None:
+        """Test batch operations with regular list parameters (direct objects)."""
+        import tempfile
+
+        from hjeon139_mcp_outofcontext.config import Config
+
+        # Create server with temp storage
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config = Config(storage_path=tmpdir)
+            server = MCPServer(config=config.to_dict())
+
+            async with server.lifespan():
+                # Test batch put_context with regular list
+                result = await server.tool_registry.dispatch(
+                    "put_context",
+                    {
+                        "contexts": [
+                            {"name": "batch-list-1", "text": "Content 1"},
+                            {"name": "batch-list-2", "text": "Content 2"},
+                        ]
+                    },
+                    server.app_state,
+                )
+
+                assert result["success"] is True
+                assert result["operation"] == "bulk"
+                assert result["count"] == 2
+
+                # Test batch get_context with regular list
+                result = await server.tool_registry.dispatch(
+                    "get_context",
+                    {"names": ["batch-list-1", "batch-list-2"]},
+                    server.app_state,
+                )
+
+                assert result["success"] is True
+                assert result["operation"] == "bulk"
+                assert len(result["contexts"]) == 2
+
+    async def test_mcp_schema_generation_for_batch_operations(self) -> None:
+        """Test that schemas are properly generated and simplified for batch operations."""
+        server = MCPServer()
+
+        # Get put_context tool schema
+        tools = server.tool_registry.list_tools()
+        put_context_tool = next((t for t in tools if t.name == "put_context"), None)
+        assert put_context_tool is not None
+        assert put_context_tool.params_model is not None
+
+        # Generate schema
+        schema = put_context_tool.params_model.model_json_schema()
+        resolved = server._resolve_schema_refs(schema)
+        simplified = server._simplify_schema(resolved)
+
+        # Check that contexts property exists and is properly structured
+        assert "properties" in simplified
+        assert "contexts" in simplified["properties"]
+
+        contexts_prop = simplified["properties"]["contexts"]
+        # Should be an array type (possibly wrapped in anyOf for array/null)
+        if "anyOf" in contexts_prop:
+            # Find array option
+            array_option = next(
+                (opt for opt in contexts_prop["anyOf"] if opt.get("type") == "array"), None
+            )
+            assert array_option is not None
+            assert "items" in array_option
+            # Items should be inline object (not $ref)
+            items = array_option["items"]
+            assert "$ref" not in items
+            assert "properties" in items
+            assert "name" in items["properties"]
+            assert "text" in items["properties"]
+        else:
+            # Direct array type
+            assert contexts_prop["type"] == "array"
+            assert "items" in contexts_prop
