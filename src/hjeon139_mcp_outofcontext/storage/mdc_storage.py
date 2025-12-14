@@ -1,5 +1,6 @@
 """MDC storage layer for markdown files with YAML frontmatter."""
 
+import json
 import logging
 import os
 import re
@@ -42,6 +43,14 @@ class MDCStorage:
         if storage_path is None:
             default_path = Path(".out_of_context") / "contexts"
             storage_path = os.getenv("OUT_OF_CONTEXT_STORAGE_PATH", str(default_path))
+        else:
+            # If storage_path is provided, ensure it points to the contexts subdirectory
+            # Only append if it doesn't already end with "contexts"
+            path_obj = Path(storage_path)
+            if path_obj.name != "contexts":
+                storage_path = str(path_obj / "contexts")
+            else:
+                storage_path = str(path_obj)
 
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
@@ -60,7 +69,31 @@ class MDCStorage:
         _validate_name(name)
 
         # Prepare metadata with defaults
-        meta = metadata or {}
+        # Handle various input types: None, dict, or JSON string
+        meta: dict[str, Any]
+        if metadata is None:
+            meta = {}
+        elif isinstance(metadata, dict):
+            # Create a copy to avoid mutating the original dict
+            meta = metadata.copy()
+        elif isinstance(metadata, str):
+            # Try to parse as JSON string
+            try:
+                meta = json.loads(metadata)
+                if not isinstance(meta, dict):
+                    logger.warning(
+                        f"Metadata parsed from JSON but is not a dict: {type(meta)}, using empty dict"
+                    )
+                    meta = {}
+            except (json.JSONDecodeError, TypeError) as e:
+                logger.warning(f"Failed to parse metadata as JSON: {e}, using empty dict")
+                meta = {}
+        else:
+            # Unknown type, use empty dict
+            logger.warning(f"Metadata has unexpected type: {type(metadata)}, using empty dict")
+            meta = {}
+
+        # Set defaults if not present
         if "name" not in meta:
             meta["name"] = name
         if "created_at" not in meta:

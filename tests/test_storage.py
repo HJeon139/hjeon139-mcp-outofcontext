@@ -228,3 +228,88 @@ def hello():
         assert result["metadata"]["custom_field"] == "custom_value"
         assert result["metadata"]["name"] == name
         assert "created_at" in result["metadata"]
+
+    def test_save_context_with_json_string_metadata(self, mdc_storage: MDCStorage) -> None:
+        """Test that metadata passed as JSON string is correctly parsed."""
+        import json
+
+        name = "json-metadata-test"
+        text = "Content"
+        metadata_dict = {"type": "test", "category": "fix-verification", "version": "0.14.0"}
+        metadata_json = json.dumps(metadata_dict)
+
+        # Test the bug fix: metadata might come as JSON string through MCP protocol
+        # We test this by passing a string directly (bypassing type hints)
+        # This simulates what might happen when metadata is serialized/deserialized
+        mdc_storage.save_context(name, text, metadata_json)  # type: ignore[arg-type]
+
+        result = mdc_storage.load_context(name)
+        assert result is not None
+        assert result["metadata"]["type"] == "test"
+        assert result["metadata"]["category"] == "fix-verification"
+        assert result["metadata"]["version"] == "0.14.0"
+
+    def test_save_context_with_none_metadata(self, mdc_storage: MDCStorage) -> None:
+        """Test that None metadata is handled correctly."""
+        name = "none-metadata-test"
+        text = "Content"
+
+        mdc_storage.save_context(name, text, None)
+
+        result = mdc_storage.load_context(name)
+        assert result is not None
+        # Should have default fields even when metadata is None
+        assert result["metadata"]["name"] == name
+        assert "created_at" in result["metadata"]
+
+    def test_save_context_metadata_not_mutated(self, mdc_storage: MDCStorage) -> None:
+        """Test that original metadata dict is not mutated."""
+        name = "metadata-mutation-test"
+        text = "Content"
+        original_metadata = {"type": "test", "custom": "value"}
+
+        mdc_storage.save_context(name, text, original_metadata)
+
+        # Original dict should not have been modified (name and created_at added)
+        assert "name" not in original_metadata
+        assert "created_at" not in original_metadata
+        assert original_metadata == {"type": "test", "custom": "value"}
+
+        # But saved metadata should have defaults
+        result = mdc_storage.load_context(name)
+        assert result is not None
+        assert result["metadata"]["name"] == name
+        assert "created_at" in result["metadata"]
+        assert result["metadata"]["type"] == "test"
+        assert result["metadata"]["custom"] == "value"
+
+    def test_storage_path_appends_contexts(self, tmp_path: Path) -> None:
+        """Test that storage_path correctly appends /contexts subdirectory."""
+        # Test the bug fix where storage_path from config needs /contexts appended
+        base_path = tmp_path / "custom_storage"
+        base_path.mkdir()
+
+        storage = MDCStorage(storage_path=str(base_path))
+
+        # Should create contexts subdirectory
+        assert storage.storage_path == base_path / "contexts"
+        assert storage.storage_path.exists()
+
+        # Should be able to save files there
+        storage.save_context("test", "content")
+        assert (storage.storage_path / "test.mdc").exists()
+
+    def test_storage_path_with_existing_contexts_dir(self, tmp_path: Path) -> None:
+        """Test that storage_path already ending with contexts doesn't double-append."""
+        contexts_path = tmp_path / "custom_storage" / "contexts"
+        contexts_path.mkdir(parents=True)
+
+        storage = MDCStorage(storage_path=str(contexts_path))
+
+        # Should use the path as-is since it already ends with contexts
+        assert storage.storage_path == contexts_path
+        assert storage.storage_path.exists()
+
+        # Should be able to save files there
+        storage.save_context("test", "content")
+        assert (storage.storage_path / "test.mdc").exists()
