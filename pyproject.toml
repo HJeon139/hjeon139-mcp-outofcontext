@@ -70,13 +70,14 @@ indent-width = 4
 target-version = "py311"
 
 exclude = [
-  ".git",
-  ".venv",
-  "venv",
-  "env",
-  "__pycache__",
-  ".pytest_cache",
-  ".ruff_cache",
+    ".git",
+    ".venv",
+    "venv",
+    "env",
+    "__pycache__",
+    ".pytest_cache",
+    ".ruff_cache",
+    "docs",  # Exclude documentation directory
 ]
 
 [tool.ruff.lint]
@@ -109,6 +110,11 @@ check_untyped_defs = true
 pretty = true
 
 modules = ["hjeon139_mcp_outofcontext"]
+
+# Exclude documentation directory from type checking
+exclude = [
+    "docs/",
+]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
