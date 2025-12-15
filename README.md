@@ -206,12 +206,13 @@ Key decisions about the REST API design...
 
 ## Architecture
 
-The server provides a simple file-based storage system:
+The server provides a simple file-based storage system built with FastMCP:
 
 **Key Components:**
+- **FastMCP Server**: Modern MCP server implementation with middleware support
 - **MDCStorage**: Manages .mdc file operations (save, load, list, search, delete)
-- **CRUD Tools**: 5 tool handlers for context operations
-- **MCP Server**: Standard MCP protocol implementation
+- **CRUD Tools**: 5 tool handlers using `@mcp.tool()` decorators for automatic registration
+- **AppStateMiddleware**: Dependency injection pattern for clean state management
 
 **Storage:**
 - Each context is one .mdc file
@@ -270,10 +271,16 @@ See [Development Guide](docs/development.md) for detailed setup and contribution
 ```
 out_of_context/
 ├── src/hjeon139_mcp_outofcontext/  # Main package
-│   ├── tools/crud/                  # CRUD tool handlers
+│   ├── fastmcp_server.py            # FastMCP instance + middleware
+│   ├── main.py                      # Entry point
+│   ├── tools/
+│   │   ├── crud/                    # CRUD operations (put, get, delete)
+│   │   └── query/                   # Query operations (list, search)
 │   ├── storage/                     # MDC storage layer
-│   └── ...
-├── tests/                           # Test files
+│   ├── app_state.py                 # Application state
+│   ├── config.py                    # Configuration
+│   └── prompts.py                   # MCP prompts
+├── tests/                           # Test files (195 tests)
 ├── docs/                            # Documentation
 └── pyproject.toml                   # Project configuration
 ```
@@ -308,9 +315,9 @@ Apache 2.0 - See [LICENSE](LICENSE) file for details.
 
 ## Status
 
-**Version:** 0.14.2
+**Version:** 1.0.0 (Launch Release)
 
-**Status:** Active development
+**Status:** Production Ready
 
 **Features:**
 - ✅ Basic CRUD operations (put, list, get, search, delete)
@@ -320,6 +327,7 @@ Apache 2.0 - See [LICENSE](LICENSE) file for details.
 - ✅ Pydantic validation for type-safe parameters
 - ✅ Automatic JSON schema generation for MCP clients
 - ✅ Text search across metadata and content
+- ✅ Built with FastMCP for improved developer experience
 
 ---
 
@@ -334,6 +342,6 @@ Apache 2.0 - See [LICENSE](LICENSE) file for details.
 ## Acknowledgments
 
 Built with:
-- [MCP](https://github.com/modelcontextprotocol) - Model Context Protocol
+- [FastMCP](https://github.com/jlowin/fastmcp) - FastMCP framework for MCP servers
 - [Pydantic](https://pydantic.dev/) - Data validation
 - [PyYAML](https://pyyaml.org/) - YAML parsing

@@ -21,8 +21,8 @@ def test_package_imports() -> None:
     assert minor.isdigit(), f"Minor version must be numeric, got: {minor}"
     assert patch.isdigit(), f"Patch version must be numeric, got: {patch}"
 
-    # Validate major version is 0 (pre-1.0.0 release)
-    assert int(major) == 0, f"Expected major version 0, got: {major}"
+    # Validate version is >= 1.0.0 (launch release)
+    assert int(major) >= 1, f"Expected major version >= 1 (launched), got: {major}"
 
 
 @pytest.mark.unit
