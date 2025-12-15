@@ -14,7 +14,7 @@ This directory contains documentation for migrating from the standard MCP SDK to
 - **[Phase 1: Basic Migration](phase-1-basic-migration.md)** - Update dependencies and create FastMCP server structure
 - **[Phase 2: Remove Tool Registry](phase-2-remove-registry.md)** - Remove custom ToolRegistry, simplify tool structure
 - **[Phase 3: FastMCP Features](phase-3-fastmcp-features.md)** - Add optional FastMCP features (resources, prompts, storage backends)
-- **[Phase 4: HTTP Transport](phase-4-http-transport.md)** - Add HTTP transport support and auto-reload
+- **[Phase 4: Development Auto-Reload](phase-4-auto-reload.md)** - Enable auto-reload for development using hot module replacement (mcp-hmr)
 - **[Phase 5: Validation](phase-5-validation.md)** - Comprehensive testing and validation
 - **[Phase 6: Cleanup](phase-6-cleanup.md)** - Documentation updates and code cleanup
 
@@ -93,6 +93,34 @@ tools/
 - Simpler, more maintainable structure following FastMCP best practices
 
 **Next**: Proceed to [Phase 3: FastMCP Features](phase-3-fastmcp-features.md) (optional) or [Phase 5: Validation](phase-5-validation.md)
+
+### ✅ Phase 4: Development Auto-Reload (COMPLETE)
+
+Phase 4 enables auto-reload for development workflows using hot module replacement with stdio transport.
+
+**Development Auto-Reload:**
+- **Stdio transport**: Hot module replacement using `mcp-hmr` (external tool)
+  - Maintains connection to Cursor during reloads
+  - Only reloads changed modules (faster than full restart)
+  - Requires development wrapper script for initialization
+
+**Key Design Decisions:**
+- Focus on improving development workflow without changing production setup
+- Use `mcp-hmr` for stdio transport auto-reload
+- Keep production configuration unchanged (continue using standard `python` command)
+- Development mode uses `mcp-hmr` wrapper for auto-reload
+
+**Implementation Details:**
+- ✅ `mcp-hmr>=0.1.0` added to dev dependencies in `pyproject.toml`
+- ✅ Development wrapper script created at `scripts/mcp_dev.py`
+- ✅ Wrapper initializes config, AppState, and registers all tools before exporting `mcp` instance
+- ✅ Configuration documented in [phase-4-auto-reload.md](phase-4-auto-reload.md)
+
+**Usage:**
+- **Development mode**: Update Cursor config to use `mcp-hmr` with `scripts.mcp_dev:mcp`
+- **Production mode**: Use `hjeon139_mcp_outofcontext` command (installed via pip)
+
+**Next**: Proceed to [Phase 6: Cleanup](phase-6-cleanup.md)
 
 ## Important Notes
 

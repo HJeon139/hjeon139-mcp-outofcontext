@@ -52,14 +52,22 @@ See [Phase 5: Validation](phase-5-validation.md) for details.
 
 ## Phase 3: Additional Features (Optional - After Migration Validated)
 
-- [ ] Add HTTP transport support (optional)
-- [ ] Create development entry point with auto-reload (optional)
 - [ ] Add resources (optional - can expose contexts as MCP resources)
 - [ ] Add prompts (optional - reusable prompt templates)
 - [ ] Add storage backend support (optional - for caching with FastMCP middleware)
 - [ ] Update tests to work with FastMCP's API (if needed)
 
-See [Phase 3: FastMCP Features](phase-3-fastmcp-features.md) and [Phase 4: HTTP Transport](phase-4-http-transport.md) for details.
+See [Phase 3: FastMCP Features](phase-3-fastmcp-features.md) for details.
+
+## Phase 4: Development Auto-Reload (Optional) ✅ COMPLETE
+
+- [x] Install `mcp-hmr` as dev dependency
+- [x] Create development wrapper script (`scripts/mcp_dev.py`)
+- [x] Configure wrapper to initialize config, AppState, and register tools
+- [x] Export FastMCP instance for `mcp-hmr` to use
+- [x] Document development workflow and Cursor configuration
+
+See [Phase 4: Development Auto-Reload](phase-4-auto-reload.md) for details.
 
 ## Phase 4: Finalization
 

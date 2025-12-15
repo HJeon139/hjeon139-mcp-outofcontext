@@ -32,8 +32,7 @@ Add to your MCP platform configuration (e.g., Cursor or Claude Desktop):
 {
   "mcpServers": {
     "out-of-context": {
-      "command": "python",
-      "args": ["-m", "hjeon139_mcp_outofcontext.main"],
+      "command": "hjeon139_mcp_outofcontext",
       "env": {
         "OUT_OF_CONTEXT_STORAGE_PATH": ".out_of_context"
       }
