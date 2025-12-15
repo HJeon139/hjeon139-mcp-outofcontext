@@ -38,16 +38,3 @@ class DeleteContextParams(BaseModel):
 
     name: str | list[str] | None = Field(None, description="Context name (single) or list (bulk)")
     names: list[str] | None = Field(None, description="List of context names (bulk operation)")
-
-
-class ListContextParams(BaseModel):
-    """Parameters for list_context tool."""
-
-    limit: int | None = Field(None, description="Limit number of results", ge=1)
-
-
-class SearchContextParams(BaseModel):
-    """Parameters for search_context tool."""
-
-    query: str = Field(..., description="Search query string")
-    limit: int | None = Field(None, description="Limit number of results", ge=1)

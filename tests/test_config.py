@@ -3,6 +3,7 @@
 import os
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -155,3 +156,56 @@ class TestLoadConfig:
                     os.environ["OUT_OF_CONTEXT_LOG_LEVEL"] = original_log_level
                 elif "OUT_OF_CONTEXT_LOG_LEVEL" in os.environ:
                     del os.environ["OUT_OF_CONTEXT_LOG_LEVEL"]
+
+    def test_load_config_file_error_handling(self, tmp_path) -> None:
+        """Test that invalid config file is handled gracefully."""
+
+        # Create invalid JSON config file
+        config_dir = Path(tmp_path) / ".out_of_context"
+        config_dir.mkdir(exist_ok=True)
+        config_file = config_dir / "config.json"
+
+        with open(config_file, "w") as f:
+            f.write("{ invalid json }")
+
+        # Save original HOME and CWD
+        original_home = os.environ.get("HOME")
+        original_cwd = os.getcwd()
+
+        try:
+            os.environ["HOME"] = str(tmp_path)
+            os.chdir(tmp_path)
+
+            # Should not raise, just print warning and continue with defaults
+            config = load_config()
+            assert config.storage_path == ".out_of_context"
+            assert config.log_level == "INFO"
+        finally:
+            if original_home:
+                os.environ["HOME"] = original_home
+            os.chdir(original_cwd)
+
+    def test_load_config_file_os_error_handling(self, tmp_path) -> None:
+        """Test that OS errors when reading config file are handled gracefully."""
+
+        config_dir = Path(tmp_path) / ".out_of_context"
+        config_dir.mkdir(exist_ok=True)
+
+        # Save original HOME and CWD
+        original_home = os.environ.get("HOME")
+        original_cwd = os.getcwd()
+
+        try:
+            os.environ["HOME"] = str(tmp_path)
+            os.chdir(tmp_path)
+
+            # Mock open to raise OSError
+            with patch("builtins.open", side_effect=OSError("Permission denied")):
+                # Should not raise, just print warning and continue with defaults
+                config = load_config()
+                assert config.storage_path == ".out_of_context"
+                assert config.log_level == "INFO"
+        finally:
+            if original_home:
+                os.environ["HOME"] = original_home
+            os.chdir(original_cwd)

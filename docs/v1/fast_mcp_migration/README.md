@@ -59,7 +59,40 @@ This directory contains documentation for migrating from the standard MCP SDK to
 - All existing handler functions preserved for feature parity
 - Old `server.py` and `tool_registry.py` kept for Phase 2 removal
 
-**Next**: Proceed to [Phase 2: Remove Tool Registry](phase-2-remove-registry.md)
+### ✅ Phase 2: Remove Tool Registry (COMPLETE)
+
+- ✅ Removed `tool_registry.py` file (ToolRegistry no longer needed)
+- ✅ Refactored package structure: separated CRUD operations from query operations
+- ✅ Created `tools/query/` package for `list_context` and `search_context`
+- ✅ Tools now use `@mcp.tool()` decorator directly in their implementation files
+- ✅ Eliminated wrapper layer: each tool file contains implementation + decorator
+- ✅ Removed `fastmcp_tools.py` wrapper file
+- ✅ Split models: CRUD models in `tools/crud/models.py`, query models in `tools/query/models.py`
+- ✅ Updated `fastmcp_server.py` to register tools from both `tools/crud/` and `tools/query/`
+- ✅ Removed ToolRegistry tests
+
+**New Package Structure:**
+```
+tools/
+  crud/
+    __init__.py          (register_tools - imports CRUD modules)
+    models.py            (PutContextParams, GetContextParams, DeleteContextParams, ContextItem)
+    put_context.py       (put_context with @mcp.tool() decorator)
+    get_context.py       (get_context with @mcp.tool() decorator)
+    delete_context.py    (delete_context with @mcp.tool() decorator)
+  query/
+    __init__.py          (register_tools - imports query modules)
+    models.py            (ListContextParams, SearchContextParams)
+    list_context.py      (list_context with @mcp.tool() decorator)
+    search_context.py    (search_context with @mcp.tool() decorator)
+```
+
+**Architectural Improvement:**
+- Each tool file is self-contained with `@mcp.tool()` decorator and implementation together
+- Tools get `app_state` from FastMCP context (via middleware), not as function parameter
+- Simpler, more maintainable structure following FastMCP best practices
+
+**Next**: Proceed to [Phase 3: FastMCP Features](phase-3-fastmcp-features.md) (optional) or [Phase 5: Validation](phase-5-validation.md)
 
 ## Important Notes
 

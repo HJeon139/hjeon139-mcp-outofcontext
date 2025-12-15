@@ -85,7 +85,9 @@ def register_all_tools() -> None:
     This function is called to ensure all tools are registered.
     Tools are registered via @mcp.tool() decorators when modules are imported.
     """
-    from hjeon139_mcp_outofcontext.tools.crud import register_tools
+    from hjeon139_mcp_outofcontext.tools.crud import register_tools as register_crud_tools
+    from hjeon139_mcp_outofcontext.tools.query import register_tools as register_query_tools
 
     # Tools are registered via decorators, just need to import
-    register_tools()
+    register_crud_tools()
+    register_query_tools()

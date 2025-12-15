@@ -3,27 +3,37 @@
 import logging
 from typing import Any
 
+from fastmcp.dependencies import CurrentContext
+from fastmcp.server.context import Context
+
 from ...app_state import AppState
+from ...fastmcp_server import mcp
 
 logger = logging.getLogger(__name__)
 
 
-async def handle_search_context(
-    app_state: AppState,
+@mcp.tool()
+async def search_context(
     query: str,
     limit: int | None = None,
+    ctx: Context = CurrentContext(),
 ) -> dict[str, Any]:
-    """
-    Search contexts by query string.
+    """Search contexts by query string.
 
-    Args:
-        app_state: Application state with all components
-        query: Search query string
-        limit: Optional maximum number of results to return
-
-    Returns:
-        Dictionary with matching contexts
+    Searches in both YAML frontmatter (metadata) and markdown body (text content).
+    Returns matching contexts with 'name', 'text', 'metadata', and 'matches' (where query was found).
+    Optional 'limit' parameter to limit number of results.
     """
+    # Get AppState from context (injected by middleware)
+    app_state: AppState = ctx.get_state("app_state")
+    if app_state is None:
+        return {
+            "error": {
+                "code": "INTERNAL_ERROR",
+                "message": "AppState not available in context",
+            }
+        }
+
     try:
         if not query:
             return {

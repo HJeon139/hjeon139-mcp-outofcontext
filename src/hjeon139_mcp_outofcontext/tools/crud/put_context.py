@@ -3,34 +3,41 @@
 import logging
 from typing import Any
 
+from fastmcp.dependencies import CurrentContext
+from fastmcp.server.context import Context
+
 from ...app_state import AppState
+from ...fastmcp_server import mcp
 
 logger = logging.getLogger(__name__)
 
 
-async def handle_put_context(
-    app_state: AppState,
+@mcp.tool()
+async def put_context(
     name: str | None = None,
     text: str | None = None,
     metadata: dict[str, Any] | None = None,
     contexts: list[dict[str, Any]] | None = None,
+    ctx: Context = CurrentContext(),
 ) -> dict[str, Any]:
+    """Add or update context by name. Supports both single and bulk operations.
+
+    Single: provide 'name' (str), 'text' (str, markdown content), and optional 'metadata' (dict).
+    Bulk: provide 'contexts' (list[dict]) where each dict has 'name', 'text', optional 'metadata'.
+    Names must be filename-safe (alphanumeric, hyphens, underscores).
+    Overwrites existing contexts with a warning.
+    Contexts are stored as .mdc files (markdown with YAML frontmatter).
     """
-    Add or update context by name. Supports both single and bulk operations.
+    # Get AppState from context (injected by middleware)
+    app_state: AppState = ctx.get_state("app_state")
+    if app_state is None:
+        return {
+            "error": {
+                "code": "INTERNAL_ERROR",
+                "message": "AppState not available in context",
+            }
+        }
 
-    Single operation: provide 'name' (str), 'text' (str, markdown content), optional 'metadata' (dict).
-    Bulk operation: provide 'contexts' (list[dict]) where each dict has 'name', 'text', optional 'metadata'.
-
-    Args:
-        app_state: Application state with all components
-        name: Context name (for single operation)
-        text: Markdown content (for single operation)
-        metadata: Optional metadata dict (for single operation)
-        contexts: List of context dicts (for bulk operation)
-
-    Returns:
-        Dictionary with success status and results
-    """
     try:
         storage = app_state.storage
 

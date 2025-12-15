@@ -3,30 +3,37 @@
 import logging
 from typing import Any
 
+from fastmcp.dependencies import CurrentContext
+from fastmcp.server.context import Context
+
 from ...app_state import AppState
+from ...fastmcp_server import mcp
 
 logger = logging.getLogger(__name__)
 
 
-async def handle_delete_context(
-    app_state: AppState,
+@mcp.tool()
+async def delete_context(
     name: str | list[str] | None = None,
     names: list[str] | None = None,
+    ctx: Context = CurrentContext(),
 ) -> dict[str, Any]:
-    """
-    Delete context by name (forced eviction by agent). Supports both single and bulk operations.
+    """Delete context by name (forced eviction by agent). Supports both single and bulk operations.
 
     Single: provide 'name' (str).
     Bulk: provide 'names' (list[str]) or 'name' as list[str].
-
-    Args:
-        app_state: Application state with all components
-        name: Context name (single) or list of names (bulk)
-        names: List of context names (bulk operation)
-
-    Returns:
-        Dictionary with deletion results
+    For bulk operations, returns list of results with errors for missing contexts.
     """
+    # Get AppState from context (injected by middleware)
+    app_state: AppState = ctx.get_state("app_state")
+    if app_state is None:
+        return {
+            "error": {
+                "code": "INTERNAL_ERROR",
+                "message": "AppState not available in context",
+            }
+        }
+
     try:
         storage = app_state.storage
 

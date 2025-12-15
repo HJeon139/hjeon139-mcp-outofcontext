@@ -7,13 +7,14 @@ parameter validation, error cases, and edge cases.
 import json
 
 import pytest
+from test_helpers import call_tool_with_app_state
 
 from hjeon139_mcp_outofcontext.app_state import AppState
-from hjeon139_mcp_outofcontext.tools.crud.delete_context import handle_delete_context
-from hjeon139_mcp_outofcontext.tools.crud.get_context import handle_get_context
-from hjeon139_mcp_outofcontext.tools.crud.list_context import handle_list_context
-from hjeon139_mcp_outofcontext.tools.crud.put_context import handle_put_context
-from hjeon139_mcp_outofcontext.tools.crud.search_context import handle_search_context
+from hjeon139_mcp_outofcontext.tools.crud.delete_context import delete_context
+from hjeon139_mcp_outofcontext.tools.crud.get_context import get_context
+from hjeon139_mcp_outofcontext.tools.crud.put_context import put_context
+from hjeon139_mcp_outofcontext.tools.query.list_context import list_context
+from hjeon139_mcp_outofcontext.tools.query.search_context import search_context
 
 
 @pytest.mark.integration
@@ -23,8 +24,8 @@ class TestPutContextIntegration:
     @pytest.mark.asyncio
     async def test_put_context_single(self, app_state: AppState) -> None:
         """Test single context put operation."""
-        result = await handle_put_context(
-            app_state, name="test-context", text="# Test\n\nContent here"
+        result = await call_tool_with_app_state(
+            put_context, app_state, name="test-context", text="# Test\n\nContent here"
         )
 
         assert result["success"] is True
@@ -39,7 +40,8 @@ class TestPutContextIntegration:
     @pytest.mark.asyncio
     async def test_put_context_with_metadata(self, app_state: AppState) -> None:
         """Test put context with metadata."""
-        result = await handle_put_context(
+        result = await call_tool_with_app_state(
+            put_context,
             app_state,
             name="test-context",
             text="Content",
@@ -62,7 +64,7 @@ class TestPutContextIntegration:
             {"name": "context-3", "text": "Content 3", "metadata": {"tags": ["bulk"]}},
         ]
 
-        result = await handle_put_context(app_state, contexts=contexts)
+        result = await call_tool_with_app_state(put_context, app_state, contexts=contexts)
 
         assert result["success"] is True
         assert result["operation"] == "bulk"
@@ -80,11 +82,13 @@ class TestPutContextIntegration:
     async def test_put_context_overwrites(self, app_state: AppState) -> None:
         """Test that put_context overwrites existing context."""
         # Create initial context
-        await handle_put_context(app_state, name="overwrite-test", text="Original")
+        await call_tool_with_app_state(
+            put_context, app_state, name="overwrite-test", text="Original"
+        )
 
         # Overwrite it
-        result = await handle_put_context(
-            app_state, name="overwrite-test", text="Updated", metadata={"version": 2}
+        result = await call_tool_with_app_state(
+            put_context, app_state, name="overwrite-test", text="Updated", metadata={"version": 2}
         )
 
         assert result["success"] is True
@@ -98,7 +102,7 @@ class TestPutContextIntegration:
     @pytest.mark.asyncio
     async def test_put_context_missing_name(self, app_state: AppState) -> None:
         """Test put context with missing name."""
-        result = await handle_put_context(app_state, text="Content")
+        result = await call_tool_with_app_state(put_context, app_state, text="Content")
 
         assert "error" in result
         assert result["error"]["code"] == "INVALID_PARAMETER"
@@ -106,7 +110,7 @@ class TestPutContextIntegration:
     @pytest.mark.asyncio
     async def test_put_context_missing_text(self, app_state: AppState) -> None:
         """Test put context with missing text."""
-        result = await handle_put_context(app_state, name="test")
+        result = await call_tool_with_app_state(put_context, app_state, name="test")
 
         assert "error" in result
         assert result["error"]["code"] == "INVALID_PARAMETER"
@@ -114,7 +118,9 @@ class TestPutContextIntegration:
     @pytest.mark.asyncio
     async def test_put_context_invalid_name(self, app_state: AppState) -> None:
         """Test put context with invalid name."""
-        result = await handle_put_context(app_state, name="invalid name!", text="Content")
+        result = await call_tool_with_app_state(
+            put_context, app_state, name="invalid name!", text="Content"
+        )
 
         assert "error" in result
         assert result["error"]["code"] == "INVALID_PARAMETER"
@@ -122,8 +128,8 @@ class TestPutContextIntegration:
     @pytest.mark.asyncio
     async def test_put_context_with_none_metadata(self, app_state: AppState) -> None:
         """Test put context with None metadata."""
-        result = await handle_put_context(
-            app_state, name="none-metadata", text="Content", metadata=None
+        result = await call_tool_with_app_state(
+            put_context, app_state, name="none-metadata", text="Content", metadata=None
         )
 
         assert result["success"] is True
@@ -140,8 +146,8 @@ class TestPutContextIntegration:
         metadata_dict = {"type": "test", "category": "integration"}
         metadata_json = json.dumps(metadata_dict)
 
-        result = await handle_put_context(
-            app_state, name="json-metadata", text="Content", metadata=metadata_json
+        result = await call_tool_with_app_state(
+            put_context, app_state, name="json-metadata", text="Content", metadata=metadata_json
         )
 
         assert result["success"] is True
@@ -162,7 +168,7 @@ class TestGetContextIntegration:
         # Save a context first
         app_state.storage.save_context("test-context", "# Test\n\nContent")
 
-        result = await handle_get_context(app_state, name="test-context")
+        result = await call_tool_with_app_state(get_context, app_state, name="test-context")
 
         assert result["success"] is True
         assert result["operation"] == "single"
@@ -173,7 +179,7 @@ class TestGetContextIntegration:
     @pytest.mark.asyncio
     async def test_get_context_not_found(self, app_state: AppState) -> None:
         """Test get context that doesn't exist."""
-        result = await handle_get_context(app_state, name="nonexistent")
+        result = await call_tool_with_app_state(get_context, app_state, name="nonexistent")
 
         assert "error" in result
         assert result["error"]["code"] == "NOT_FOUND"
@@ -187,8 +193,8 @@ class TestGetContextIntegration:
         app_state.storage.save_context("context-2", "Content 2")
         app_state.storage.save_context("context-3", "Content 3")
 
-        result = await handle_get_context(
-            app_state, names=["context-1", "context-2", "nonexistent"]
+        result = await call_tool_with_app_state(
+            get_context, app_state, names=["context-1", "context-2", "nonexistent"]
         )
 
         assert result["success"] is True
@@ -209,7 +215,7 @@ class TestGetContextIntegration:
         app_state.storage.save_context("bulk-1", "Content 1")
         app_state.storage.save_context("bulk-2", "Content 2")
 
-        result = await handle_get_context(app_state, name=["bulk-1", "bulk-2"])
+        result = await call_tool_with_app_state(get_context, app_state, name=["bulk-1", "bulk-2"])
 
         assert result["success"] is True
         assert result["operation"] == "bulk"
@@ -220,7 +226,7 @@ class TestGetContextIntegration:
     @pytest.mark.asyncio
     async def test_get_context_missing_parameter(self, app_state: AppState) -> None:
         """Test get context with missing name/names parameter."""
-        result = await handle_get_context(app_state)
+        result = await call_tool_with_app_state(get_context, app_state)
 
         assert "error" in result
         assert result["error"]["code"] == "INVALID_PARAMETER"
@@ -233,7 +239,7 @@ class TestListContextIntegration:
     @pytest.mark.asyncio
     async def test_list_context_empty(self, app_state: AppState) -> None:
         """Test listing contexts when none exist."""
-        result = await handle_list_context(app_state)
+        result = await call_tool_with_app_state(list_context, app_state)
 
         assert result["success"] is True
         assert result["count"] == 0
@@ -246,7 +252,7 @@ class TestListContextIntegration:
         app_state.storage.save_context("context-2", "Content 2")
         app_state.storage.save_context("context-3", "Content 3")
 
-        result = await handle_list_context(app_state)
+        result = await call_tool_with_app_state(list_context, app_state)
 
         assert result["success"] is True
         assert result["count"] == 3
@@ -270,7 +276,7 @@ class TestListContextIntegration:
         app_state.storage.save_context("context-2", "Content 2")
         app_state.storage.save_context("context-3", "Content 3")
 
-        result = await handle_list_context(app_state, limit=2)
+        result = await call_tool_with_app_state(list_context, app_state, limit=2)
 
         assert result["success"] is True
         assert result["count"] == 2
@@ -285,7 +291,7 @@ class TestListContextIntegration:
         time.sleep(0.1)  # Small delay to ensure different timestamps
         app_state.storage.save_context("new", "New content")
 
-        result = await handle_list_context(app_state)
+        result = await call_tool_with_app_state(list_context, app_state)
 
         assert result["success"] is True
         assert len(result["contexts"]) == 2
@@ -306,7 +312,7 @@ class TestSearchContextIntegration:
             "javascript-code", "JavaScript code example", {"tags": ["js"]}
         )
 
-        result = await handle_search_context(app_state, query="Python")
+        result = await call_tool_with_app_state(search_context, app_state, query="Python")
 
         assert result["success"] is True
         assert result["query"] == "Python"
@@ -320,7 +326,7 @@ class TestSearchContextIntegration:
         app_state.storage.save_context("note-1", "Some content", {"tags": ["python", "test"]})
         app_state.storage.save_context("note-2", "Other content", {"tags": ["js"]})
 
-        result = await handle_search_context(app_state, query="python")
+        result = await call_tool_with_app_state(search_context, app_state, query="python")
 
         assert result["success"] is True
         assert result["count"] == 1
@@ -333,7 +339,7 @@ class TestSearchContextIntegration:
         app_state.storage.save_context("code-2", "Python code")
         app_state.storage.save_context("code-3", "JavaScript code")
 
-        result = await handle_search_context(app_state, query="Python")
+        result = await call_tool_with_app_state(search_context, app_state, query="Python")
 
         assert result["success"] is True
         assert result["count"] == 2
@@ -350,7 +356,7 @@ class TestSearchContextIntegration:
         app_state.storage.save_context("code-2", "Python code")
         app_state.storage.save_context("code-3", "Python code")
 
-        result = await handle_search_context(app_state, query="Python", limit=2)
+        result = await call_tool_with_app_state(search_context, app_state, query="Python", limit=2)
 
         assert result["success"] is True
         assert result["count"] == 2
@@ -361,7 +367,7 @@ class TestSearchContextIntegration:
         """Test searching with empty query."""
         app_state.storage.save_context("test", "Content")
 
-        result = await handle_search_context(app_state, query="")
+        result = await call_tool_with_app_state(search_context, app_state, query="")
 
         assert "error" in result
         assert result["error"]["code"] == "INVALID_PARAMETER"
@@ -371,7 +377,7 @@ class TestSearchContextIntegration:
         """Test that search is case-insensitive."""
         app_state.storage.save_context("test", "Python Code Example")
 
-        result = await handle_search_context(app_state, query="python")
+        result = await call_tool_with_app_state(search_context, app_state, query="python")
 
         assert result["success"] is True
         assert result["count"] == 1
@@ -388,7 +394,7 @@ class TestDeleteContextIntegration:
         # Save a context first
         app_state.storage.save_context("test-context", "Content")
 
-        result = await handle_delete_context(app_state, name="test-context")
+        result = await call_tool_with_app_state(delete_context, app_state, name="test-context")
 
         assert result["success"] is True
         assert result["operation"] == "single"
@@ -400,7 +406,7 @@ class TestDeleteContextIntegration:
     @pytest.mark.asyncio
     async def test_delete_context_not_found(self, app_state: AppState) -> None:
         """Test deleting non-existent context."""
-        result = await handle_delete_context(app_state, name="nonexistent")
+        result = await call_tool_with_app_state(delete_context, app_state, name="nonexistent")
 
         assert "error" in result
         assert result["error"]["code"] == "INVALID_PARAMETER"
@@ -413,8 +419,8 @@ class TestDeleteContextIntegration:
         app_state.storage.save_context("context-2", "Content 2")
         app_state.storage.save_context("context-3", "Content 3")
 
-        result = await handle_delete_context(
-            app_state, names=["context-1", "context-2", "nonexistent"]
+        result = await call_tool_with_app_state(
+            delete_context, app_state, names=["context-1", "context-2", "nonexistent"]
         )
 
         assert result["success"] is True
@@ -438,7 +444,9 @@ class TestDeleteContextIntegration:
         app_state.storage.save_context("bulk-1", "Content 1")
         app_state.storage.save_context("bulk-2", "Content 2")
 
-        result = await handle_delete_context(app_state, name=["bulk-1", "bulk-2"])
+        result = await call_tool_with_app_state(
+            delete_context, app_state, name=["bulk-1", "bulk-2"]
+        )
 
         assert result["success"] is True
         assert result["operation"] == "bulk"
@@ -451,7 +459,7 @@ class TestDeleteContextIntegration:
     @pytest.mark.asyncio
     async def test_delete_context_missing_parameter(self, app_state: AppState) -> None:
         """Test delete context with missing name/names parameter."""
-        result = await handle_delete_context(app_state)
+        result = await call_tool_with_app_state(delete_context, app_state)
 
         assert "error" in result
         assert result["error"]["code"] == "INVALID_PARAMETER"
@@ -465,7 +473,8 @@ class TestEndToEndWorkflows:
     async def test_put_get_list_search_delete_workflow(self, app_state: AppState) -> None:
         """Test complete workflow: put → get → list → search → delete."""
         # Put
-        put_result = await handle_put_context(
+        put_result = await call_tool_with_app_state(
+            put_context,
             app_state,
             name="workflow-test",
             text="Test content for workflow",
@@ -474,30 +483,34 @@ class TestEndToEndWorkflows:
         assert put_result["success"] is True
 
         # Get
-        get_result = await handle_get_context(app_state, name="workflow-test")
+        get_result = await call_tool_with_app_state(get_context, app_state, name="workflow-test")
         assert get_result["success"] is True
         assert get_result["text"] == "Test content for workflow"
 
         # List
-        list_result = await handle_list_context(app_state)
+        list_result = await call_tool_with_app_state(list_context, app_state)
         assert list_result["success"] is True
         assert list_result["count"] >= 1
         names = {ctx["name"] for ctx in list_result["contexts"]}
         assert "workflow-test" in names
 
         # Search
-        search_result = await handle_search_context(app_state, query="workflow")
+        search_result = await call_tool_with_app_state(search_context, app_state, query="workflow")
         assert search_result["success"] is True
         assert search_result["count"] >= 1
         match_names = {match["name"] for match in search_result["matches"]}
         assert "workflow-test" in match_names
 
         # Delete
-        delete_result = await handle_delete_context(app_state, name="workflow-test")
+        delete_result = await call_tool_with_app_state(
+            delete_context, app_state, name="workflow-test"
+        )
         assert delete_result["success"] is True
 
         # Verify deleted
-        get_result_after = await handle_get_context(app_state, name="workflow-test")
+        get_result_after = await call_tool_with_app_state(
+            get_context, app_state, name="workflow-test"
+        )
         assert "error" in get_result_after
         assert get_result_after["error"]["code"] == "NOT_FOUND"
 
@@ -510,18 +523,22 @@ class TestEndToEndWorkflows:
             {"name": "bulk-2", "text": "Content 2"},
             {"name": "bulk-3", "text": "Content 3"},
         ]
-        put_result = await handle_put_context(app_state, contexts=contexts)
+        put_result = await call_tool_with_app_state(put_context, app_state, contexts=contexts)
         assert put_result["success"] is True
         assert put_result["count"] == 3
 
         # Bulk get
-        get_result = await handle_get_context(app_state, names=["bulk-1", "bulk-2", "bulk-3"])
+        get_result = await call_tool_with_app_state(
+            get_context, app_state, names=["bulk-1", "bulk-2", "bulk-3"]
+        )
         assert get_result["success"] is True
         assert get_result["count"] == 3
         assert all(ctx["success"] for ctx in get_result["contexts"])
 
         # Bulk delete
-        delete_result = await handle_delete_context(app_state, names=["bulk-1", "bulk-2", "bulk-3"])
+        delete_result = await call_tool_with_app_state(
+            delete_context, app_state, names=["bulk-1", "bulk-2", "bulk-3"]
+        )
         assert delete_result["success"] is True
         assert delete_result["count"] == 3
         assert all(r["success"] for r in delete_result["results"])
