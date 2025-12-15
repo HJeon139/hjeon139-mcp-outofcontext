@@ -1,0 +1,58 @@
+name: Publish to PyPI (Using API Token)
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install Hatch
+        run: pip install hatch
+      
+      - name: Run full test suite
+        run: hatch run release
+
+  publish:
+    name: Build and Publish to PyPI
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install Hatch
+        run: pip install hatch
+      
+      - name: Build package
+        run: hatch build
+      
+      - name: Publish to PyPI
+        env:
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.PYPI_API_TOKEN }}
+        run: hatch publish
+
+# To use this workflow:
+# 1. Rename this file to publish.yml (remove .example)
+# 2. Go to GitHub repo Settings > Secrets and variables > Actions
+# 3. Click "New repository secret"
+# 4. Name: PYPI_API_TOKEN
+# 5. Value: Your PyPI API token (starts with pypi-)
+# 6. Click "Add secret"
+

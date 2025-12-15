@@ -1,0 +1,72 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0, v1.0.1, etc.
+  workflow_dispatch:  # Allows manual triggering from GitHub UI
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install Hatch
+        run: pip install hatch
+      
+      - name: Run linting
+        run: hatch run lint-fix
+      
+      - name: Run formatting check
+        run: hatch run fmt-fix
+      
+      - name: Run type checking
+        run: hatch run typecheck
+      
+      - name: Run tests
+        run: hatch run pytest -m 'unit' --cov=src/hjeon139_mcp_outofcontext
+      
+      - name: Run integration tests
+        run: hatch run pytest -m 'integration'
+
+  publish:
+    name: Build and Publish to PyPI
+    needs: test  # Only publish if tests pass
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Required for trusted publishing
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install Hatch
+        run: pip install hatch
+      
+      - name: Build package
+        run: hatch build
+      
+      - name: Verify build
+        run: |
+          ls -la dist/
+          echo "Package built successfully"
+      
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Uses PyPI Trusted Publishers (no API token needed!)
+          # See Step 2 below for setup
+          verbose: true
+
