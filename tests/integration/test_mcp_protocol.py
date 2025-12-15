@@ -380,7 +380,11 @@ class TestMCPToolsCall:
 
     @pytest.mark.asyncio
     async def test_call_invalid_tool_name(self, server_params: StdioServerParameters) -> None:
-        """Test calling non-existent tool returns error."""
+        """Test calling non-existent tool returns error.
+
+        Note: FastMCP treats unknown tools as protocol-level errors (isError=True),
+        unlike the old MCP SDK which returned them as successful tool calls with error content.
+        """
         async with (
             stdio_client(server_params) as (read, write),
             ClientSession(read, write) as session,
@@ -389,12 +393,11 @@ class TestMCPToolsCall:
 
             result = await session.call_tool("nonexistent_tool", {})
 
-            assert not result.isError  # MCP doesn't treat this as an error
-            response_text = result.content[0].text
-            response_data = json.loads(response_text)
-
-            assert "error" in response_data
-            assert "not registered" in response_data["error"]["message"].lower()
+            # FastMCP treats unknown tools as protocol-level errors
+            assert result.isError
+            assert len(result.content) > 0
+            error_text = result.content[0].text
+            assert "unknown tool" in error_text.lower() or "not found" in error_text.lower()
 
     @pytest.mark.asyncio
     async def test_error_response_format(self, server_params: StdioServerParameters) -> None:

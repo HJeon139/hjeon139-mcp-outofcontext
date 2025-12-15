@@ -41,7 +41,25 @@ This directory contains documentation for migrating from the standard MCP SDK to
 - ✅ Baseline behavior documented in [phase-0-baseline.md](phase-0-baseline.md)
 - ✅ Tests can be run with `hatch test -m integration`
 
-**Next**: Proceed to [Phase 1: Basic Migration](phase-1-basic-migration.md)
+### ✅ Phase 1: Basic Migration (COMPLETE)
+
+- ✅ Updated dependencies: replaced `mcp>=1.0.0` with `fastmcp>=2.11.0`
+- ✅ Created `fastmcp_server.py` with FastMCP instance and `AppStateMiddleware` for dependency injection
+- ✅ Created `fastmcp_tools.py` with all 5 CRUD tool wrappers using `@mcp.tool()` decorators
+- ✅ Updated `main.py` with synchronous initialization (mcp.run() is synchronous)
+- ✅ Added `register_tools()` function to `tools/crud/__init__.py`
+- ✅ All 91 unit tests passing with 80% code coverage
+- ✅ All 84 integration tests passing (verified feature parity)
+- ✅ Tools verified working via direct MCP tool invocation
+- ✅ Release pipeline passes (linting, formatting, type checking, tests, build)
+
+**Implementation Details:**
+- Tools use context state injection via `ctx.get_state("app_state")` (no global variables)
+- Middleware pattern follows FastMCP best practices for dependency injection
+- All existing handler functions preserved for feature parity
+- Old `server.py` and `tool_registry.py` kept for Phase 2 removal
+
+**Next**: Proceed to [Phase 2: Remove Tool Registry](phase-2-remove-registry.md)
 
 ## Important Notes
 

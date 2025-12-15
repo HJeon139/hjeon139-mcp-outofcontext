@@ -15,7 +15,7 @@ from .models import (
 from .put_context import handle_put_context
 from .search_context import handle_search_context
 
-__all__ = ["register_crud_tools"]
+__all__ = ["register_crud_tools", "register_tools"]
 
 
 def register_crud_tools(registry: ToolRegistry, app_state: AppState) -> None:
@@ -91,3 +91,13 @@ def register_crud_tools(registry: ToolRegistry, app_state: AppState) -> None:
         ),
         params_model=DeleteContextParams,
     )
+
+
+def register_tools() -> None:
+    """Register all CRUD tools with FastMCP.
+
+    Tools are registered via @mcp.tool() decorators when imported.
+    This function ensures all tool modules are imported.
+    """
+    # Import all tool modules (decorators register tools on import)
+    from . import fastmcp_tools  # noqa: F401

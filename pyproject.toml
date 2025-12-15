@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hjeon139-mcp-outofcontext"
-version = "0.15.0"
+version = "0.15.1"
 description = "Out of context project"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -13,7 +13,7 @@ authors = [
 ]
 license = { text = "MIT" }
 dependencies = [
-    "mcp>=1.0.0",
+    "fastmcp>=2.11.0",
     "pydantic>=2.0.0",
     "pyyaml>=6.0.0",
 ]
@@ -27,6 +27,7 @@ dev = [
     "mypy>=1.11.0",
     "pre-commit>=3.6.0",
     "types-PyYAML>=6.0.0",
+    "uvicorn>=0.30.0",
 ]
 
 [tool.hatch.metadata]
@@ -106,6 +107,10 @@ ignore = [
   "E203", # whitespace before ':', conflicts with common formatter styles
   "E501", # line length handled by formatter; keep checks lightweight
 ]
+
+[tool.ruff.lint.per-file-ignores]
+# FastMCP uses CurrentContext() in defaults for dependency injection (correct pattern)
+"src/hjeon139_mcp_outofcontext/tools/crud/fastmcp_tools.py" = ["B008"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["hjeon139_mcp_outofcontext"]
