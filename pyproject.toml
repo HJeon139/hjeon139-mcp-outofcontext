@@ -4,19 +4,36 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hjeon139-mcp-outofcontext"
-version = "1.0.0"
-description = "Out of context project"
+version = "1.0.1"
+description = "MCP server for context management with markdown storage, CRUD operations, and search"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
-  { name = "Your Name", email = "your@email.com" },
+  { name = "Hal Jeon", email = "hjeon139@gmail.com" },
 ]
-license = { text = "MIT" }
+license = { text = "Apache-2.0" }
+keywords = ["mcp", "model-context-protocol", "context-management", "fastmcp", "ai", "llm", "memory"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "fastmcp>=2.11.0",
     "pydantic>=2.0.0",
     "pyyaml>=6.0.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/HJeon139/hjeon139-mcp-outofcontext"
+Repository = "https://github.com/HJeon139/hjeon139-mcp-outofcontext"
+Issues = "https://github.com/HJeon139/hjeon139-mcp-outofcontext/issues"
+Changelog = "https://github.com/HJeon139/hjeon139-mcp-outofcontext/releases"
 
 [project.scripts]
 hjeon139_mcp_outofcontext = "hjeon139_mcp_outofcontext.main:main"
