@@ -3,6 +3,7 @@
 import logging
 import sys
 
+from hjeon139_mcp_outofcontext import prompts as _prompts  # noqa: F401
 from hjeon139_mcp_outofcontext.config import load_config
 from hjeon139_mcp_outofcontext.fastmcp_server import initialize_app_state, mcp, register_all_tools
 

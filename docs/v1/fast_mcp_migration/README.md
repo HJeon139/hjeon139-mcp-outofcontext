@@ -94,31 +94,18 @@ tools/
 
 **Next**: Proceed to [Phase 3: FastMCP Features](phase-3-fastmcp-features.md) (optional) or [Phase 5: Validation](phase-5-validation.md)
 
-### ✅ Phase 4: Development Auto-Reload (COMPLETE)
+### ⚠️ Phase 4: Development Auto-Reload (ABANDONED)
 
-Phase 4 enables auto-reload for development workflows using hot module replacement with stdio transport.
+Auto-reload experiments (mcp-hmr, watchfiles, process restarts) were removed. The server now runs without hot reload; restart manually when code changes. We reverted to decorator-based tool/prompt registration and removed all HMR/file-watcher tooling and dependencies.
 
-**Development Auto-Reload:**
-- **Stdio transport**: Hot module replacement using `mcp-hmr` (external tool)
-  - Maintains connection to Cursor during reloads
-  - Only reloads changed modules (faster than full restart)
-  - Requires development wrapper script for initialization
-
-**Key Design Decisions:**
-- Focus on improving development workflow without changing production setup
-- Use `mcp-hmr` for stdio transport auto-reload
-- Keep production configuration unchanged (continue using standard `python` command)
-- Development mode uses `mcp-hmr` wrapper for auto-reload
-
-**Implementation Details:**
-- ✅ `mcp-hmr>=0.1.0` added to dev dependencies in `pyproject.toml`
-- ✅ Development wrapper script created at `scripts/mcp_dev.py`
-- ✅ Wrapper initializes config, AppState, and registers all tools before exporting `mcp` instance
-- ✅ Configuration documented in [phase-4-auto-reload.md](phase-4-auto-reload.md)
+**Current state:**
+- No auto-reload in development (stdIO server runs once; restart on change).
+- Decorator-based tools and prompts are restored; new prompt file `prompts.py` registers prompts via `@mcp.prompt()`.
+- HMR-related files/scripts/dependencies removed (`filewatcher.py`, `mcp-hmr`, `watchfiles`, HMR scripts).
 
 **Usage:**
-- **Development mode**: Update Cursor config to use `mcp-hmr` with `scripts.mcp_dev:mcp`
-- **Production mode**: Use `hjeon139_mcp_outofcontext` command (installed via pip)
+- Run normally: `python -m hjeon139_mcp_outofcontext.main`
+- Restart the process after edits to pick up changes.
 
 **Next**: Proceed to [Phase 6: Cleanup](phase-6-cleanup.md)
 
