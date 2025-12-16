@@ -1,0 +1,531 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "created_date": "2024-12-16",
+    "num_queries": 55,
+    "description": "Evaluation test set for semantic search quality validation",
+    "author": "ML Scientist",
+    "target_distribution": {
+      "how-to": 22,
+      "factual": 17,
+      "troubleshooting": 11,
+      "comparison": 5
+    },
+    "notes": "Test set created based on existing MCP contexts and anticipated usage patterns for context management tool"
+  },
+  "queries": [
+    {
+      "id": "q001",
+      "query": "How do I set up context management for my project?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "context-management",
+        "key-documents-index"
+      ],
+      "notes": "Broad onboarding query"
+    },
+    {
+      "id": "q002",
+      "query": "What is the out-of-context MCP server?",
+      "type": "factual",
+      "relevant_contexts": [
+        "project-overview"
+      ],
+      "notes": "High-level project understanding"
+    },
+    {
+      "id": "q003",
+      "query": "How do I create a new context?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Common operational task"
+    },
+    {
+      "id": "q004",
+      "query": "What are the scientist and developer personas?",
+      "type": "factual",
+      "relevant_contexts": [
+        "persona-definitions"
+      ],
+      "notes": "Role understanding query"
+    },
+    {
+      "id": "q005",
+      "query": "What is semantic search and why do we need it?",
+      "type": "factual",
+      "relevant_contexts": [
+        "project-overview",
+        "decision-log"
+      ],
+      "notes": "Feature understanding"
+    },
+    {
+      "id": "q006",
+      "query": "How do I fetch contexts at the start of a session?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "context-management",
+        "current-status"
+      ],
+      "notes": "Workflow query"
+    },
+    {
+      "id": "q007",
+      "query": "What is the current status of the database enhancement?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "current-status"
+      ],
+      "notes": "Status check query"
+    },
+    {
+      "id": "q008",
+      "query": "When should I update the decision log?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "context-management",
+        "decision-log"
+      ],
+      "notes": "Context update guidelines"
+    },
+    {
+      "id": "q009",
+      "query": "What are the constraints for the semantic search implementation?",
+      "type": "factual",
+      "relevant_contexts": [
+        "project-overview",
+        "decision-log"
+      ],
+      "notes": "Technical requirements query"
+    },
+    {
+      "id": "q010",
+      "query": "How many contexts should I fetch per session?",
+      "type": "factual",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Best practices query"
+    },
+    {
+      "id": "q011",
+      "query": "What is the MVP scope for semantic search?",
+      "type": "factual",
+      "relevant_contexts": [
+        "project-overview",
+        "decision-log"
+      ],
+      "notes": "Scope understanding"
+    },
+    {
+      "id": "q012",
+      "query": "How do I handle stale contexts?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Troubleshooting/maintenance query"
+    },
+    {
+      "id": "q013",
+      "query": "What are the scientist's action items?",
+      "type": "factual",
+      "relevant_contexts": [
+        "persona-definitions",
+        "current-status"
+      ],
+      "notes": "Task list query"
+    },
+    {
+      "id": "q014",
+      "query": "What embedding model are we using?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "notes": "Technical detail query"
+    },
+    {
+      "id": "q015",
+      "query": "How do I validate that contexts match reality?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Quality assurance query"
+    },
+    {
+      "id": "q016",
+      "query": "What is the difference between storage and retrieval limits?",
+      "type": "comparison",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Conceptual distinction"
+    },
+    {
+      "id": "q017",
+      "query": "Why was BM25 moved to Phase 2?",
+      "type": "factual",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "notes": "Decision rationale query"
+    },
+    {
+      "id": "q018",
+      "query": "What are the acceptance criteria for the MVP?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "current-status",
+        "decision-log"
+      ],
+      "notes": "Success criteria query"
+    },
+    {
+      "id": "q019",
+      "query": "How do I create an evaluation test set?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "current-status"
+      ],
+      "notes": "Task-specific query"
+    },
+    {
+      "id": "q020",
+      "query": "What transport does the MCP server use?",
+      "type": "troubleshooting",
+      "relevant_contexts": [
+        "project-overview",
+        "decision-log"
+      ],
+      "notes": "Technical architecture query"
+    },
+    {
+      "id": "q021",
+      "query": "Context says Week 1 but we're in Week 3 - what should I do?",
+      "type": "troubleshooting",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Staleness scenario"
+    },
+    {
+      "id": "q022",
+      "query": "What file format are contexts stored in?",
+      "type": "factual",
+      "relevant_contexts": [
+        "project-overview"
+      ],
+      "notes": "Storage detail query"
+    },
+    {
+      "id": "q023",
+      "query": "How do I delete a context?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "CRUD operation query"
+    },
+    {
+      "id": "q024",
+      "query": "What is the role of the ML scientist persona?",
+      "type": "troubleshooting",
+      "relevant_contexts": [
+        "persona-definitions"
+      ],
+      "notes": "Role definition query"
+    },
+    {
+      "id": "q025",
+      "query": "When should I create a new context vs update existing?",
+      "type": "comparison",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Decision guidance"
+    },
+    {
+      "id": "q026",
+      "query": "What is the target improvement for semantic search?",
+      "type": "factual",
+      "relevant_contexts": [
+        "decision-log",
+        "current-status"
+      ],
+      "notes": "Metric target query"
+    },
+    {
+      "id": "q027",
+      "query": "How do I start a new session on this project?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "context-management",
+        "key-documents-index"
+      ],
+      "notes": "Onboarding workflow"
+    },
+    {
+      "id": "q028",
+      "query": "What are the research tasks that were removed?",
+      "type": "troubleshooting",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "notes": "Historical change query"
+    },
+    {
+      "id": "q029",
+      "query": "How do I prevent contexts from becoming stale?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Preventive maintenance"
+    },
+    {
+      "id": "q030",
+      "query": "What is the scale target for the database?",
+      "type": "factual",
+      "relevant_contexts": [
+        "project-overview",
+        "decision-log"
+      ],
+      "notes": "Capacity planning query"
+    },
+    {
+      "id": "q031",
+      "query": "Why use eventual consistency instead of strong consistency?",
+      "type": "comparison",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "notes": "Design rationale"
+    },
+    {
+      "id": "q032",
+      "query": "Context conflicts with git history - which should I trust?",
+      "type": "troubleshooting",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Conflict resolution scenario"
+    },
+    {
+      "id": "q033",
+      "query": "What are the key documents I should read?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "key-documents-index"
+      ],
+      "notes": "Documentation discovery"
+    },
+    {
+      "id": "q034",
+      "query": "How do I update current-status after completing work?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "context-management",
+        "current-status"
+      ],
+      "notes": "Status update workflow"
+    },
+    {
+      "id": "q035",
+      "query": "What is the critical path to MVP?",
+      "type": "factual",
+      "relevant_contexts": [
+        "current-status"
+      ],
+      "notes": "Project timeline query"
+    },
+    {
+      "id": "q036",
+      "query": "Which vector databases are being considered?",
+      "type": "factual",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "notes": "Technology options query"
+    },
+    {
+      "id": "q037",
+      "query": "How do I know if a context is stale?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Detection heuristics"
+    },
+    {
+      "id": "q038",
+      "query": "What is the two-persona approach?",
+      "type": "troubleshooting",
+      "relevant_contexts": [
+        "persona-definitions"
+      ],
+      "notes": "Methodology query"
+    },
+    {
+      "id": "q039",
+      "query": "I have 100 contexts - should I fetch them all?",
+      "type": "troubleshooting",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Scale scenario"
+    },
+    {
+      "id": "q040",
+      "query": "What evidence supports the 30% improvement target?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "notes": "Evidence-based reasoning query"
+    },
+    {
+      "id": "q041",
+      "query": "How do I coordinate with the developer persona?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "persona-definitions",
+        "current-status"
+      ],
+      "notes": "Collaboration workflow"
+    },
+    {
+      "id": "q042",
+      "query": "What does STDIO transport mean for the implementation?",
+      "type": "troubleshooting",
+      "relevant_contexts": [
+        "project-overview",
+        "decision-log"
+      ],
+      "notes": "Technical constraint query"
+    },
+    {
+      "id": "q043",
+      "query": "When should I delete a context?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Lifecycle management"
+    },
+    {
+      "id": "q044",
+      "query": "What is the next action to take?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "current-status"
+      ],
+      "notes": "Next step query"
+    },
+    {
+      "id": "q045",
+      "query": "Why use sentence-transformers for embeddings?",
+      "type": "troubleshooting",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "notes": "Technology justification"
+    },
+    {
+      "id": "q046",
+      "query": "Context list is too long - how do I clean it up?",
+      "type": "troubleshooting",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Maintenance scenario"
+    },
+    {
+      "id": "q047",
+      "query": "What are the developer's responsibilities vs scientist's?",
+      "type": "comparison",
+      "relevant_contexts": [
+        "persona-definitions"
+      ],
+      "notes": "Role boundary query"
+    },
+    {
+      "id": "q048",
+      "query": "How do I search for contexts by topic?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Search operation query"
+    },
+    {
+      "id": "q049",
+      "query": "What files should I read to understand the project?",
+      "type": "factual",
+      "relevant_contexts": [
+        "key-documents-index",
+        "current-status"
+      ],
+      "notes": "Onboarding query"
+    },
+    {
+      "id": "q050",
+      "query": "Test set shows contexts are severely outdated - how to recover?",
+      "type": "troubleshooting",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Recovery scenario"
+    },
+    {
+      "id": "q051",
+      "query": "What is the latency requirement for semantic search?",
+      "type": "factual",
+      "relevant_contexts": [
+        "project-overview",
+        "decision-log"
+      ],
+      "notes": "Performance requirement"
+    },
+    {
+      "id": "q052",
+      "query": "Which contexts should I always fetch at session start?",
+      "type": "factual",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "notes": "Best practice query"
+    },
+    {
+      "id": "q053",
+      "query": "What is evidence-first methodology?",
+      "type": "factual",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "notes": "Methodology concept"
+    },
+    {
+      "id": "q054",
+      "query": "How do I know if my test set is good enough?",
+      "type": "how-to",
+      "relevant_contexts": [
+        "current-status"
+      ],
+      "notes": "Quality validation query"
+    },
+    {
+      "id": "q055",
+      "query": "What is the difference between scientist and developer action items?",
+      "type": "comparison",
+      "relevant_contexts": [
+        "persona-definitions",
+        "current-status"
+      ],
+      "notes": "Task distinction query"
+    }
+  ]
+}
