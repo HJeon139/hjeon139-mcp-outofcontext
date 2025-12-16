@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hjeon139-mcp-outofcontext"
-version = "1.1.0"
+version = "1.1.1"
 description = "MCP server for context management with markdown storage, CRUD operations, and search"
 readme = "README.md"
 requires-python = ">=3.11"

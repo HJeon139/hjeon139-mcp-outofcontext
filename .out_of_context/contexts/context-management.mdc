@@ -1,0 +1,149 @@
+---
+type: workflow
+source: cursor-rules
+last-updated: '2024-12-16'
+name: context-management
+created_at: '2025-12-16T13:02:06.716675'
+---
+
+# Context Management - Quick Reference
+
+**Purpose:** Guidelines for managing MCP contexts across agent sessions
+
+---
+
+## Session Start Checklist
+
+**Every new session - ALWAYS fetch:**
+```
+get_context names=["project-overview", "current-status"]
+```
+
+**Role-specific contexts:**
+- ML Scientist: fetch `persona-definitions`, `decision-log`
+- Developer: fetch `persona-definitions`, `key-documents-index`
+
+---
+
+## When to Update Contexts
+
+### Update `current-status` when:
+- Completing an action item
+- Changing phase (requirements → implementation → evaluation)
+- Unblocking a task or encountering a blocker
+- Making progress on current work
+
+### Update `decision-log` when:
+- Making a key technology choice
+- Changing a requirement or constraint
+- Making a design decision affecting multiple components
+- Discovering an issue that changes approach
+
+---
+
+## Context Fetching Strategy
+
+**Storage vs Retrieval:**
+- **Storage:** Unlimited - store as many contexts as helpful
+- **Retrieval:** Limited - fetch < 10 contexts per session (< 20k tokens)
+
+**Best practices:**
+- ✅ Use `get_context` with specific names
+- ✅ Start with 2-5 most relevant contexts
+- ✅ Fetch only what you need for current task
+- ⚠️ Use `list_context` with limit parameter
+- ❌ Don't fetch all contexts at once
+
+---
+
+## Staleness Detection
+
+**Context is stale if:**
+- `last-updated` date is > 2 weeks old during active development
+- References a completed phase
+- Contains decisions that were overridden
+- Links to files that no longer exist
+
+**How to handle:**
+1. Verify ground truth (check files, git history)
+2. Update context with correct information
+3. Document correction in decision-log
+4. **Trust git** - if context conflicts with git, git is ground truth
+
+---
+
+## Context Lifecycle
+
+### When to Create New Context
+- Starting a new major phase
+- Documenting a complex decision needing detail
+- Capturing lessons learned
+
+### When to Delete Context
+- Phase is complete and archived
+- Decision is superseded
+- Temporary/scratch context no longer needed
+
+**Before deleting:**
+1. Archive important info to permanent context
+2. Verify not referenced elsewhere
+3. Document deletion in decision-log
+
+---
+
+## Common Workflows
+
+### Starting Work
+```
+1. Fetch: get_context names=["project-overview", "current-status"]
+2. Review: What's done, what's next
+3. Fetch role-specific contexts if needed
+4. Begin work
+```
+
+### After Completing Work
+```
+1. Update: put_context name="current-status" (mark completed)
+2. Update: put_context name="decision-log" (if decisions made)
+3. Identify: What's now unblocked
+```
+
+### Handling Conflicts
+```
+If context contradicts reality:
+1. Check git history (ground truth)
+2. Update context with correct info
+3. Document correction in decision-log
+```
+
+---
+
+## Anti-Patterns (Don't Do This)
+
+❌ **Don't:** Store large documents in context (use git instead)  
+✅ **Do:** Store references to git files
+
+❌ **Don't:** Create duplicate contexts for same topic  
+✅ **Do:** One canonical context per topic, update it
+
+❌ **Don't:** Let contexts get stale  
+✅ **Do:** Update at end of each work session
+
+❌ **Don't:** Fetch 50+ contexts at once  
+✅ **Do:** Be selective, < 10 contexts per session
+
+---
+
+## Key Principles
+
+1. **Storage unlimited, retrieval limited** - Store everything, fetch selectively
+2. **Git is ground truth** - Trust git over contexts when conflict
+3. **Update after work** - Keep current-status fresh
+4. **Be selective** - Fetch only what you need
+5. **Check staleness** - Verify `last-updated` dates
+6. **Document changes** - Log important updates in decision-log
+
+---
+
+**Full documentation:** `.cursor/rules/context-management.mdc`  
+**Last Updated:** 2024-12-16

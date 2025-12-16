@@ -1,0 +1,1218 @@
+{
+  "metadata": {
+    "evaluation_date": "2025-12-16T13:03:53.799263",
+    "search_method": "substring",
+    "test_set_version": "1.0.0",
+    "num_queries": 55,
+    "system_info": {
+      "num_contexts": 6,
+      "contexts_directory": ".out_of_context/contexts"
+    }
+  },
+  "metrics": {
+    "precision_at_5": 0.2545454545454545,
+    "recall_at_5": 0.9454545454545454,
+    "mrr": 0.6518181818181819,
+    "ndcg_at_10": 0.74176923163691
+  },
+  "per_query_results": [
+    {
+      "query_id": "q001",
+      "query": "How do I set up context management for my project?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "context-management",
+        "key-documents-index"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "project-overview",
+        "context-management",
+        "persona-definitions"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.3333333333333333,
+      "ndcg_at_10": 0.5437713091520254
+    },
+    {
+      "query_id": "q002",
+      "query": "What is the out-of-context MCP server?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "project-overview"
+      ],
+      "retrieved_contexts": [
+        "project-overview",
+        "persona-definitions",
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "context-management"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q003",
+      "query": "How do I create a new context?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "decision-log",
+        "key-documents-index",
+        "context-management",
+        "current-status",
+        "project-overview"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.25,
+      "ndcg_at_10": 0.43067655807339306
+    },
+    {
+      "query_id": "q004",
+      "query": "What are the scientist and developer personas?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "persona-definitions"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "context-management",
+        "project-overview"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q005",
+      "query": "What is semantic search and why do we need it?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "project-overview",
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "project-overview",
+        "context-management"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.3333333333333333,
+      "ndcg_at_10": 0.5437713091520254
+    },
+    {
+      "query_id": "q006",
+      "query": "How do I fetch contexts at the start of a session?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "context-management",
+        "current-status"
+      ],
+      "retrieved_contexts": [
+        "key-documents-index",
+        "current-status",
+        "context-management",
+        "decision-log",
+        "project-overview"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6934264036172708
+    },
+    {
+      "query_id": "q007",
+      "query": "What is the current status of the database enhancement?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "current-status"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "project-overview",
+        "context-management",
+        "persona-definitions"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q008",
+      "query": "When should I update the decision log?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "context-management",
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "context-management",
+        "persona-definitions"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6509209298071326
+    },
+    {
+      "query_id": "q009",
+      "query": "What are the constraints for the semantic search implementation?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "project-overview",
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "decision-log",
+        "key-documents-index",
+        "project-overview",
+        "current-status"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6509209298071326
+    },
+    {
+      "query_id": "q010",
+      "query": "How many contexts should I fetch per session?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "key-documents-index",
+        "context-management",
+        "current-status",
+        "decision-log",
+        "project-overview",
+        "persona-definitions"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6309297535714575
+    },
+    {
+      "query_id": "q011",
+      "query": "What is the MVP scope for semantic search?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "project-overview",
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "decision-log",
+        "persona-definitions",
+        "key-documents-index",
+        "project-overview"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6240505200038379
+    },
+    {
+      "query_id": "q012",
+      "query": "How do I handle stale contexts?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "context-management",
+        "persona-definitions",
+        "decision-log"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q013",
+      "query": "What are the scientist's action items?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "persona-definitions",
+        "current-status"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "decision-log",
+        "current-status",
+        "key-documents-index",
+        "project-overview",
+        "context-management"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 0.9197207891481876
+    },
+    {
+      "query_id": "q014",
+      "query": "What embedding model are we using?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "decision-log",
+        "project-overview",
+        "persona-definitions"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q015",
+      "query": "How do I validate that contexts match reality?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "decision-log",
+        "current-status",
+        "project-overview",
+        "persona-definitions",
+        "key-documents-index",
+        "context-management"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 0,
+      "precision_at_5": 0.0,
+      "recall_at_5": 0.0,
+      "reciprocal_rank": 0.16666666666666666,
+      "ndcg_at_10": 0.3562071871080222
+    },
+    {
+      "query_id": "q016",
+      "query": "What is the difference between storage and retrieval limits?",
+      "query_type": "comparison",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "decision-log",
+        "context-management",
+        "persona-definitions",
+        "current-status",
+        "key-documents-index",
+        "project-overview"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6309297535714575
+    },
+    {
+      "query_id": "q017",
+      "query": "Why was BM25 moved to Phase 2?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "decision-log",
+        "current-status",
+        "key-documents-index",
+        "project-overview",
+        "context-management"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q018",
+      "query": "What are the acceptance criteria for the MVP?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "current-status",
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "decision-log",
+        "current-status",
+        "project-overview"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6934264036172708
+    },
+    {
+      "query_id": "q019",
+      "query": "How do I create an evaluation test set?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "current-status"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "project-overview",
+        "context-management"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6309297535714575
+    },
+    {
+      "query_id": "q020",
+      "query": "What transport does the MCP server use?",
+      "query_type": "troubleshooting",
+      "relevant_contexts": [
+        "project-overview",
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "project-overview",
+        "current-status",
+        "decision-log",
+        "persona-definitions",
+        "key-documents-index",
+        "context-management"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 0.9197207891481876
+    },
+    {
+      "query_id": "q021",
+      "query": "Context says Week 1 but we're in Week 3 - what should I do?",
+      "query_type": "troubleshooting",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "context-management",
+        "decision-log",
+        "key-documents-index",
+        "project-overview"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6309297535714575
+    },
+    {
+      "query_id": "q022",
+      "query": "What file format are contexts stored in?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "project-overview"
+      ],
+      "retrieved_contexts": [
+        "project-overview",
+        "context-management",
+        "current-status",
+        "decision-log",
+        "persona-definitions",
+        "key-documents-index"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q023",
+      "query": "How do I delete a context?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "project-overview",
+        "context-management"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6309297535714575
+    },
+    {
+      "query_id": "q024",
+      "query": "What is the role of the ML scientist persona?",
+      "query_type": "troubleshooting",
+      "relevant_contexts": [
+        "persona-definitions"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "key-documents-index",
+        "context-management",
+        "current-status",
+        "decision-log",
+        "project-overview"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q025",
+      "query": "When should I create a new context vs update existing?",
+      "query_type": "comparison",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "decision-log",
+        "key-documents-index",
+        "context-management",
+        "current-status",
+        "persona-definitions",
+        "project-overview"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.3333333333333333,
+      "ndcg_at_10": 0.5
+    },
+    {
+      "query_id": "q026",
+      "query": "What is the target improvement for semantic search?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "decision-log",
+        "current-status"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "decision-log",
+        "project-overview",
+        "current-status",
+        "key-documents-index"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6509209298071326
+    },
+    {
+      "query_id": "q027",
+      "query": "How do I start a new session on this project?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "context-management",
+        "key-documents-index"
+      ],
+      "retrieved_contexts": [
+        "key-documents-index",
+        "context-management",
+        "current-status",
+        "decision-log",
+        "persona-definitions",
+        "project-overview"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q028",
+      "query": "What are the research tasks that were removed?",
+      "query_type": "troubleshooting",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "decision-log",
+        "key-documents-index"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6309297535714575
+    },
+    {
+      "query_id": "q029",
+      "query": "How do I prevent contexts from becoming stale?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "decision-log",
+        "current-status",
+        "key-documents-index",
+        "project-overview",
+        "context-management"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.2,
+      "ndcg_at_10": 0.38685280723454163
+    },
+    {
+      "query_id": "q030",
+      "query": "What is the scale target for the database?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "project-overview",
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "decision-log",
+        "project-overview"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6934264036172708
+    },
+    {
+      "query_id": "q031",
+      "query": "Why use eventual consistency instead of strong consistency?",
+      "query_type": "comparison",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "decision-log",
+        "persona-definitions",
+        "project-overview",
+        "context-management",
+        "current-status",
+        "key-documents-index"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q032",
+      "query": "Context conflicts with git history - which should I trust?",
+      "query_type": "troubleshooting",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "context-management",
+        "decision-log",
+        "current-status",
+        "key-documents-index",
+        "project-overview"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q033",
+      "query": "What are the key documents I should read?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "key-documents-index"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "context-management",
+        "persona-definitions",
+        "project-overview"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.3333333333333333,
+      "ndcg_at_10": 0.5
+    },
+    {
+      "query_id": "q034",
+      "query": "How do I update current-status after completing work?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "context-management",
+        "current-status"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "context-management",
+        "decision-log",
+        "key-documents-index"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q035",
+      "query": "What is the critical path to MVP?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "current-status"
+      ],
+      "retrieved_contexts": [
+        "current-status"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q036",
+      "query": "Which vector databases are being considered?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "current-status",
+        "decision-log",
+        "project-overview"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.3333333333333333,
+      "ndcg_at_10": 0.5
+    },
+    {
+      "query_id": "q037",
+      "query": "How do I know if a context is stale?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "project-overview",
+        "context-management"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.2,
+      "ndcg_at_10": 0.38685280723454163
+    },
+    {
+      "query_id": "q038",
+      "query": "What is the two-persona approach?",
+      "query_type": "troubleshooting",
+      "relevant_contexts": [
+        "persona-definitions"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "current-status"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q039",
+      "query": "I have 100 contexts - should I fetch them all?",
+      "query_type": "troubleshooting",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "project-overview",
+        "context-management",
+        "persona-definitions"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.2,
+      "ndcg_at_10": 0.38685280723454163
+    },
+    {
+      "query_id": "q040",
+      "query": "What evidence supports the 30% improvement target?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "decision-log",
+        "project-overview",
+        "current-status"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6309297535714575
+    },
+    {
+      "query_id": "q041",
+      "query": "How do I coordinate with the developer persona?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "persona-definitions",
+        "current-status"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "project-overview",
+        "context-management"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q042",
+      "query": "What does STDIO transport mean for the implementation?",
+      "query_type": "troubleshooting",
+      "relevant_contexts": [
+        "project-overview",
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "decision-log",
+        "project-overview",
+        "persona-definitions",
+        "current-status"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q043",
+      "query": "When should I delete a context?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "project-overview",
+        "context-management"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6309297535714575
+    },
+    {
+      "query_id": "q044",
+      "query": "What is the next action to take?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "current-status"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "context-management",
+        "persona-definitions",
+        "project-overview"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q045",
+      "query": "Why use sentence-transformers for embeddings?",
+      "query_type": "troubleshooting",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "decision-log",
+        "persona-definitions",
+        "current-status",
+        "key-documents-index",
+        "project-overview",
+        "context-management"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q046",
+      "query": "Context list is too long - how do I clean it up?",
+      "query_type": "troubleshooting",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "project-overview",
+        "context-management",
+        "decision-log",
+        "key-documents-index",
+        "persona-definitions",
+        "current-status"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6309297535714575
+    },
+    {
+      "query_id": "q047",
+      "query": "What are the developer's responsibilities vs scientist's?",
+      "query_type": "comparison",
+      "relevant_contexts": [
+        "persona-definitions"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "decision-log",
+        "key-documents-index"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    },
+    {
+      "query_id": "q048",
+      "query": "How do I search for contexts by topic?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "project-overview",
+        "persona-definitions",
+        "context-management"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 0,
+      "precision_at_5": 0.0,
+      "recall_at_5": 0.0,
+      "reciprocal_rank": 0.16666666666666666,
+      "ndcg_at_10": 0.3562071871080222
+    },
+    {
+      "query_id": "q049",
+      "query": "What files should I read to understand the project?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "key-documents-index",
+        "current-status"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "project-overview",
+        "context-management"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 0.9197207891481876
+    },
+    {
+      "query_id": "q050",
+      "query": "Test set shows contexts are severely outdated - how to recover?",
+      "query_type": "troubleshooting",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "persona-definitions",
+        "project-overview",
+        "context-management"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 0,
+      "precision_at_5": 0.0,
+      "recall_at_5": 0.0,
+      "reciprocal_rank": 0.16666666666666666,
+      "ndcg_at_10": 0.3562071871080222
+    },
+    {
+      "query_id": "q051",
+      "query": "What is the latency requirement for semantic search?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "project-overview",
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "decision-log",
+        "project-overview",
+        "current-status",
+        "key-documents-index",
+        "context-management"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6934264036172708
+    },
+    {
+      "query_id": "q052",
+      "query": "Which contexts should I always fetch at session start?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "context-management"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "decision-log",
+        "context-management",
+        "key-documents-index",
+        "project-overview"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.3333333333333333,
+      "ndcg_at_10": 0.5
+    },
+    {
+      "query_id": "q053",
+      "query": "What is evidence-first methodology?",
+      "query_type": "factual",
+      "relevant_contexts": [
+        "decision-log"
+      ],
+      "retrieved_contexts": [
+        "current-status",
+        "decision-log"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6309297535714575
+    },
+    {
+      "query_id": "q054",
+      "query": "How do I know if my test set is good enough?",
+      "query_type": "how-to",
+      "relevant_contexts": [
+        "current-status"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "current-status",
+        "decision-log",
+        "key-documents-index"
+      ],
+      "num_relevant_total": 1,
+      "num_relevant_retrieved_at_5": 1,
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5,
+      "ndcg_at_10": 0.6309297535714575
+    },
+    {
+      "query_id": "q055",
+      "query": "What is the difference between scientist and developer action items?",
+      "query_type": "comparison",
+      "relevant_contexts": [
+        "persona-definitions",
+        "current-status"
+      ],
+      "retrieved_contexts": [
+        "persona-definitions",
+        "current-status",
+        "decision-log",
+        "key-documents-index",
+        "context-management",
+        "project-overview"
+      ],
+      "num_relevant_total": 2,
+      "num_relevant_retrieved_at_5": 2,
+      "precision_at_5": 0.4,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_10": 1.0
+    }
+  ],
+  "metrics_by_type": {
+    "comparison": {
+      "count": 5,
+      "precision_at_5": 0.24000000000000005,
+      "recall_at_5": 1.0,
+      "mrr": 0.7666666666666667,
+      "ndcg_at_10": 0.8261859507142916
+    },
+    "troubleshooting": {
+      "count": 11,
+      "precision_at_5": 0.21818181818181823,
+      "recall_at_5": 0.9090909090909091,
+      "mrr": 0.7151515151515151,
+      "ndcg_at_10": 0.7777790949277386
+    },
+    "how-to": {
+      "count": 22,
+      "precision_at_5": 0.24545454545454548,
+      "recall_at_5": 0.9090909090909091,
+      "mrr": 0.5750000000000001,
+      "ndcg_at_10": 0.6887722891277049
+    },
+    "factual": {
+      "count": 17,
+      "precision_at_5": 0.29411764705882354,
+      "recall_at_5": 1.0,
+      "mrr": 0.6764705882352942,
+      "ndcg_at_10": 0.7622245636143505
+    }
+  }
+}

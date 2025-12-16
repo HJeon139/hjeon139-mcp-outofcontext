@@ -2,9 +2,11 @@
 type: decisions
 phase: implementation-phase
 last-updated: '2024-12-16'
-session: scientist-01-complete
+session: scientist-01-02-complete
+scientist-complete: true
+developer-next: true
 name: decision-log
-created_at: '2025-12-16T12:56:52.990466'
+created_at: '2025-12-16T13:07:25.535689'
 ---
 
 # Decision Log - Database Layer Enhancement
@@ -125,10 +127,10 @@ docs/v1/database/
 
 ### Context Management System
 
-**Decision Date:** 2024-12-16 (end of session)
+**Decision Date:** 2024-12-16 (morning session)
 
 **Implementation:**
-- Created 5 MCP contexts (project-overview, persona-definitions, decision-log, current-status, key-documents-index)
+- Created 6 MCP contexts (added context-management in afternoon)
 - Created cursor rule: `.cursor/rules/context-management.mdc`
 - Contexts tracked in git (exception in `.gitignore`)
 - Storage unlimited, retrieval < 10 contexts per session
@@ -149,13 +151,13 @@ docs/v1/database/
 **Files Created:**
 1. `.cursor/rules/context-management.mdc` (520 lines)
 2. `docs/v1/database/CONTEXT-MANAGEMENT-SETUP.md` (documentation)
-3. 5 MCP contexts in `.out_of_context/contexts/`
+3. 6 MCP contexts in `.out_of_context/contexts/`
 
 ---
 
 ### Evaluation Test Set Design (Scientist Action Item 01)
 
-**Decision Date:** 2024-12-16  
+**Decision Date:** 2024-12-16 morning 
 **Status:** ✅ Complete
 
 **Decisions Made:**
@@ -177,7 +179,7 @@ docs/v1/database/
    - Rationale: Simple, clear criteria; sufficient for MVP validation
 
 4. **Query Sources:**
-   - Based on existing 5 MCP contexts (project-overview, persona-definitions, decision-log, current-status, key-documents-index)
+   - Based on 6 MCP contexts (including context-management)
    - Anticipated usage patterns (onboarding, status checks, workflow guidance)
    - Edge cases (staleness, scale scenarios, conflict resolution)
    - Rationale: Representative of actual LLM agent workflows
@@ -196,63 +198,151 @@ docs/v1/database/
 - ✅ Defines "good retrieval" for MVP acceptance
 - ✅ Can be shared with developer for alignment
 
-**Validation:**
-- ✅ All RT-10 requirements met
-- ✅ Perfect distribution match to target
-- ✅ All queries have relevance judgments
-- ✅ No data quality issues
+---
+
+### Baseline Evaluation Design (Scientist Action Item 02)
+
+**Decision Date:** 2024-12-16 afternoon  
+**Status:** ✅ Complete
+
+**Key Decisions:**
+
+1. **Search Algorithm Choice: Word-Based Substring Search**
+   - **NOT pure substring** (exact phrase matching → all metrics = 0.000)
+   - **Word-based tokenization** with stop word filtering
+   - **Rationale:** More realistic baseline, fairer comparison to semantic search
+   - Pure substring is too broken to be useful comparison
+
+2. **Metrics Selected:**
+   - Precision@5 (primary metric)
+   - Recall@5 (ensure high recall maintained)
+   - MRR (Mean Reciprocal Rank)
+   - NDCG@10 (ranking quality)
+   - **Rationale:** Standard IR metrics, matches requirements RT-10
+
+3. **Stop Word Filtering:**
+   - Filters common words (a, the, is, how, what, etc.)
+   - Focuses on content words
+   - **Rationale:** Reduces noise, more representative of practical search
+
+4. **Ranking Strategy:**
+   - Score by percentage of query words matched
+   - Sort by score descending
+   - **Rationale:** Simple, interpretable, reasonable baseline
+
+**Baseline Results Achieved:**
+- **Precision@5: 0.255** (25.5% of top-5 results relevant)
+- **Recall@5: 0.945** (94.5% of relevant docs found)
+- **MRR: 0.652** (relevant docs at positions 2-3 on average)
+- **NDCG@10: 0.742** (good but improvable ranking)
+
+**Key Findings:**
+1. **High Recall, Low Precision** - "Shotgun" approach
+   - Finds most relevant docs (good)
+   - Returns too many irrelevant docs (bad)
+
+2. **Failure Modes Identified:**
+   - Vocabulary mismatch (20% of queries)
+   - Overly broad matches (40% of queries)
+   - Missing specificity (30% of queries)
+   - Long-tail/meta queries (10% of queries)
+
+3. **Performance by Query Type:**
+   - Factual: Best (P@5=0.294)
+   - How-to: Moderate (P@5=0.245)
+   - Comparison: Low precision (P@5=0.240) but high MRR (0.767)
+   - Troubleshooting: Worst (P@5=0.218)
+
+4. **Query Success:**
+   - 0 perfect queries (P@5 = 1.0)
+   - 52/55 partial success (0 < P@5 < 1)
+   - 3/55 complete failures (P@5 = 0)
+
+**Target Metrics for Semantic Search (30% improvement):**
+- **Precision@5 ≥ 0.332** (primary acceptance criterion)
+- **Recall@5 ≥ 0.945** (maintain high recall)
+- **MRR ≥ 0.848**
+- **NDCG@10 ≥ 0.965**
+
+**Deliverables:**
+- ✅ `evaluate.py` - Reusable evaluation script (works for semantic search too)
+- ✅ `baseline-results.json` - Full per-query results (55 queries)
+- ✅ `baseline-analysis.md` - Comprehensive 350-line analysis
+
+**Impact:**
+- ✅ Clear bar set for semantic search MVP
+- ✅ Failure modes identified (vocabulary mismatch = key opportunity)
+- ✅ Evaluation infrastructure ready for Scientist Action Item 03
+- ✅ Developer has concrete metrics to beat
+
+**Scientific Rigor:**
+- Methodology documented
+- Metrics justified
+- Failure modes analyzed
+- Realistic baseline (not artificially weakened)
 
 ---
 
 ## Open Decisions (Pending)
 
-### Developer's Decisions
-- **Vector Database:** ChromaDB vs LanceDB vs SQLite+extension (RT-3)
+### Developer's Decisions (NEXT)
+- **Vector Database:** ChromaDB vs LanceDB vs SQLite+extension (RT-3) - BLOCKING
 - **API Integration:** New tool vs replace vs parameter
 - **Schema Design:** How to structure embeddings + metadata
 - **File Watcher:** watchdog vs inotify vs polling
 
 ### Scientist's Decisions (Updated)
 - ~~**Test Set Composition:** What queries to include (Action Item 01)~~ ✅ COMPLETE
-- **Baseline Performance:** Actual metrics to be measured (Action Item 02)
-- **Conditional Acceptance:** What improvement is acceptable if <30%
+- ~~**Baseline Performance:** Actual metrics measured (Action Item 02)~~ ✅ COMPLETE
+- **Conditional Acceptance:** What improvement is acceptable if <30% (pending Scientist 03)
+- **Failure Mode Prioritization:** Which failure modes to focus on (pending Scientist 03)
 
 ---
 
 ## Decision Timeline
 
 ```
-2024-12-16 (Session 1):
+2024-12-16 Morning (Session 1):
 ├─ Requirements v2.0.0 finalized
 ├─ Context management system established
-└─ Test set design completed ✅
+├─ Test set design completed ✅
+└─ Test set created (55 queries) ✅
 
-Next:
-├─ Baseline evaluation methodology (Scientist 02)
-├─ Vector database choice (Developer 01)
-└─ Semantic search evaluation (Scientist 03, after MVP)
+2024-12-16 Afternoon (Session 1 continued):
+├─ Baseline evaluation method designed ✅
+├─ Word-based search implemented ✅
+├─ Baseline metrics measured ✅
+└─ Comprehensive analysis completed ✅
+
+Next (Session 2 - Developer):
+├─ Vector database choice (Developer 01) ← CRITICAL PATH
+├─ MVP implementation (Developer 02-05)
+└─ Semantic evaluation (Scientist 03)
 ```
 
 ---
 
 ## Next Decision Point
 
-**After Scientist Action Item 02 (Baseline Evaluation):**
-- Document baseline metrics (P@5, R@5, MRR)
-- Establish target metrics for semantic search (30% improvement)
-- Share baseline with developer to inform optimization priorities
-
-**After RT-3 (Database Choice):**
-- Developer documents rationale, shares with team
-- Validates decision meets performance constraints
+**After Developer Action Item 01 (Database Choice):**
+- Developer documents rationale with tradeoffs analysis
+- Validates decision meets performance constraints (< 100ms query latency)
+- Confirms STDIO compatibility and embedding support
 - Proceeds with MVP implementation
 
-**After Scientist Action Item 03 (Evaluation):**
-- Accept/Conditional Accept/Reject decision for MVP
-- If rejected, iterate on issues identified
-- If accepted, plan Phase 2 (hybrid search)
+**After Developer Action Items 02-05 (MVP Implementation):**
+- Developer signals MVP ready for evaluation
+- Scientist runs Action Item 03 (Semantic Search Evaluation)
+- Compare to baseline with statistical significance test
+- Make MVP acceptance decision
+
+**After Scientist Action Item 03 (Semantic Evaluation):**
+- **If P@5 improvement ≥ 30%:** Accept MVP for production
+- **If 20% ≤ improvement < 30%:** Conditional accept, recommend Phase 2
+- **If improvement < 20%:** Analyze failure modes, iterate
 
 ---
 
-**Last Updated:** 2024-12-16 (Scientist 01 complete)  
-**Next Update:** After Scientist 02 or Developer 01 completes
+**Last Updated:** 2024-12-16 18:00 (Scientist 02 complete)  
+**Next Update:** After Developer 01 completes (database choice)  
+**Critical Path:** Developer Action Item 01 - Choose Vector Database
