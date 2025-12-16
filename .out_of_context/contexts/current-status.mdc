@@ -1,0 +1,263 @@
+---
+type: status
+phase: implementation-phase
+last-updated: '2024-12-16'
+scientist-01: complete
+next-action: scientist-02-or-developer-01
+name: current-status
+created_at: '2025-12-16T12:56:16.530883'
+---
+
+# Current Status - Database Layer Enhancement
+
+**Last Updated:** 2024-12-16 (Scientist Action Item 01 Complete)  
+**Phase:** Implementation Phase - Scientist 01 ✅, Developer 01 Ready  
+**Next:** Scientist Action Item 02 (Baseline Evaluation) OR Developer Action Item 01 (Database Choice)
+
+---
+
+## ✅ Completed
+
+### Scientist Action Item 01: Create Evaluation Test Set - COMPLETE ✅
+
+**Status:** ✅ Complete (2024-12-16)  
+**Time:** 4 hours actual  
+**Owner:** ML Scientist
+
+**Deliverables:**
+- ✅ `evaluation-testset.json` - 55 queries with relevance judgments
+- ✅ `evaluation-testset-methodology.md` - Comprehensive documentation
+
+**Key Metrics:**
+- 55 queries (exceeds 50 minimum requirement)
+- Perfect distribution: 22 how-to (40%), 17 factual (31%), 11 troubleshooting (20%), 5 comparison (9%)
+- All queries have relevance judgments
+- Average 1.33 relevant contexts per query
+- 6 unique contexts referenced
+- All RT-10 requirements met ✅
+
+**Next Impact:**
+- ✅ Unblocks Scientist Action Item 02 (Baseline Evaluation)
+- ✅ Can share with developer for alignment
+- ✅ Defines what "good retrieval" means for MVP acceptance
+
+---
+
+## 🔴 Ready to Start (No Blockers)
+
+### NEXT ACTION: Scientist Action Item 02 OR Developer Action Item 01
+
+Both can proceed in parallel:
+
+#### Option A: Scientist Action Item 02 - Baseline Evaluation
+**Task:** Run current substring search against test set  
+**Owner:** ML Scientist  
+**Priority:** HIGH  
+**Time Estimate:** 2-3 hours  
+**Status:** 🔴 Ready to start (test set complete)
+
+**What to do:**
+1. Read: `docs/v1/database/scientist/02-baseline-evaluation.md`
+2. Create evaluation script: `evaluate.py`
+3. Run baseline evaluation
+4. Document results: `baseline-results.json`, `baseline-analysis.md`
+
+**Dependencies met:**
+- ✅ Test set complete (Scientist 01)
+- ✅ MCP server operational
+
+#### Option B: Developer Action Item 01 - Choose Vector Database
+**Task:** Evaluate and choose vector database (ChromaDB/LanceDB/SQLite+ext)  
+**Owner:** Developer  
+**Priority:** HIGH (BLOCKING for MVP implementation)  
+**Time Estimate:** 4-8 hours  
+**Status:** 🔴 Ready to start (no blockers)
+
+**What to do:**
+1. Read: `docs/v1/database/developer/README.md`
+2. Research: RT-3 (database benchmarking)
+3. Create POC implementations
+4. Document decision in decision-log
+
+---
+
+## 🟡 Blocked (Waiting)
+
+### Scientist Action Item 03: Semantic Search Evaluation
+- **Status:** BLOCKED by Scientist 02 + Developer MVP
+- **Time:** 2-3 hours after MVP complete
+- **Note:** Can only proceed after semantic search implementation done
+
+### Developer Action Items 02-05: Implementation
+- **Status:** BLOCKED by Developer 01 (database choice)
+- **Time:** 4-6 days after database chosen
+- **Note:** All implementation depends on database choice
+
+---
+
+## 📋 Requirements Phase Summary (Complete ✅)
+
+**Duration:** 1 full session (multiple hours)
+
+**Major Deliverables:**
+1. ✅ Requirements document v2.0.0 (revised and finalized)
+2. ✅ Requirements critique (developer perspective)
+3. ✅ Scientist response (accepted changes)
+4. ✅ Action items structure (scientist + developer)
+5. ✅ Context management system (MCP + cursor rules)
+6. ✅ Evaluation test set (Scientist 01)
+
+**Key Decisions Made:**
+- Evidence-first methodology validated
+- MVP scope clearly defined (semantic only)
+- Research tasks reduced to 6 essential items
+- Two-persona structure maintained
+- Context management rules established
+- Test set creation methodology documented
+
+**Files Created:** 17 markdown documents, 5 MCP contexts, 1 cursor rule, 1 test set
+
+---
+
+## 🎯 Critical Path to MVP (Updated)
+
+```
+Week 1:
+├─ Scientist 01: Create test set (4h) ✅ COMPLETE
+├─ Scientist 02: Baseline eval (2-3h) ← READY TO START
+└─ Developer 01: Choose database (4-8h) ← READY TO START [parallel]
+
+Week 1-2:
+└─ Developer 02-05: Implement MVP (4-6 days) [after database choice]
+
+Week 2:
+├─ Scientist 03: Semantic eval (2-3h) [after MVP]
+└─ MVP Acceptance Decision
+```
+
+**Progress Update:**
+- ✅ Week 1 - Scientist 01: Complete
+- 🔴 Week 1 - Scientist 02: Ready
+- 🔴 Week 1 - Developer 01: Ready
+
+**Estimated Time to MVP:** 1-2 weeks (on track)
+
+---
+
+## 📚 Key Documents for Next Session
+
+### For Scientist (Baseline Evaluation)
+1. `docs/v1/database/scientist/02-baseline-evaluation.md` - Detailed instructions
+2. `docs/v1/database/scientist/evaluation-testset.json` - Test set to use
+3. `docs/v1/database/scientist/evaluation-testset-methodology.md` - Test set documentation
+
+### For Developer (Database Choice)
+1. `docs/v1/database/developer/README.md` - Developer action items
+2. `docs/v1/database/requirements.md` - Full requirements (Quick Reference section)
+3. `decision-log` (context) - Previous decisions and rationale
+
+### Context Documents (Fetch These)
+```bash
+# At session start, fetch:
+get_context names=["project-overview", "current-status", "persona-definitions"]
+
+# For specific tasks:
+get_context names=["decision-log", "key-documents-index"]
+```
+
+---
+
+## 🎬 Next Session Quick Start
+
+**For Scientist (Continue with Baseline Evaluation):**
+```
+1. Fetch contexts
+   get_context names=["project-overview", "current-status"]
+
+2. Review Action Item 02
+   Read: docs/v1/database/scientist/02-baseline-evaluation.md
+
+3. Create evaluation script
+   File: docs/v1/database/scientist/evaluate.py
+   
+4. Run baseline evaluation
+   Use: evaluation-testset.json
+
+5. Update status when complete
+   put_context(name="current-status", text="Scientist 02 complete...")
+```
+
+**For Developer (Start Database Choice):**
+```
+1. Fetch contexts
+   get_context names=["project-overview", "current-status", "persona-definitions"]
+
+2. Review quick reference
+   Read: docs/v1/database/requirements.md (Quick Reference section)
+
+3. Start Action Item 01 (Choose Database)
+   Read: docs/v1/database/developer/README.md
+   Evaluate: ChromaDB, LanceDB, SQLite+extension
+   
+4. Update decision log when complete
+   put_context(name="decision-log", text="Database choice: [chosen] because [rationale]...")
+```
+
+---
+
+## ⚠️ Important Notes
+
+### Test Set Sharing
+- ✅ Test set ready for developer to review
+- ✅ Developer can use it for integration testing
+- ✅ Ensures alignment on "good retrieval" expectations
+
+### Context Management
+- Always fetch `project-overview` + `current-status` at session start
+- Update `current-status` after completing work
+- Keep contexts consistent with git (git is ground truth)
+- See `.cursor/rules/context-management.mdc` for full rules
+
+### Git Status
+- Scientist 01 deliverables not yet committed
+- Consider committing before proceeding to Scientist 02
+- Contexts are tracked in git (via `.gitignore` exception)
+
+### Collaboration
+- Scientist 02 and Developer 01 can work in parallel
+- Test set available for both scientist and developer
+- Final handoff: Developer MVP ready → Scientist 03 evaluation
+
+---
+
+## 🚨 Blockers / Issues
+
+**None currently** - Both scientist and developer can proceed.
+
+---
+
+## 📊 Progress Metrics
+
+**Requirements Phase:**
+- ✅ 100% complete
+
+**Implementation Phase:**
+- Scientist 01: ✅ Complete (100%)
+- Scientist 02: 🔴 Ready (0%)
+- Scientist 03: 🟡 Blocked (0%)
+- Developer 01: 🔴 Ready (0%)
+- Developer 02-05: 🟡 Blocked (0%)
+
+**Overall MVP Progress:**
+- Planning: 100% ✅
+- Test Set: 100% ✅
+- Baseline Eval: 0% 🔴
+- Database Choice: 0% 🔴
+- Implementation: 0% 🟡
+- Semantic Eval: 0% 🟡
+- **Total: ~25% complete** (planning + test set done)
+
+---
+
+**Last Updated:** 2024-12-16 23:59  
+**Next Update:** After Scientist 02 or Developer 01 complete

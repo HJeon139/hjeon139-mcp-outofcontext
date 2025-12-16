@@ -1,0 +1,258 @@
+---
+type: decisions
+phase: implementation-phase
+last-updated: '2024-12-16'
+session: scientist-01-complete
+name: decision-log
+created_at: '2025-12-16T12:56:52.990466'
+---
+
+# Decision Log - Database Layer Enhancement
+
+## Key Decisions Made
+
+### Requirements Document (v2.0.0 - Revised)
+
+**Decision Date:** 2024-12-16
+
+**Changes from v1.0:**
+- Added Quick Reference section for developers
+- Clarified MVP scope (semantic only, BM25 in Phase 2)
+- Moved evidence to appendix for readability
+- Reduced research tasks from 9 to 6
+- Added evaluation methodology
+- Separated interface requirements from implementation details
+
+**Rationale:** Developer critique showed v1.0 mixed strategy (WHAT) with tactics (HOW), creating confusion about what's required vs what's design freedom.
+
+---
+
+### Evidence-First Methodology
+
+**Decision:** Requirements derived from evidence, not narrative-first approach
+
+**Key Evidence:**
+- [ANT-2024] Anthropic Contextual Retrieval: 49% improvement (semantic), 67% (hybrid)
+- Informs: Semantic search MUST, BM25 SHOULD, hybrid is Phase 2
+
+**Application:** Each requirement cites evidence, explains derivation, states confidence level
+
+---
+
+### MVP Scope Definition
+
+**In Scope (Phase 1):**
+- ✅ Semantic search with local embeddings
+- ✅ File synchronization (eventual consistency)
+- ✅ Index rebuild capability
+
+**NOT in MVP:**
+- ❌ BM25 lexical search (Phase 2)
+- ❌ Metadata filtering API (schema OK, API later)
+- ❌ Chunking (full-document only)
+- ❌ Hybrid search (requires BM25 first)
+
+**Rationale:** Semantic alone provides 49% improvement (substantial value), BM25 adds 18% more (diminishing returns), prioritize semantic first per user constraint.
+
+---
+
+### Technology Constraints (Locked)
+
+**Embedding Model:** all-MiniLM-L6-v2 via sentence-transformers
+- Why: Balances speed (2,800 sent/sec), quality (68.06 SBERT), size (80MB, 384 dim)
+
+**Consistency Model:** Eventual (< 10s convergence target)
+- Why: Enables async updates, simpler error handling, acceptable for use case
+
+**Scale Target:** 500k-1M tokens (1K-2K contexts), future 2M tokens
+- Why: Matches LLM context windows (200k-1M typical)
+
+**Transport:** Self-contained, STDIO only
+- Why: MCP library constraint, no external services allowed
+
+---
+
+### Action Items Structure
+
+**Decision:** Separate scientist and developer action items into subdirectories
+
+**Structure:**
+```
+docs/v1/database/
+├── scientist/ (3 action items, 8-12h total)
+└── developer/ (5 action items, 4-6 days total)
+```
+
+**Rationale:** Clear ownership, parallel work enabled, blocking dependencies explicit
+
+---
+
+### Research Tasks (Reduced from 9 to 6)
+
+**Kept:**
+- RT-1: Validate query latency (developer, during implementation)
+- RT-2: Measure convergence time (developer, during implementation)
+- RT-3: Choose vector database (developer, BLOCKING)
+- RT-5: Benchmark embedding model (developer, during implementation)
+- RT-7: Measure write latency (developer, optimization)
+- RT-10: Create evaluation test set (scientist, BLOCKING for quality)
+
+**Removed:**
+- RT-4: Dependency footprint (implementation detail)
+- RT-6: POC comparison (duplicate of RT-3)
+- RT-8: Chunking strategy (out of scope)
+- RT-9: Query expansion (future feature)
+
+**Rationale:** Focus on validation tasks, remove non-MVP items
+
+---
+
+### Quality Acceptance Criteria
+
+**Primary Metric:** Precision@5 improvement over baseline
+**Target:** > 30% relative improvement
+**Validation:** Statistically significant (p < 0.05)
+
+**Process:**
+1. Scientist creates test set (50+ queries)
+2. Measure baseline (substring search)
+3. Measure semantic search
+4. Compare with paired t-test
+
+**Scientific Honesty:** If 30% not achieved, document actual improvement and make case for conditional acceptance (don't artificially adjust test set)
+
+---
+
+### Context Management System
+
+**Decision Date:** 2024-12-16 (end of session)
+
+**Implementation:**
+- Created 5 MCP contexts (project-overview, persona-definitions, decision-log, current-status, key-documents-index)
+- Created cursor rule: `.cursor/rules/context-management.mdc`
+- Contexts tracked in git (exception in `.gitignore`)
+- Storage unlimited, retrieval < 10 contexts per session
+
+**Rationale:**
+- Maintain continuity across agent sessions
+- Prevent context loss when switching sessions
+- Enable team collaboration via git-tracked contexts
+- Balance thoroughness (store everything) with efficiency (fetch selectively)
+
+**Key Principles:**
+- **Storage vs Retrieval:** Store liberally, fetch conservatively
+- **Git is Ground Truth:** If context conflicts with git, trust git
+- **Always Apply:** Context management rules apply to every session
+- **Staleness Detection:** Check `last-updated`, cross-reference with git
+- **Session Discipline:** Update current-status at session end
+
+**Files Created:**
+1. `.cursor/rules/context-management.mdc` (520 lines)
+2. `docs/v1/database/CONTEXT-MANAGEMENT-SETUP.md` (documentation)
+3. 5 MCP contexts in `.out_of_context/contexts/`
+
+---
+
+### Evaluation Test Set Design (Scientist Action Item 01)
+
+**Decision Date:** 2024-12-16  
+**Status:** ✅ Complete
+
+**Decisions Made:**
+
+1. **Test Set Size:** 55 queries (exceeds 50 minimum)
+   - Rationale: Provides sufficient statistical power while remaining manageable
+
+2. **Query Distribution:** 40/30/20/10 (how-to/factual/troubleshooting/comparison)
+   - 22 how-to queries (40.0%)
+   - 17 factual queries (30.9%)
+   - 11 troubleshooting queries (20.0%)
+   - 5 comparison queries (9.1%)
+   - Rationale: Matches anticipated usage patterns for MCP context management
+
+3. **Relevance Judgment Criteria:**
+   - Binary relevance (relevant/not relevant)
+   - Average 1.33 relevant contexts per query
+   - No queries without relevant contexts
+   - Rationale: Simple, clear criteria; sufficient for MVP validation
+
+4. **Query Sources:**
+   - Based on existing 5 MCP contexts (project-overview, persona-definitions, decision-log, current-status, key-documents-index)
+   - Anticipated usage patterns (onboarding, status checks, workflow guidance)
+   - Edge cases (staleness, scale scenarios, conflict resolution)
+   - Rationale: Representative of actual LLM agent workflows
+
+5. **Methodology Documentation:**
+   - Comprehensive documentation in `evaluation-testset-methodology.md`
+   - Includes query creation process, validation criteria, limitations, expected baseline performance
+   - Rationale: Ensures reproducibility and scientific rigor
+
+**Deliverables:**
+- ✅ `evaluation-testset.json` (55 queries, all with relevance judgments)
+- ✅ `evaluation-testset-methodology.md` (comprehensive documentation)
+
+**Impact:**
+- ✅ Unblocks Scientist Action Item 02 (Baseline Evaluation)
+- ✅ Defines "good retrieval" for MVP acceptance
+- ✅ Can be shared with developer for alignment
+
+**Validation:**
+- ✅ All RT-10 requirements met
+- ✅ Perfect distribution match to target
+- ✅ All queries have relevance judgments
+- ✅ No data quality issues
+
+---
+
+## Open Decisions (Pending)
+
+### Developer's Decisions
+- **Vector Database:** ChromaDB vs LanceDB vs SQLite+extension (RT-3)
+- **API Integration:** New tool vs replace vs parameter
+- **Schema Design:** How to structure embeddings + metadata
+- **File Watcher:** watchdog vs inotify vs polling
+
+### Scientist's Decisions (Updated)
+- ~~**Test Set Composition:** What queries to include (Action Item 01)~~ ✅ COMPLETE
+- **Baseline Performance:** Actual metrics to be measured (Action Item 02)
+- **Conditional Acceptance:** What improvement is acceptable if <30%
+
+---
+
+## Decision Timeline
+
+```
+2024-12-16 (Session 1):
+├─ Requirements v2.0.0 finalized
+├─ Context management system established
+└─ Test set design completed ✅
+
+Next:
+├─ Baseline evaluation methodology (Scientist 02)
+├─ Vector database choice (Developer 01)
+└─ Semantic search evaluation (Scientist 03, after MVP)
+```
+
+---
+
+## Next Decision Point
+
+**After Scientist Action Item 02 (Baseline Evaluation):**
+- Document baseline metrics (P@5, R@5, MRR)
+- Establish target metrics for semantic search (30% improvement)
+- Share baseline with developer to inform optimization priorities
+
+**After RT-3 (Database Choice):**
+- Developer documents rationale, shares with team
+- Validates decision meets performance constraints
+- Proceeds with MVP implementation
+
+**After Scientist Action Item 03 (Evaluation):**
+- Accept/Conditional Accept/Reject decision for MVP
+- If rejected, iterate on issues identified
+- If accepted, plan Phase 2 (hybrid search)
+
+---
+
+**Last Updated:** 2024-12-16 (Scientist 01 complete)  
+**Next Update:** After Scientist 02 or Developer 01 completes

@@ -1,0 +1,54 @@
+---
+type: project-info
+phase: database-enhancement
+status: requirements-complete
+name: project-overview
+created_at: '2025-12-16T12:37:01.193231'
+---
+
+# Out-of-Context MCP Server - Project Overview
+
+## What Is This Project?
+
+**Repository:** out_of_context (Python MCP server)  
+**Purpose:** Memory management tool for LLMs via Model Context Protocol (MCP)  
+**Current Version:** 1.0.1 (Production)
+
+## Core Functionality
+
+- **Storage:** Contexts stored as .mdc files (markdown + YAML frontmatter)
+- **Operations:** CRUD tools (put, get, list, search, delete) via MCP
+- **Current Search:** Simple substring matching (`query_lower in text.lower()`)
+- **Transport:** STDIO (single process, no external services)
+- **Tech Stack:** Python, FastMCP, Pydantic, PyYAML
+
+## Active Enhancement: Database Layer (v2.0)
+
+**Goal:** Add semantic search via vector embeddings  
+**Status:** Requirements complete, action items defined, implementation pending
+
+**Why:** Current substring search cannot capture semantic similarity, missing synonyms/paraphrases
+
+**Success Criteria:**
+- Query latency < 100ms p95
+- Quality improvement > 30% over baseline (Precision@5)
+- Self-contained, STDIO compatible
+- Scale: 500k-1M tokens (1K-2K contexts)
+
+## Key Constraints
+
+1. **Self-contained:** No external services (Redis, PostgreSQL, Docker)
+2. **STDIO transport:** Single process only
+3. **Local embeddings:** sentence-transformers (no external APIs)
+4. **File-based storage:** .mdc files remain source of truth
+5. **Eventual consistency:** < 10s convergence acceptable
+
+## Document Structure
+
+```
+docs/v1/database/
+├── requirements.md (v2.0.0)
+├── ACTION-ITEMS-SUMMARY.md
+├── scientist/ (evaluation & validation)
+└── developer/ (implementation)
+```
