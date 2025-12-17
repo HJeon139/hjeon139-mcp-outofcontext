@@ -1,8 +1,9 @@
 # Database Layer Requirements for Out-of-Context MCP Server
 
-**Version:** 2.0.0 (Revised)  
+**Version:** 2.1.0 (Revised - Unlocked Model Choice)  
 **Date:** 2024-12-16  
-**Status:** Draft for Implementation
+**Status:** Active for Implementation  
+**Changelog:** See `.out_of_context/contexts/requirements-revision-changelog.mdc`
 
 ---
 
@@ -11,18 +12,20 @@
 **What You're Building:**
 Semantic search capability using local embeddings, integrated into the existing MCP server.
 
-**Key Decisions (Locked):**
-- ✅ Embedding Model: `all-MiniLM-L6-v2` via sentence-transformers
-- ✅ Consistency: Eventual (convergence < 10s target)
+**Key Decisions:**
+- 🔬 Embedding Model: Research required (Scientist 04) - Must support ≥512 tokens
+- ✅ Consistency: Eventual (convergence < 10s target) + invalidation mechanism
 - ✅ Scale: 500k-1M tokens (1K-2K contexts), future 2M tokens  
 - ✅ Transport: Self-contained, STDIO compatible
-- ✅ Chunking: None (full-document embedding only)
+- 🔧 Chunking: Optional/Recommended (Developer design choice)
 
 **Your Design Decisions:**
-- 🔧 Vector Database: Choose ChromaDB, LanceDB, or SQLite+extension (constraints below)
-- 🔧 API Design: Integration with existing `search_context` or new tool
-- 🔧 Database Schema: Your design, must support vector + mtime tracking
-- 🔧 File Watcher: Your choice of Python library (watchdog recommended)
+- 🔧 Vector Database: ChromaDB selected (see Dev 00)
+- 🔧 API Design: New `semantic_search` tool (keep existing `search_context`)
+- 🔧 Database Schema: Must support vector + mtime tracking + invalidation
+- 🔧 File Watcher: watchdog library (async file monitoring)
+- 🔧 Chunking Strategy: IF model max_length < context length (integrate with sentence-transformers)
+- 🔧 Invalidation Mechanism: Detect and handle stale index entries
 
 **Success Targets:**
 - Query latency: < 100ms p95
@@ -32,8 +35,8 @@ Semantic search capability using local embeddings, integrated into the existing 
 **What's NOT in MVP:**
 - ❌ BM25 lexical search (Phase 2)
 - ❌ Metadata filtering API (schema OK, query API later)
-- ❌ Chunking (full-document only)
 - ❌ Hybrid search (requires BM25 first)
+- ❌ Advanced chunking optimization (basic chunking IS in MVP if needed)
 
 ---
 
@@ -65,10 +68,10 @@ Semantic search capability using local embeddings, integrated into the existing 
 - Contextual retrieval (chunk-level context prepending)
 
 **Explicitly NOT Planned:**
-- Chunking large documents (use full-document embedding)
 - Neural reranking models
 - External API-based embeddings (local only)
 - Distributed vector search
+- Multi-language support (English only for MVP)
 
 ---
 
@@ -229,10 +232,39 @@ See Appendix A for full evidence documentation.
 - Queries may return stale results briefly (< 10s target)
 - System converges to consistent state
 
-**Staleness Handling:**
-- Detect: Compare .mdc mtime with stored mtime
-- Action: Return cached result, enqueue async re-index
-- Response: Include `stale` flag if detected
+---
+
+### NFR-3A: Invalidation Mechanism (MUST)
+
+**Requirement:** System MUST detect and handle stale index entries.
+
+**Why:** Eventual consistency requires way to know if index is stale and how to handle it.
+
+**Acceptable Approaches (Developer Choice):**
+
+**Option 1: mtime Tracking (Recommended)**
+- Store file mtime with embedding in vector DB
+- On query: Compare current file mtime with indexed mtime
+- If different: Re-index in background, optionally flag as stale
+
+**Option 2: Content Hashing**
+- Hash file content, store with embedding
+- On query: Compare current hash with indexed hash
+- More robust but higher overhead
+
+**Option 3: Version Tagging**
+- Increment version counter on each file change
+- Store version with embedding
+- Compare versions to detect staleness
+
+**Response to Staleness (Developer Choice):**
+- Option A: Return stale results + background re-index (fast, eventually correct)
+- Option B: Wait for re-index up to timeout (slower, immediately correct)
+- Option C: Hybrid (return stale if re-index > threshold, otherwise wait)
+
+**Design Requirement:** Document chosen approach in design doc Section 3.7
+
+**Time:** Part of Dev 01-R (6-8 hours total including chunking)
 
 ---
 
@@ -257,25 +289,58 @@ See Appendix A for full evidence documentation.
 
 ## 5. Technology Constraints
 
-### TC-1: Embedding Model (MUST)
+### TC-1: Embedding Model (Scientist Research Required)
 
-**Model:** `all-MiniLM-L6-v2` via sentence-transformers
+**Constraint:** Model MUST support ≥512 token context length OR chunking strategy MUST be designed.
 
-**Characteristics:**
-- Size: ~80MB download
-- Dimensions: 384
-- Speed: ~2,800 sentences/sec on CPU (hardware-dependent)
-- Quality: 68.06 SBERT benchmark (semantic similarity)
+**Why Change from v2.0.0:** Original choice (`all-MiniLM-L6-v2`, 256 tokens) cannot handle our contexts (500-1000+ tokens). Scientist must research and recommend appropriate model.
 
-**Why:** Balances speed, quality, size for local deployment.
+**Research Task:** Scientist Action Item 04 - Embedding Model Selection
+- Survey models with ≥512 token support (MTEB leaderboard)
+- Benchmark top 3 candidates (quality, latency, context handling)
+- Recommend model with evidence
 
-**Research:** RT-5 benchmarks actual inference time on target hardware
+**Selection Criteria:**
+1. Context length: ≥512 tokens (prefer 2K-8K)
+2. Quality: Comparable to all-MiniLM-L6-v2 (SBERT ≥68)
+3. Speed: Embedding generation < 50ms for 500-token context
+4. Size: < 500MB download (local deployment)
+5. sentence-transformers compatible
+
+**Deliverable:** `docs/v1/database/scientist/04-model-selection-research.md`
+
+**Time:** 4-6 hours (0.5-1 day)
+
+**Blocks:** Final design document, execution plan, implementation
 
 ---
 
-### TC-2: Vector Database (Developer Choice)
+### TC-1A: Chunking Strategy (Developer Design Choice)
 
-**Requirement:** Choose ONE of: ChromaDB (embedded), LanceDB, or SQLite + vector extension
+**Requirement:** IF model max_length < context length, MUST implement chunking strategy.
+
+**Recommendation:** Consider chunking even with long-context models for faster embedding (parallel processing of smaller segments).
+
+**Design Requirements:**
+- Must integrate with sentence-transformers library
+- Must handle contexts of 500-1000+ tokens
+- Should support overlap (e.g., 50-100 tokens) for context preservation
+- Must include aggregation strategy (mean pooling, max pooling, or separate documents)
+
+**Acceptable Approaches:**
+1. Fixed-size chunking (e.g., 512 tokens with 50-token overlap)
+2. Sentence-aware chunking (langchain, semantic-text-splitter)
+3. Paragraph-based chunking (preserve semantic boundaries)
+
+**Developer Decision:** Design chunking abstraction in Dev 01-R, document in design doc Section 3.
+
+**Time:** Part of Dev 01-R (6-8 hours total including invalidation mechanism)
+
+---
+
+### TC-2: Vector Database (Selected: ChromaDB)
+
+**Decision:** ChromaDB (embedded mode) selected via Developer Action Item 00.
 
 **Constraints (ALL must be met):**
 - ✅ Embedded (no external process)

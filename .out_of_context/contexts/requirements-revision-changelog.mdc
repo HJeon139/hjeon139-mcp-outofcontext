@@ -1,0 +1,359 @@
+---
+name: requirements-revision-changelog
+type: changelog
+date: 2024-12-16
+phase: phase-0-tech-selection
+impact: critical
+created_at: 2024-12-16T21:00:00
+---
+
+# Requirements Revision Changelog - v2.0.0 → v2.1.0
+
+**Date:** 2024-12-16  
+**Trigger:** Scientist critique identified contradictions in requirements v2.0.0  
+**Status:** Requirements revised, design can proceed  
+**Impact:** CRITICAL - Unblocks Dev 01-R and design revision
+
+---
+
+## Why Requirements Needed Revision
+
+**Problem:** Requirements v2.0.0 contained contradictory constraints that made design impossible:
+
+1. **TC-1 locked all-MiniLM-L6-v2** (256 token max) but contexts are 500-1000+ tokens
+2. **"No chunking" declared** but model can't handle full contexts
+3. **Manual indexing implied** as Phase 1, but FR-4 (auto file sync) is MUST
+4. **No invalidation mechanism** specified for eventual consistency
+
+**Discovery:** Scientist critique of design document v2.0 revealed these issues.
+
+---
+
+## Changes Made (v2.0.0 → v2.1.0)
+
+### Change 1: Unlocked Embedding Model Choice
+
+**v2.0.0 (WRONG):**
+```
+TC-1: Embedding Model (MUST)
+Model: `all-MiniLM-L6-v2` via sentence-transformers [LOCKED]
+```
+
+**v2.1.0 (CORRECTED):**
+```
+TC-1: Embedding Model (Scientist Research Required)
+Constraint: Must support ≥512 tokens OR chunking strategy must be designed
+Research Task: Scientist Action Item 04 - Model Selection
+Decision: Based on quality (P@5), latency, and context length
+```
+
+**Rationale:** 256 token limit was overlooked. Real contexts are 500-1000+ tokens. Model choice must be evidence-based, not assumption-based.
+
+**Impact:** Scientist must complete research task before implementation begins.
+
+---
+
+### Change 2: Chunking Now Optional/Recommended
+
+**v2.0.0 (CONTRADICTORY):**
+```
+Key Decisions (LOCKED):
+- ✅ Chunking: None (full-document embedding only)
+
+Explicitly NOT Planned:
+- Chunking large documents (use full-document embedding)
+```
+
+**v2.1.0 (CLARIFIED):**
+```
+TC-1A: Chunking Strategy (Developer Design Choice)
+Constraint: IF model max_length < context length, MUST implement chunking
+Recommendation: Use chunking even with long-context models (faster embedding)
+Design Requirement: Chunking must integrate with sentence-transformers library
+Acceptable Approaches:
+  - Fixed-size chunks with overlap
+  - Sentence-aware chunking (langchain, semantic-chunker)
+  - Paragraph-based chunking
+```
+
+**Rationale:** 
+- Can't have 256-token model + no chunking + 1000-token contexts (math doesn't work)
+- Chunking can improve speed (embed smaller segments in parallel)
+- Should be implementation detail, not locked constraint
+
+**Impact:** Software lead has flexibility to design chunking strategy.
+
+---
+
+### Change 3: Auto File Sync is Phase 1 MVP (Not Phase 2)
+
+**v2.0.0 (AMBIGUOUS):**
+```
+FR-4: Index Synchronization (MUST)
+[Implied for MVP but design put in Phase 2]
+```
+
+**v2.1.0 (EXPLICIT):**
+```
+FR-4: Automatic Index Synchronization (MUST - Phase 1 MVP)
+Requirement: File changes MUST automatically trigger re-indexing
+Scope: MVP must include file watcher, not just manual indexing
+Rationale: Manual indexing is not MVP - users expect automatic sync
+```
+
+**Removed:** Any mention of "manual indexing" as Phase 1 deliverable
+
+**Impact:** Software lead must include file watcher in Phase 1, not defer to Phase 2.
+
+---
+
+### Change 4: Added Invalidation Mechanism Requirement
+
+**v2.0.0 (MISSING):**
+```
+NFR-3: Consistency (MUST)
+[Mentioned eventual consistency but no invalidation mechanism]
+```
+
+**v2.1.0 (ADDED):**
+```
+NFR-3A: Invalidation Mechanism (MUST)
+Requirement: System MUST detect and handle stale index entries
+Approaches (Developer Choice):
+  1. mtime tracking: Compare file mtime with indexed mtime
+  2. Content hashing: Detect if content changed since indexing
+  3. Version tagging: Increment version on each change
+Response to staleness:
+  - Option A: Return stale results + background re-index
+  - Option B: Wait for re-index (up to convergence target)
+  - Option C: Hybrid (return stale if re-index > threshold)
+```
+
+**Rationale:** Eventual consistency requires invalidation strategy. Can't just "hope for convergence."
+
+**Impact:** Software lead must design staleness detection and handling.
+
+---
+
+## New Action Items Created
+
+### Scientist Action Item 04: Embedding Model Research
+
+**What:** Research and recommend embedding model for launch.
+
+**Scope:**
+1. Survey modern embedding models (MTEB leaderboard)
+2. Filter by: ≥512 token context length, sentence-transformers compatible
+3. Benchmark top 3 candidates:
+   - Quality: P@5 on 55-query test set
+   - Latency: Embedding generation time
+   - Context handling: 500-1000 token contexts
+4. Recommend model with evidence
+
+**Time:** 4-6 hours (0.5-1 day)
+
+**Deliverable:** `docs/v1/database/scientist/04-model-selection-research.md`
+
+**Depends on:** Nothing (can start immediately)
+
+**Blocks:** Dev 01-R (software lead can proceed in parallel with design patterns)
+
+---
+
+### Software Lead: Revised Dev 01-R
+
+**What:** Design chunking strategy compatible with sentence-transformers.
+
+**Scope:**
+1. Research chunking libraries (langchain, semantic-text-splitter)
+2. Design chunking abstraction that works with any model
+3. Design aggregation strategy for chunked embeddings
+4. Design invalidation mechanism for eventual consistency
+
+**Time:** 6-8 hours (1 day)
+
+**Deliverable:** Update design document Section 3 with:
+- Chunking architecture (Strategy pattern)
+- Invalidation mechanism design
+- Integration with sentence-transformers
+
+**Can proceed in parallel with:** Scientist 04 (model research)
+
+---
+
+## Updated Phase 0 Timeline
+
+**Original v2.0.0 timeline:**
+```
+Day 1: Dev 00 (DB Selection) ✅
+Day 2: Dev 01 v2 (Design) ✅ → But blocked by requirements
+Day 3: Dev 01-R (Model Research) ← Blocked
+Day 3: Dev 02 (Execution Plan) ← Blocked
+```
+
+**Revised v2.1.0 timeline:**
+```
+Day 1: Dev 00 (DB Selection) ✅ COMPLETE
+Day 2: Dev 01 v2 (Design) ✅ COMPLETE
+Day 2: Scientist Critique ✅ COMPLETE
+Day 2: Requirements Revision ✅ COMPLETE (v2.1.0)
+
+Day 3: [PARALLEL TRACK]
+  ├─ Scientist 04: Model Research (4-6h) ← NEW
+  └─ Dev 01-R: Chunking + Invalidation Design (6-8h) ← REVISED
+
+Day 4: Design Revision + Integration
+  └─ Incorporate model choice + chunking design into main design doc
+
+Day 4: Dev 02: Execution Plan (3-4h)
+Day 4: Gate 1: Design Review & Approval
+```
+
+**Key Change:** Scientist and Developer work in parallel on Day 3.
+
+---
+
+## Scope Clarification: Phase 1 MVP
+
+**v2.0.0 (Ambiguous):**
+- Phase 1: Core semantic search (manual indexing)
+- Phase 2: Automatic file sync
+
+**v2.1.0 (Clear):**
+- **Phase 1 MVP:** Complete semantic search with auto file sync
+  - Semantic search tool
+  - Embedding service (model from Scientist 04)
+  - Vector database layer
+  - File watcher service
+  - Invalidation mechanism
+  - Index rebuild (for recovery, not primary flow)
+
+- **Phase 2:** Optimization and advanced features
+  - Performance tuning
+  - Error handling refinement
+  - Monitoring/observability
+
+- **Phase 3:** Hybrid search (semantic + BM25)
+  - BM25 integration
+  - Rank fusion
+
+**"Manual indexing"** removed from roadmap. Only needed for:
+- Initial startup (rebuild from files)
+- Error recovery (manual trigger)
+- Model upgrades (re-embed all)
+
+Not a user-facing Phase 1 deliverable.
+
+---
+
+## Decision-Making Philosophy Clarified
+
+**Question:** Who has authority to revise requirements?
+
+**Answer (from project lead):**
+> "No authority needed. This is a collaboration. We will rarely make a decision because someone said so. We will make a decision because we can reason the conclusion logically."
+
+**Implication:**
+- Requirements are living documents
+- Contradictions can be fixed when discovered
+- Evidence-based reasoning trumps arbitrary "lock"
+- All personas (scientist, developer, lead) collaborate
+
+**Applied to this revision:**
+- Scientist identified contradictions through critique
+- Project lead reasoned through correct approach
+- Requirements revised collaboratively
+- No "approval" needed - just logical consensus
+
+---
+
+## Summary of Unblocked Work
+
+### Scientist Can Now:
+- ✅ Research embedding models (Scientist 04)
+- ✅ Evaluate models with test set
+- ✅ Recommend model with evidence
+
+### Software Lead Can Now:
+- ✅ Design chunking strategy (Dev 01-R)
+- ✅ Design invalidation mechanism (Dev 01-R)
+- ✅ Proceed with Phase 1 = Auto file sync (not manual)
+
+### Blocked Until Complete:
+- ❌ Dev 02 (Execution Plan) - Needs model choice + chunking design
+- ❌ Gate 1 (Design Review) - Needs complete design
+- ❌ Implementation (Dev 03-09) - Needs Gate 1 approval
+
+---
+
+## Files Modified
+
+**Created:**
+- `.out_of_context/contexts/requirements-revision-changelog.mdc` (this file)
+
+**To Be Modified:**
+- `docs/v1/database/requirements.md` (v2.0.0 → v2.1.0)
+- `docs/v1/database/developer/01-design-document.md` (after Dev 01-R complete)
+- `.out_of_context/contexts/current-status.mdc` (update action items)
+
+---
+
+## Key Takeaways
+
+### 1. Requirements Can Have Bugs
+
+Just like code, requirements can have:
+- Contradictions (locked model + no chunking + long contexts)
+- Oversights (256 token limit not checked)
+- Ambiguity (Phase 1 scope unclear)
+
+**Solution:** Critique, revise, document changes.
+
+### 2. Evidence-Based Decisions
+
+Model choice moved from "locked" to "research required" because:
+- ✅ Evidence showed 256 tokens insufficient
+- ✅ Better models exist (2K-8K context)
+- ✅ Research can determine optimal choice
+
+Not because someone has "authority" to unlock it.
+
+### 3. Collaboration Over Hierarchy
+
+Scientist critique → Project lead feedback → Requirements revision → Everyone unblocked
+
+No one "owns" requirements. Everyone contributes to correctness.
+
+---
+
+## Next Steps (Immediate)
+
+1. **Project Lead:** Review and approve requirements v2.1.0 (this is formality - already discussed)
+
+2. **Scientist:** Start Scientist 04 (Model Research)
+   - Can begin immediately
+   - Deliverable: Model recommendation with benchmarks
+
+3. **Software Lead:** Start Dev 01-R (Chunking + Invalidation Design)
+   - Can begin immediately
+   - Deliverable: Design document Section 3 updates
+
+4. **Both:** Sync after ~1 day, integrate findings into unified design
+
+5. **All:** Proceed to Dev 02 (Execution Plan) once design is complete
+
+---
+
+**Status:** ✅ Requirements revised, design unblocked, parallel work streams defined
+
+**Timeline Impact:** +0.5 days (parallel work offsets revision time)
+
+**Risk Mitigation:** Contradictions resolved before implementation, preventing rework
+
+---
+
+**References:**
+- Original requirements: `docs/v1/database/requirements.md` v2.0.0
+- Revised requirements: `docs/v1/database/requirements.md` v2.1.0 (to be created)
+- Scientist critique: In conversation history (2024-12-16)
+- Design document: `docs/v1/database/developer/01-design-document.md` v2.0

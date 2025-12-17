@@ -1,0 +1,380 @@
+---
+name: action-items-day3
+type: action-items
+phase: phase-0-tech-selection
+date: 2024-12-16
+priority: critical
+created_at: 2024-12-16T21:30:00
+---
+
+# Day 3 Action Items - Parallel Work Streams
+
+**Date:** 2024-12-16  
+**Phase:** Phase 0 - Technology Selection & Design  
+**Status:** Ready to execute (requirements unblocked)  
+**Timeline:** Day 3 (8-12 hours total, can run in parallel)
+
+---
+
+## Context: Why Parallel Work?
+
+**Problem Solved:** Requirements v2.0.0 had contradictions that blocked both scientist and developer.
+
+**Solution:** Requirements revised to v2.1.0:
+- Unlocked model choice → Scientist can research
+- Added chunking + invalidation requirements → Developer can design
+- Can work in parallel (minimal dependencies)
+
+**Result:** Both tracks unblocked, can proceed simultaneously.
+
+**See:** `.out_of_context/contexts/requirements-revision-changelog.mdc` for full details.
+
+---
+
+## Track 1: Scientist 04 - Embedding Model Research
+
+### Owner
+**Scientist Persona**
+
+### Priority
+**CRITICAL** - Blocks final design document and execution plan
+
+### Time Estimate
+4-6 hours (0.5-1 day)
+
+### Dependencies
+- ✅ Requirements v2.1.0 (complete)
+- ✅ Baseline evaluation (complete - P@5=0.255)
+- ✅ Evaluation test set (55 queries, complete)
+
+### Blocks
+- Developer 02: Execution Plan (needs model choice for estimates)
+- Gate 1: Design Review (needs complete design)
+- Implementation: Dev 03-09
+
+### Scope
+
+**Research Questions:**
+1. Which embedding models support ≥512 token context?
+2. How do they perform on our 55-query test set?
+3. What's the quality vs latency tradeoff?
+4. Which model should we launch with?
+
+**Methodology:**
+1. **Survey Phase** (1h)
+   - Review MTEB leaderboard (https://huggingface.co/spaces/mteb/leaderboard)
+   - Filter: sentence-transformers compatible, ≥512 tokens, <500MB size
+   - Identify top 5 candidates
+
+2. **Shortlist Phase** (1h)
+   - Deep dive on top 5 models
+   - Check: Context length, quality score, model size, inference speed
+   - Select top 3 for benchmarking
+
+3. **Benchmark Phase** (2-3h)
+   - Implement: Load model, embed contexts, test with evaluation set
+   - Measure: P@5, R@5, MRR, NDCG (same as baseline)
+   - Measure: Embedding latency (mean, p95)
+   - Compare: Quality improvement vs baseline (target: ≥30%)
+
+4. **Recommendation Phase** (1h)
+   - Decision matrix: Quality, latency, context length, model size
+   - Tradeoff analysis: Is higher quality worth higher latency?
+   - Final recommendation with evidence
+
+### Deliverable
+
+**Document:** `docs/v1/database/scientist/04-model-selection-research.md`
+
+**Required Content:**
+- Executive summary (recommendation + rationale)
+- Methodology (how models were evaluated)
+- Candidate models surveyed (table)
+- Benchmark results (quality + latency)
+- Comparison to baseline
+- Decision matrix
+- Final recommendation
+
+**Success Criteria:**
+- ≥3 models benchmarked
+- Quality measured on 55-query test set
+- Latency measured for 500-1000 token contexts
+- Clear recommendation with tradeoff discussion
+
+### Output to Developer
+
+After completion, scientist provides:
+1. **Recommended model name** (e.g., "jina-embeddings-v2-base-en")
+2. **Expected quality** (e.g., P@5=0.35, +37% vs baseline)
+3. **Expected latency** (e.g., 25ms for 500-token context)
+4. **Context length** (e.g., 8192 tokens max)
+5. **Chunking needed?** (Yes if max_length < typical context size)
+
+Developer integrates this into design document and execution plan.
+
+---
+
+## Track 2: Developer 01-R - Chunking + Invalidation Design
+
+### Owner
+**Software Developer Lead Persona**
+
+### Priority
+**CRITICAL** - Blocks execution plan and implementation
+
+### Time Estimate
+6-8 hours (1 day)
+
+### Dependencies
+- ✅ Requirements v2.1.0 (complete)
+- ✅ Design document v2.0 (complete, needs expansion)
+- ⚠️ Can proceed without Scientist 04 results (design abstractions)
+
+### Blocks
+- Developer 02: Execution Plan (needs design details)
+- Gate 1: Design Review (needs complete design)
+
+### Scope
+
+**Design Questions:**
+1. How should chunking work with sentence-transformers?
+2. How should we aggregate chunk embeddings?
+3. How should we detect stale index entries?
+4. How should we handle staleness in queries?
+
+**Design Tasks:**
+
+#### Task 1: Chunking Architecture (3h)
+
+**Research:**
+- Survey chunking libraries (langchain, semantic-text-splitter, tiktoken)
+- Identify sentence-transformers integration patterns
+- Research aggregation strategies (mean pooling, max pooling, separate docs)
+
+**Design:**
+- Abstract chunking interface (Strategy pattern)
+- Support multiple chunking strategies:
+  - Fixed-size with overlap
+  - Sentence-aware (preserve boundaries)
+  - Paragraph-based
+- Integration with embedding service (Template Method pattern)
+- Aggregation strategy (configuration-based)
+
+**Document in design doc:**
+- Section 3.2.1A: Chunking Service
+  - Responsibilities
+  - Interface
+  - Strategy pattern details
+  - Aggregation approaches
+  - Integration with EmbeddingService
+
+#### Task 2: Invalidation Mechanism (2h)
+
+**Research:**
+- Review eventual consistency patterns
+- Research mtime vs hashing vs versioning tradeoffs
+
+**Design:**
+- Choose approach: mtime tracking (recommended)
+- Detection: Compare file mtime with indexed mtime
+- Storage: Add mtime field to vector DB metadata
+- Response strategy: Return stale + async re-index (fast)
+
+**Document in design doc:**
+- Section 3.7: Invalidation Mechanism
+  - Detection approach (mtime tracking)
+  - Storage schema (mtime in metadata)
+  - Query flow with staleness check
+  - Re-indexing trigger
+  - Alternative approaches considered
+
+#### Task 3: Update Architecture Diagrams (1h)
+
+**Modify:**
+- Section 3.1: Add chunking to embedding flow
+- Section 3.4.1: Indexing flow with chunking
+- Section 3.4.2: Query flow with invalidation check
+
+#### Task 4: Integration Points (1h)
+
+**Document:**
+- How chunking affects embedding service interface
+- How invalidation affects vector DB interface
+- How both affect file watcher logic
+- Configuration points (chunk size, overlap, staleness threshold)
+
+### Deliverable
+
+**Updated Document:** `docs/v1/database/developer/01-design-document.md`
+
+**New Sections:**
+- 3.2.1A: Chunking Service (architecture + patterns)
+- 3.7: Invalidation Mechanism (detection + handling)
+
+**Modified Sections:**
+- 1.4: Model landscape (note chunking may be needed)
+- 3.1: Architectural principles (add chunking principle)
+- 3.2.1: Embedding Service (integrate with chunking)
+- 3.4: Data flows (show chunking + invalidation)
+
+**Success Criteria:**
+- Chunking strategy supports any model (abstracted)
+- Chunking integrates with sentence-transformers
+- Invalidation mechanism is concrete (not abstract)
+- All patterns documented (not just code)
+
+### Output to Scientist
+
+After completion, developer provides:
+1. **Chunking approach** (fixed-size with 512-token chunks, 50-token overlap)
+2. **Aggregation strategy** (mean pooling of chunk embeddings)
+3. **Impact on quality** (discuss in Gate 1 - may affect P@5)
+4. **Invalidation approach** (mtime tracking, async re-index)
+
+Scientist validates chunking won't hurt quality target.
+
+---
+
+## Synchronization Point (End of Day 3)
+
+### What Happens
+
+After both tracks complete (~8-12 hours):
+
+1. **Integration Meeting** (1h)
+   - Scientist presents model recommendation
+   - Developer presents chunking + invalidation design
+   - Discuss: Does model choice require chunking?
+   - Discuss: Will chunking affect quality target?
+   - Decide: Any design adjustments needed?
+
+2. **Design Document Finalization** (1h)
+   - Developer integrates model choice into design
+   - Scientist reviews final design
+   - Both sign off
+
+3. **Proceed to Dev 02** (3-4h)
+   - Create execution plan with concrete model + design
+   - Break into implementable tasks
+   - Estimate time per task
+
+4. **Gate 1 Prep** (1h)
+   - Prepare design review materials
+   - Schedule with project lead + scientist
+   - Prepare to answer questions
+
+---
+
+## Success Criteria (End of Day 3)
+
+**Must Have:**
+- ✅ Model selected with benchmarks (Scientist 04)
+- ✅ Chunking designed with patterns (Developer 01-R)
+- ✅ Invalidation designed with approach (Developer 01-R)
+- ✅ Design document complete (all sections)
+- ✅ No more "open questions" blocking implementation
+
+**Can Proceed To:**
+- Dev 02: Execution Plan (model + design known)
+- Gate 1: Design Review (complete design ready)
+
+**Cannot Proceed Without:**
+- ❌ If model choice incomplete → Block Dev 02
+- ❌ If chunking design incomplete → Block Dev 02
+- ❌ If design review fails → Iterate design
+
+---
+
+## Risk Mitigation
+
+### Risk 1: Scientist and Developer Designs Conflict
+
+**Scenario:** Scientist recommends 8K-token model (no chunking), but developer designs complex chunking.
+
+**Mitigation:** 
+- Developer designs chunking as OPTIONAL (plugin)
+- If model doesn't need it, can skip
+- No wasted work (good to have design ready)
+
+### Risk 2: Chunking Hurts Quality
+
+**Scenario:** Scientist finds chunking reduces P@5 below target.
+
+**Mitigation:**
+- Try different aggregation strategies
+- Try longer-context model (no chunking)
+- Accept lower quality if latency much better
+- Document tradeoff in Gate 1
+
+### Risk 3: Takes Longer Than Estimated
+
+**Scenario:** Research or design takes 12+ hours instead of 8.
+
+**Mitigation:**
+- Both tracks can extend into Day 4 if needed
+- Synchronization point flexible (not hard deadline)
+- Gate 1 can slip by 0.5 days (acceptable)
+
+---
+
+## Timeline Impact
+
+**Original Plan (blocked):**
+```
+Day 3: Dev 01-R (model research) ← Blocked by requirements
+Day 3: Dev 02 (execution plan) ← Blocked by Dev 01-R
+Day 3: Gate 1 ← Blocked by Dev 02
+```
+
+**Revised Plan (unblocked):**
+```
+Day 3: [PARALLEL]
+  ├─ Scientist 04: Model research (4-6h)
+  └─ Developer 01-R: Chunking + invalidation (6-8h)
+
+Day 3-4: Synchronization + Integration (2h)
+Day 4: Dev 02: Execution plan (3-4h)
+Day 4: Gate 1: Design review
+```
+
+**Time saved:** 0.5 days (parallel work)
+
+**Risk:** Higher coordination overhead (sync meeting needed)
+
+**Net impact:** Neutral to +0.5 days ahead of schedule
+
+---
+
+## Communication Protocol
+
+### During Day 3 (Parallel Work)
+
+- **Minimal sync needed** - Tracks are independent
+- **Async updates via context files** (update current-status as you go)
+- **Flag blockers immediately** (if something blocks, notify other track)
+
+### End of Day 3 (Synchronization)
+
+- **Scheduled sync meeting** (1h)
+- **Both present findings**
+- **Discuss integration points**
+- **Identify any conflicts**
+- **Agree on final design**
+
+### Day 4 (Sequential Work)
+
+- **Developer leads Dev 02** (execution plan)
+- **Scientist reviews Dev 02** (sanity check)
+- **Both prepare Gate 1 materials**
+- **Project lead reviews at Gate 1**
+
+---
+
+**Status:** ✅ Action items defined, ready to execute
+
+**Next:** Begin parallel work on Day 3
+
+**References:**
+- Requirements v2.1.0: `docs/v1/database/requirements.md`
+- Design v2.0: `docs/v1/database/developer/01-design-document.md`
+- Changelog: `.out_of_context/contexts/requirements-revision-changelog.mdc`

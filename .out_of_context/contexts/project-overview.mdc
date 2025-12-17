@@ -25,7 +25,7 @@ created_at: '2025-12-16T12:37:01.193231'
 ## Active Enhancement: Database Layer (v2.0)
 
 **Goal:** Add semantic search via vector embeddings  
-**Status:** Requirements complete, action items defined, implementation pending
+**Status:** Requirements v2.1.0, parallel work tracks active (Day 3)
 
 **Why:** Current substring search cannot capture semantic similarity, missing synonyms/paraphrases
 
@@ -47,8 +47,7 @@ created_at: '2025-12-16T12:37:01.193231'
 
 ```
 docs/v1/database/
-├── requirements.md (v2.0.0)
-├── ACTION-ITEMS-SUMMARY.md
+├── requirements.md (v2.1.0 - revised Dec 16)
 ├── scientist/ (evaluation & validation)
 └── developer/ (implementation)
 ```

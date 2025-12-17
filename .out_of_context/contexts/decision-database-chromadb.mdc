@@ -1,0 +1,137 @@
+---
+name: decision-database-chromadb
+type: decision
+phase: phase-0-tech-selection
+decision-date: 2024-12-16
+status: complete
+impact: critical
+created_at: 2024-12-16T18:00:00
+---
+
+# Database Choice: ChromaDB Selected
+
+**Decision Date:** 2024-12-16 (afternoon - REVISED after comprehensive benchmarking)  
+**Status:** ✅ Complete (Developer Action Item 00)  
+**Impact:** Critical - Foundational for all semantic search implementation
+
+---
+
+## Decision
+
+**Use ChromaDB as the vector database for semantic search.**
+
+**⚠️ REVISION NOTE:** Original decision was LanceDB based on flawed 10-query benchmark. After comprehensive 55-query benchmark at 1K/2K/4K contexts, ChromaDB proved 1.9x faster at max capacity (8.4ms vs 15.9ms p95).
+
+---
+
+## Options Evaluated
+
+1. **ChromaDB** - Popular RAG database ✅ SELECTED
+2. **LanceDB** - Fast, embedded Rust-based database
+3. **SQLite + sqlite-vec** - Not fully evaluated (time constraints)
+
+---
+
+## Evaluation Process
+
+1. **Initial POC (flawed):** 10 queries, 2K contexts → LanceDB appeared faster
+2. **Comprehensive Benchmark (correct):** 55 queries, 1K/2K/4K contexts → ChromaDB actually faster
+3. **Key insight:** Must test at max capacity (4K contexts), not average load
+
+---
+
+## Comprehensive Benchmark Results
+
+| Database | 1K Contexts | 2K Contexts | 4K Contexts (Max) | Winner |
+|----------|-------------|-------------|-------------------|--------|
+| **ChromaDB** | 96.3ms p95 | 8.7ms p95 | **8.4ms p95** ✅ | **ChromaDB** |
+| **LanceDB** | 14.8ms p95 | 15.2ms p95 | 15.9ms p95 | |
+| **Advantage** | LanceDB | ChromaDB | **ChromaDB (1.9x)** | |
+
+---
+
+## ChromaDB Advantages
+
+- ✅ **1.9x faster at max capacity** (8.4ms vs 15.9ms p95)
+- ✅ **10x faster vector search** (0.8ms vs 7.9ms at 4K contexts)
+- ✅ **Built-in hybrid search** (`where` + `where_document` filters)
+- ✅ **Simple API** - No tantivy FTS setup needed
+- ✅ **Ephemeral client** - In-memory, perfect for STDIO
+- ✅ Both meet < 100ms target
+
+---
+
+## Critical Implementation Requirement
+
+- ⚠️ **DO NOT use ChromaDB's built-in embedding function** (causes 300ms+ latency)
+- ✅ **Use sentence-transformers independently:** `model.encode([text])[0]`
+- ✅ **Pass pre-computed embeddings:** `collection.add(embeddings=...)`
+- This ensures 7-8ms embedding time (not 300ms+)
+
+---
+
+## Expected Performance (ChromaDB)
+
+- Embedding generation: 7-8ms (sentence-transformers independently)
+- Vector search: 0.8ms (at 4K contexts)
+- **Total query latency: ~8.4ms p95** (12x below 100ms target!)
+
+---
+
+## Schema Design (ChromaDB)
+
+```python
+collection.add(
+    ids=["context-name"],
+    embeddings=[embedding.tolist()],  # 384-dim from sentence-transformers
+    metadatas=[{
+        "context_name": str,
+        "mtime": float,
+        "model_version": str,
+        "created_at": float,
+        "type": str,           # Optional
+        "tags": List[str]      # Optional
+    }],
+    documents=[context_text]
+)
+```
+
+---
+
+## Risk Mitigation
+
+1. Abstract database layer → easy to swap if needed
+2. Pin ChromaDB version → avoid breaking changes
+3. Test file permissions → ensure STDIO compatibility
+
+---
+
+## Impact
+
+- ✅ Unblocks Developer 01 (Design Document)
+- ✅ Technology stack decided (can design concrete architecture)
+- ✅ Performance expectations set (8.4ms p95 latency)
+- ✅ Schema designed (ready for implementation)
+
+---
+
+## Deliverable
+
+`docs/v1/database/developer/00-database-choice-decision.md` (606 lines, comprehensive analysis)
+
+---
+
+## Lessons Learned
+
+1. ✅ Test at max capacity (4K contexts), not just average (2K)
+2. ✅ Use enough queries for reliable p95 (55, not 10)
+3. ✅ Evaluate holistic features (hybrid search matters)
+4. ✅ Consider warmup effects (ChromaDB: 96ms @ 1K → 8ms @ 4K)
+5. ✅ Always use independent embeddings (sentence-transformers directly)
+
+---
+
+**References:**
+- Full analysis: `docs/v1/database/developer/00-database-choice-decision.md`
+- Benchmark code: `docs/v1/database/developer/poc/test_comprehensive.py`
+- Design document: `docs/v1/database/developer/01-design-document.md`
