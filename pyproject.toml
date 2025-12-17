@@ -54,6 +54,7 @@ allow-direct-references = true
 
 [tool.hatch.envs.default]
 type = "virtual"
+python = "3.11"
 dependencies = [
   "pytest",
   "pytest-asyncio",

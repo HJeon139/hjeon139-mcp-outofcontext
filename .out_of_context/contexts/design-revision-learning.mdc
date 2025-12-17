@@ -1,0 +1,264 @@
+---
+name: design-revision-learning
+type: learning
+date: 2024-12-16
+phase: phase-0-tech-selection
+created_at: 2024-12-16T20:00:00
+---
+
+# Design Revision Learning - Developer 01 v1 → v2
+
+**Date:** 2024-12-16  
+**Context:** User feedback on Developer 01 design document (v1, 1,598 lines)  
+**Result:** Complete redesign with WHY/WHAT/HOW structure (v2, 600 lines)
+
+---
+
+## Critical Feedback Received
+
+### 1. Model Constraint Missed
+
+**Problem:** all-MiniLM-L6-v2 has max sequence length of 256 tokens.
+- Our contexts: 200-400+ lines (1000-3000 tokens)
+- Design assumed full-document embeddings → Won't work!
+
+**Root cause:** Didn't validate model constraints before designing.
+
+**User insight:** "thinking 256 → 384 is big is an indication that you are not aware of our model options"
+- Modern embedding models support 2K-8K token context lengths
+- I was operating with ~5 years outdated assumptions
+
+**Learning:** Always research current landscape FIRST, don't design with old knowledge.
+
+---
+
+### 2. Design Document Too Long & Unfocused
+
+**Problem:** 1,598 lines trying to design everything at once:
+- Semantic search (core)
+- File watcher (separate concern)
+- Metadata moderation (separate concern)  
+- Index rebuild (operational)
+- Error handling (cross-cutting)
+- Testing (validation)
+- Implementation code examples
+
+**User feedback:** "Consider focusing on one feature per design at a time."
+
+**Root cause:** Tried to design "complete MVP" in single document, mixed high-level architecture with low-level implementation.
+
+**Learning:** One feature, one design. Defer implementation details to POCs.
+
+---
+
+### 3. Wrong Structure - Jumped to Code
+
+**Problem:** Document jumped straight to code examples without establishing context.
+
+**User prescription:** Three-section structure:
+1. **Section 1: WHY (Context)** - Requirements, evidence, research
+2. **Section 2: WHAT (Solution)** - What we're building
+3. **Section 3: HOW (Architecture)** - Patterns and principles, NOT code
+
+**Example of wrong approach (v1):**
+```python
+# Jumped straight to this:
+class EmbeddingService:
+    def embed_text(self, text: str) -> List[float]:
+        return self.model.encode([text])[0].tolist()
+```
+
+**Right approach (v2):**
+```
+Embedding Service uses Strategy Pattern for model swapping.
+Template Method handles chunking if needed.
+Singleton ensures model loaded once at startup.
+```
+
+**Learning:** Design = Patterns + Principles, not code. Code goes in POCs.
+
+---
+
+### 4. Quality Over Speed
+
+**User insight:** "Given our agentic coding cycle, it's not that hard to ship something complex quickly. However, it can become unmanageable if we constantly build on top of short-sighted implementation decisions."
+
+**Implication:** 
+- Speed is not our constraint (agentic coding is fast)
+- Thoughtfulness is our constraint
+- Take time to design right, implementation is fast
+
+**Learning:** Slow down on design, speed up on implementation.
+
+---
+
+### 5. Holistic Design vs Incremental Design
+
+**User feedback:** "Instead of deciding to draft each design in isolation, please draft a high level design with some degree of ambiguity."
+
+**Interpretation:**
+- Don't design File Sync separately after Semantic Search
+- Design holistic architecture that supports both
+- Leave ambiguity where appropriate (specific model choice, chunking strategy)
+- Focus on structure that enables MVP-first, then secondary features
+
+**Learning:** Think holistically, deliver incrementally.
+
+---
+
+## What Changed in Design v2
+
+### Structure: WHY/WHAT/HOW
+
+**Section 1: Context (WHY)**
+- Requirements driving decisions
+- Evidence from research (Anthropic paper, baseline)
+- Model landscape (acknowledged 2K-8K models exist)
+- Constraints (STDIO, self-contained)
+
+**Section 2: Solution (WHAT)**
+- Core feature: Semantic search
+- Supporting features: File sync, metadata moderation
+- Phased delivery (MVP vs future)
+- Success criteria
+
+**Section 3: Architecture (HOW)**
+- Architectural principles (layered, file-based truth, plugin models, eventual consistency)
+- Component responsibilities (not implementations)
+- Design patterns (Strategy, Observer, Repository, etc.)
+- Integration approach
+- Extensibility points
+
+### Length: 1,598 lines → 600 lines
+
+**Removed:**
+- Detailed code examples (moved to future POCs)
+- Specific error handling logic (defer to implementation)
+- Performance benchmarking methodology (defer to Dev 08)
+- Detailed schema examples (kept high-level only)
+
+**Kept:**
+- High-level architecture and principles
+- Component interfaces (contracts)
+- Design decisions with rationale
+- Integration points
+- Open questions requiring research
+
+### Focus: Holistic Architecture
+
+**v1 approach:** Design semantic search completely, then design file sync separately.
+
+**v2 approach:** Design architecture that supports:
+- Phase 1: Core semantic search (manual indexing)
+- Phase 2: Automatic file sync (add later)
+- Phase 3: Advanced features (hybrid search, etc.)
+
+Architecture supports all phases, implement incrementally.
+
+---
+
+## Research Task Added: Dev 01-R
+
+**Why needed:** Can't finalize design without knowing model/chunking approach.
+
+**What to research:**
+1. Survey modern embedding models (2K-8K context)
+2. Test 2-3 models with quality (P@5) and latency benchmarks
+3. If chunking needed, test strategies (fixed-size, sentence-aware, overlap)
+4. Document recommendation with evidence
+
+**Where this fits:** After Dev 01 v2 (design), before Dev 02 (execution plan).
+
+**Time:** 4-6 hours (0.5-1 day)
+
+---
+
+## Key Principles Learned
+
+### 1. Research Current Landscape First
+
+Don't design with 5-year-old assumptions. Web search, read leaderboards, understand state-of-art BEFORE designing.
+
+### 2. Structure Matters More Than Length
+
+Even 100-line doc can be good design if structured well:
+- WHY section sets context
+- WHAT section defines solution
+- HOW section describes patterns/principles
+
+### 3. Patterns Over Code
+
+Design communicates through:
+- Architectural patterns (Layered, Event Sourcing, Plugin)
+- Design patterns (Strategy, Observer, Repository, Facade)
+- Principles (SOLID, Separation of Concerns)
+
+NOT through code examples.
+
+### 4. One Feature Per Design vs Holistic Architecture
+
+Balance:
+- **Holistic architecture:** Design system that supports multiple features
+- **Incremental delivery:** Implement one feature at a time
+- **Ambiguity:** Leave details TBD when more research needed
+
+### 5. Quality is Thoughtfulness
+
+"Agentic coding makes complex things achievable quickly."
+
+Constraint is NOT speed, it's thoughtfulness:
+- Take time to research (Dev 01-R)
+- Take time to design patterns (not code)
+- Take time to think through extensibility
+
+Implementation will be fast once design is solid.
+
+---
+
+## Updated Phase 0 Timeline
+
+**Original:**
+```
+Day 1: Dev 00 (DB Selection) ✅
+Day 2: Dev 01 (Design) ✅ → But needs revision
+Day 2: Dev 02 (Execution Plan) ← NEXT
+```
+
+**Revised:**
+```
+Day 1: Dev 00 (DB Selection) ✅
+Day 2: Dev 01 v1 (Design) ✅ → Too long, wrong structure
+Day 2: Dev 01 v2 (Design) ✅ → WHY/WHAT/HOW, 600 lines
+Day 3: Dev 01-R (Research) ← NEXT (Model selection)
+Day 3: Dev 02 (Execution Plan) ← After research
+Day 3: Gate 1 (Approval) ← After execution plan
+```
+
+Research task added because design identified critical unknown (model/chunking strategy).
+
+---
+
+## Files Created/Updated
+
+**Created:**
+- `docs/v1/database/developer/01-design-document.md` (v2, 600 lines, WHY/WHAT/HOW)
+- `docs/v1/database/developer/01-design-document-draft-v1.md` (archived, 1,598 lines, reference)
+- `.out_of_context/contexts/design-revision-learning.mdc` (this file)
+
+**Learning Repository:**
+- This context serves as institutional memory
+- Future design documents should follow v2 structure
+- Avoid mistakes from v1
+
+---
+
+## References
+
+- Original design: `docs/v1/database/developer/01-design-document-draft-v1.md`
+- Revised design: `docs/v1/database/developer/01-design-document.md`
+- User feedback: In conversation history (2024-12-16)
+- Context management rules: `.cursor/rules/context-management.mdc`
+
+---
+
+**Key Takeaway:** Design is communication. Structure and principles matter more than length or code examples. Research current reality before designing.

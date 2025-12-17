@@ -1,0 +1,495 @@
+---
+type: workflow
+version: '2.0'
+phase: ready-to-start
+next-action: developer-00
+last-updated: '2024-12-16'
+name: action-items-revised
+created_at: '2025-12-16T13:22:26.980573'
+---
+
+# Revised Action Items Structure - Database Layer MVP
+
+**Last Updated:** 2024-12-16  
+**Status:** Active workflow  
+**Version:** 2.0 (Resequenced based on proper dependencies)
+
+---
+
+## Overview
+
+This document defines the correct sequencing of action items based on true dependencies. Key insight: **Database selection must come FIRST** as it's foundational to all design and implementation work.
+
+**Total Timeline:** 2 weeks (10 working days)
+
+---
+
+## PHASE 0: Technology Selection & Design (Week 1, Days 1-3)
+
+### Developer 00: Database Selection (POC & Decision)
+**Owner:** Developer  
+**Time:** 1 day (6-8 hours)  
+**Depends on:** Requirements (✅ complete)  
+**Blocks:** Design document, all implementation  
+**Priority:** CRITICAL PATH
+
+**Tasks:**
+1. Research ChromaDB, LanceDB, SQLite+vec (2h)
+2. Build minimal POC for top 2 candidates (3h)
+3. Benchmark with 10 queries from test set (2h)
+4. Document decision with rationale (1h)
+
+**Deliverable:** `docs/v1/database/developer/00-database-choice-decision.md`
+
+**Why first:**
+- Database choice affects EVERYTHING downstream
+- Can't design architecture without knowing DB APIs
+- Can't estimate timelines without knowing DB complexity
+- Lightweight enough to complete quickly (1 day)
+
+**Acceptance Criteria:**
+- [ ] POC implemented for 2+ options
+- [ ] Query latency < 50ms at 2K vectors
+- [ ] Decision documented with rationale
+- [ ] Installation instructions provided
+
+---
+
+### Developer 01: Design Document
+**Owner:** Developer (lead), Scientist (review)  
+**Time:** 1 day (6-8 hours)  
+**Depends on:** Developer 00 (Database choice)  
+**Blocks:** Execution plan, implementation  
+**Priority:** HIGH
+
+**Tasks:**
+1. System architecture (now we know the DB) (2h)
+2. Component designs (embedding, DB layer, file watcher, MCP tool) (3h)
+3. Data models and schemas (1h)
+4. Error handling strategy (1h)
+5. Testing strategy (1h)
+
+**Deliverable:** `docs/v1/database/developer/01-design-document.md`
+
+**Content Requirements:**
+- System architecture diagram
+- Component designs (4 major components)
+- Data models and schemas
+- API/interface definitions
+- Error handling strategy
+- Performance considerations
+- Testing strategy
+
+**Scientist's role in review:**
+- Validate design will support evaluation (can run test queries)
+- Confirm metrics are measurable
+- Check error handling won't break evaluation
+- Verify design aligns with requirements
+
+**Why after DB choice:**
+- Now we know DB schema constraints
+- Can design concrete APIs (not abstract)
+- Can estimate memory/performance characteristics
+- Scientist can validate concrete design vs abstract ideas
+
+---
+
+### Developer 02: Execution Plan
+**Owner:** Developer (lead), Scientist (review)  
+**Time:** 0.5 day (3-4 hours)  
+**Depends on:** Developer 01 (Design document)  
+**Blocks:** Implementation start  
+**Priority:** HIGH
+
+**Tasks:**
+1. Break design into implementable tasks (2h)
+2. Sequence tasks with dependencies (1h)
+3. Identify test checkpoints (0.5h)
+4. Set timeline with gates (0.5h)
+
+**Deliverable:** `docs/v1/database/developer/02-execution-plan.md`
+
+**Content Requirements:**
+- Detailed task breakdown
+- Task dependencies
+- Timeline with milestones
+- Test checkpoints
+- Review gates
+- Risk management
+
+**Scientist's role in review:**
+- Validate timeline allows for evaluation feedback
+- Confirm test checkpoints produce evaluable artifacts
+- Check gates align with when scientist needs to be involved
+
+**Why after design:**
+- Can't plan execution without knowing what to build
+- Task estimates depend on design complexity
+- Timeline depends on component dependencies in design
+
+---
+
+### 🚪 GATE 1: Design & Plan Approved
+**Approvers:** User + Scientist  
+**Time:** 2-3 hours review + discussion  
+**Outcome:** Go/No-Go for implementation
+
+**Review Checklist:**
+- [ ] Design aligns with requirements
+- [ ] Design supports evaluation methodology
+- [ ] Execution plan is realistic
+- [ ] Timeline has appropriate gates
+- [ ] Risk management is adequate
+
+---
+
+## PHASE 1: Core Implementation (Week 1 Day 4 - Week 2 Day 2)
+
+### Developer 03: Implement Embedding Service
+**Owner:** Developer  
+**Time:** 0.5 day (4 hours)  
+**Depends on:** Gate 1 (Design approved)  
+**Blocks:** All features need embeddings  
+**Priority:** HIGH
+
+**Tasks:**
+1. Load all-MiniLM-L6-v2 model
+2. Implement embed_query() and embed_context()
+3. Add caching/memoization
+4. Unit tests
+
+**Deliverable:** Working embedding service
+
+**Test Checkpoint:** Unit tests pass, can generate embeddings
+
+---
+
+### Developer 04: Implement Vector Database Layer
+**Owner:** Developer  
+**Time:** 1 day (6-8 hours)  
+**Depends on:** Developer 03 (Embedding Service)  
+**Blocks:** All search features  
+**Priority:** HIGH
+
+**Tasks:**
+1. Initialize chosen database
+2. Implement schema/indices
+3. CRUD operations (insert, search, delete)
+4. mtime tracking for staleness
+5. Unit tests
+
+**Deliverable:** Working vector DB layer
+
+**Test Checkpoint:** Unit tests pass, can insert/search vectors
+
+---
+
+### Developer 05: Implement MCP Tool Integration
+**Owner:** Developer  
+**Time:** 0.5 day (4 hours)  
+**Depends on:** Developer 04 (Vector DB Layer)  
+**Blocks:** End-to-end testing  
+**Priority:** HIGH
+
+**Tasks:**
+1. Add search parameter or new tool (per design)
+2. Integrate embedding + vector search
+3. Return results with scores
+4. Error handling
+5. Integration tests
+
+**Deliverable:** Working semantic search via MCP
+
+**Test Checkpoint:** Scientist can run test queries manually
+
+---
+
+### Developer 06: Implement Index Rebuild
+**Owner:** Developer  
+**Time:** 0.5 day (3-4 hours)  
+**Depends on:** Developer 04 (Vector DB Layer)  
+**Can parallelize with:** Developer 05  
+**Priority:** MEDIUM
+
+**Tasks:**
+1. Read all .mdc files
+2. Generate embeddings for each
+3. Bulk insert to vector DB
+4. Progress reporting
+5. Integration tests
+
+**Deliverable:** Index rebuild command
+
+**Test Checkpoint:** Can rebuild entire index from .mdc files
+
+---
+
+### 🚪 GATE 2: Core MVP Feature Complete
+**Test:** Developer runs 10 sample queries from test set  
+**Outcome:** Basic functionality works, ready for file sync
+
+**Checklist:**
+- [ ] Semantic search returns relevant results
+- [ ] Results include similarity scores
+- [ ] Index rebuild works
+- [ ] Integration tests pass
+
+---
+
+## PHASE 2: File Synchronization (Week 2 Day 3)
+
+### Developer 07: Implement File Synchronization
+**Owner:** Developer  
+**Time:** 1 day (6-8 hours)  
+**Depends on:** Developer 06 (Index Rebuild logic)  
+**Blocks:** Convergence validation  
+**Priority:** MEDIUM
+
+**Tasks:**
+1. Set up file watcher (watchdog)
+2. Implement event handlers (create/modify/delete)
+3. Debouncing logic (500ms)
+4. Background processing
+5. Integration tests
+
+**Deliverable:** Automatic index synchronization
+
+**Test Checkpoint:** File changes trigger index updates within 10s
+
+---
+
+## PHASE 3: Developer Validation (Week 2 Day 4)
+
+### Developer 08: Performance Validation
+**Owner:** Developer  
+**Time:** 0.5 day (4 hours)  
+**Depends on:** Developer 05 (MCP Tool), Developer 07 (File Sync)  
+**Blocks:** Scientist evaluation  
+**Priority:** HIGH
+
+**Tasks:**
+1. Benchmark query latency (p50, p95, p99)
+2. Test at 1K, 2K, 4K scale
+3. Break down: embedding time vs search time
+4. Document results
+
+**Deliverable:** `docs/v1/database/developer/08-performance-validation-report.md`
+
+**Acceptance:** p95 < 100ms or documented mitigation plan
+
+---
+
+### Developer 09: Convergence Validation
+**Owner:** Developer  
+**Time:** 0.25 day (2 hours)  
+**Depends on:** Developer 07 (File Sync)  
+**Can parallelize with:** Developer 08  
+**Priority:** MEDIUM
+
+**Tasks:**
+1. Measure convergence time (single file, batch)
+2. Measure write latency impact
+3. Document results
+
+**Deliverable:** `docs/v1/database/developer/09-convergence-validation-report.md`
+
+**Acceptance:** p95 convergence < 10s
+
+---
+
+### 🚪 GATE 3: Ready for Scientist Evaluation
+**Checklist:**
+- ✅ Core semantic search works
+- ✅ File sync works
+- ✅ Performance validated
+- ✅ Test set compatible (can use evaluation script)
+
+**Action:** Developer signals scientist "MVP ready for evaluation"
+
+---
+
+## PHASE 4: Quality Evaluation (Week 2 Day 5)
+
+### Scientist 03: Semantic Search Evaluation
+**Owner:** Scientist  
+**Time:** 0.5 day (3-4 hours)  
+**Depends on:** Gate 3 (Developer MVP complete)  
+**Blocks:** Acceptance decision  
+**Priority:** HIGH
+
+**Tasks:**
+1. Run evaluation script with semantic search
+2. Statistical comparison to baseline
+3. Analyze improvement by query type
+4. Document findings
+
+**Deliverables:**
+- `docs/v1/database/scientist/semantic-results.json`
+- `docs/v1/database/scientist/semantic-vs-baseline-comparison.md`
+
+**Acceptance:**
+- P@5 improvement ≥ 30% → Accept MVP
+- 20-30% → Conditional accept
+- < 20% → Iterate or document limitations
+
+---
+
+### 🚪 GATE 4: Acceptance Decision
+**Owner:** Scientist (recommendation) + User (final decision)  
+**Criteria:**
+- P@5 improvement ≥ 30% → Accept
+- 20-30% → Conditional accept
+- < 20% → Iterate or document limitations
+
+**Outcome:** MVP accepted or iteration plan created
+
+---
+
+## Timeline Summary
+
+### Week 1: Selection & Design & Core Build
+
+| Day | Task | Owner | Deliverable |
+|-----|------|-------|-------------|
+| 1 | Dev 00: Database Selection | Dev | DB choice doc |
+| 2 | Dev 01: Design Document | Dev + Sci | Design doc |
+| 2 | Dev 02: Execution Plan | Dev + Sci | Execution plan |
+| 2 | **GATE 1: Review & Approve** | User + Sci | Go/No-Go |
+| 3 | Dev 03: Embedding Service | Dev | Embedding code |
+| 3-4 | Dev 04: Vector DB Layer | Dev | DB layer code |
+| 4 | Dev 05: MCP Integration | Dev | Searchable via MCP |
+| 4-5 | Dev 06: Index Rebuild | Dev | Rebuild command |
+| 5 | **GATE 2: Core Complete** | Dev | Manual test pass |
+
+### Week 2: Sync & Validation & Evaluation
+
+| Day | Task | Owner | Deliverable |
+|-----|------|-------|-------------|
+| 1 | Dev 07: File Sync | Dev | Auto-sync works |
+| 2 | Dev 08: Performance Val | Dev | Perf report |
+| 2 | Dev 09: Convergence Val | Dev | Convergence report |
+| 2 | **GATE 3: Ready for Eval** | Dev | Signal scientist |
+| 3 | Sci 03: Quality Eval | Sci | Eval report |
+| 3 | **GATE 4: Acceptance** | Sci + User | Decision |
+| 4-5 | Bug fixes / iteration | Dev | MVP accepted |
+
+---
+
+## Critical Path
+
+```
+Dev 00 (DB choice) 
+  → Dev 01 (Design) 
+  → Dev 02 (Plan) 
+  → Gate 1 (Approval)
+  → Dev 03 (Embedding)
+  → Dev 04 (Vector DB)
+  → Dev 05 (MCP Integration)
+  → Dev 08 (Performance)
+  → Gate 3 (Ready)
+  → Sci 03 (Evaluation)
+  → Gate 4 (Acceptance)
+```
+
+**Critical Path Duration:** 8-10 days
+
+---
+
+## Key Insights
+
+### Why Database Choice First?
+- **Foundational decision** - affects all downstream work
+- **Lightweight task** - 1 day POC validation
+- **Unblocks design** - can't design without knowing DB APIs
+- **Risk reduction** - validate performance early
+
+### Why Design Before Plan?
+- **WHAT before HOW** - know what to build before planning how
+- **Estimation accuracy** - task estimates need design complexity
+- **Dependency identification** - design reveals task dependencies
+
+### Why Two Review Gates?
+- **Gate 1 (Design):** Prevents building wrong thing (before coding)
+- **Gate 3 (Pre-eval):** Prevents wasting scientist time on broken code
+
+### Scientist Involvement Points
+1. **Design review** (Day 2) - Validate approach
+2. **Manual testing** (Day 5) - Sanity check before formal eval
+3. **Quality evaluation** (Week 2 Day 3) - Formal acceptance testing
+4. **Acceptance decision** (Week 2 Day 3) - Final go/no-go
+
+---
+
+## Dependency Graph
+
+```mermaid
+graph TD
+    REQ[Requirements ✅] --> DEV00[Dev 00: DB Choice]
+    DEV00 --> DEV01[Dev 01: Design]
+    DEV01 --> DEV02[Dev 02: Plan]
+    DEV02 --> GATE1[Gate 1: Approval]
+    GATE1 --> DEV03[Dev 03: Embedding]
+    DEV03 --> DEV04[Dev 04: Vector DB]
+    DEV04 --> DEV05[Dev 05: MCP Tool]
+    DEV04 --> DEV06[Dev 06: Index Rebuild]
+    DEV06 --> DEV07[Dev 07: File Sync]
+    DEV05 --> DEV08[Dev 08: Performance]
+    DEV07 --> DEV08
+    DEV07 --> DEV09[Dev 09: Convergence]
+    DEV08 --> GATE3[Gate 3: Ready]
+    DEV09 --> GATE3
+    GATE3 --> SCI03[Sci 03: Evaluation]
+    SCI03 --> GATE4[Gate 4: Acceptance]
+```
+
+---
+
+## Risk Management
+
+### Risk 1: Database choice wrong
+- **Mitigation:** POC validation before committing
+- **Fallback:** Abstract DB layer for easy swap
+
+### Risk 2: Latency too high
+- **Mitigation:** Profile early, optimize query path
+- **Fallback:** Adjust target or optimize further
+
+### Risk 3: Quality improvement insufficient
+- **Mitigation:** Test with evaluation set during development
+- **Fallback:** Analyze failure modes, iterate
+
+### Risk 4: Design review takes too long
+- **Mitigation:** Prepare clear, concrete design doc
+- **Fallback:** Async review with follow-up discussion
+
+---
+
+## Communication Protocol
+
+### Developer → Scientist Handoffs
+1. **After Dev 00:** Share database choice (informational)
+2. **After Dev 02:** Share design + plan for review (approval needed)
+3. **After Dev 05:** Share test deployment (scientist can explore)
+4. **After Dev 09:** Signal MVP ready (scientist starts evaluation)
+
+### Scientist → Developer Feedback
+1. **During Gate 1:** Design review feedback
+2. **During Gate 2:** Manual testing feedback
+3. **During Sci 03:** Bug reports / issues found
+4. **After Gate 4:** Acceptance decision
+
+---
+
+## Next Actions
+
+**Current Status:** Ready to start Developer 00 (Database Selection)
+
+**Immediate Next Steps:**
+1. Developer starts Dev 00 (Database Selection POC)
+2. Complete in 1 day
+3. Document decision
+4. Proceed to Dev 01 (Design Document)
+
+**Estimated Start of Implementation:** Week 1, Day 4 (after Gate 1 approval)
+**Estimated MVP Complete:** Week 2, Day 2-3
+**Estimated Acceptance:** Week 2, Day 3-5

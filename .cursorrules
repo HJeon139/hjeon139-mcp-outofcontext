@@ -1,0 +1,195 @@
+# Out-of-Context MCP Server - Cursor Rules
+
+## Context Management (Updated for Direct File Operations)
+
+**⚠️ IMPORTANT:** Until version 2.0, use direct file operations for context management instead of slow MCP tools.
+
+### Writing Contexts
+
+**DON'T use `put_context` (slow: 1-3s per call)**
+
+**DO use direct file write:**
+
+```python
+# Create or update a context
+write(".out_of_context/contexts/context-name.mdc", """---
+name: context-name
+type: project-info
+created_at: 2024-12-16T10:00:00
+custom_field: value
+---
+
+# Context Title
+
+Markdown content goes here...
+""")
+```
+
+### Reading Contexts
+
+**Option 1: Read specific context file**
+```python
+read_file(".out_of_context/contexts/context-name.mdc")
+```
+
+**Option 2: Use semantic search (when database layer is ready)**
+```python
+semantic_search("query about context", limit=5)
+```
+
+### Updating Contexts
+
+**Use search_replace for targeted edits:**
+```python
+search_replace(
+    file_path=".out_of_context/contexts/context-name.mdc",
+    old_string="old content section",
+    new_string="new content section"
+)
+```
+
+### Deleting Contexts
+
+```python
+delete_file(".out_of_context/contexts/context-name.mdc")
+```
+
+### .mdc File Format Specification
+
+**Structure:**
+```
+---
+<YAML frontmatter>
+---
+
+<Markdown body>
+```
+
+**Required Fields:**
+- `name`: Context name (must match filename without .mdc)
+
+**Optional Fields:**
+- `created_at`: ISO datetime (auto-added if missing)
+- `type`: Context type (e.g., "project-info", "status", "decision")
+- `tags`: List of tags
+- Any custom fields
+
+**Example:**
+```markdown
+---
+name: project-overview
+type: project-info
+tags: [overview, documentation]
+created_at: 2024-12-16T10:00:00
+---
+
+# Project Overview
+
+Content here...
+```
+
+### Context Management Best Practices
+
+1. **Always fetch at session start:**
+   - Read `.out_of_context/contexts/project-overview.mdc`
+   - Read `.out_of_context/contexts/current-status.mdc`
+
+2. **Update at session end:**
+   - Update `current-status.mdc` with progress
+   - Update `decision-log.mdc` if decisions made
+
+3. **Naming conventions:**
+   - Use lowercase with hyphens (kebab-case)
+   - Be descriptive: `action-items-revised` not `items`
+   - Match filename to `name` field
+
+4. **Storage vs Retrieval:**
+   - Store liberally (many contexts OK)
+   - Fetch conservatively (< 10 contexts per session)
+
+### Performance
+
+**Direct file operations:**
+- Create/update: ~20-50ms (fast!)
+- Read: ~10-20ms (instant!)
+- 20-60x faster than MCP tools
+
+**When database layer is ready:**
+- Semantic search: ~30-80ms (vector DB)
+- Much more powerful than substring search
+
+---
+
+## Code Quality Standards
+
+See main workspace rules for full standards. Key points:
+
+- Type hints required
+- All tests must pass
+- Use pytest markers: `@pytest.mark.unit` or `@pytest.mark.integration`
+- Never use `# noqa` to suppress linting errors
+- Run `hatch run release` before committing
+
+---
+
+## Python Environment
+
+- **Python Version:** 3.11.9 (specified in .mise.toml and pyproject.toml)
+- **DO NOT** use Python 3.14 (causes dependency issues)
+- **Package Manager:** hatch
+- **Virtual Env:** Managed by hatch
+
+---
+
+## Database Integration (In Progress)
+
+**Current Status:** Developer Action Item 01 (Design Document)
+
+**Selected Database:** LanceDB
+- Benchmarked: 81.6ms p95 latency (meets < 100ms target)
+- 18x faster than ChromaDB
+- Rust-based, optimized for our scale (1K-4K contexts)
+
+**Architecture Decision (Pending):**
+- Remove MCP CRUD tools (put_context, get_context, etc.)
+- Use direct file operations (current temporary workaround)
+- File watcher detects .mdc changes → updates vector DB
+- Semantic search queries vector DB
+
+---
+
+## Testing
+
+- **Run tests:** `hatch run pytest -m 'unit'` or `hatch run pytest -m 'integration'`
+- **Coverage:** `hatch run pytest --cov=src`
+- **All test functions must be marked** with appropriate marker
+
+---
+
+## Commit Standards
+
+- Follow Conventional Commits format
+- **Version bumping:**
+  - `feat` → MINOR bump (0.1.0 → 0.2.0)
+  - `fix` → PATCH bump (0.1.0 → 0.1.1) - **MANDATORY**
+  - Breaking changes → MAJOR bump
+- Update version in both:
+  - `pyproject.toml`
+  - `src/hjeon139_mcp_outofcontext/__init__.py`
+
+---
+
+## Current Session Context
+
+**Last Action:** Developer Action Item 00 complete
+- Database choice: LanceDB (benchmarked)
+- Python version fixed: 3.11.9
+- Context management: Using direct file ops (temporary)
+
+**Next Action:** Developer Action Item 01 (Design Document)
+- Design architecture with LanceDB
+- Decide on CRUD tools removal
+- Document file watcher + vector DB integration
+
+**Progress:** ~45% to MVP (planning + scientist + DB choice complete)
+

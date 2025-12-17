@@ -8,513 +8,162 @@ alwaysApply: true
 
 # Context Management Rules
 
-**⚠️ ALWAYS APPLY THIS RULE:** These guidelines apply to every session and every interaction with the out-of-context MCP tool.
+**⚠️ ALWAYS APPLY:** Use direct file operations for writing, MCP tools for reading.
 
-This project uses the **out-of-context MCP server** to maintain continuity across multiple agent sessions. Use these rules to manage context efficiently and avoid flooding the context window.
+## Quick Start (Every Session)
 
-## Quick Checklist
-
-**Every Session Start:**
-- [ ] Fetch `project-overview` + `current-status` (REQUIRED)
-- [ ] Fetch role-specific contexts if needed (scientist/developer)
-- [ ] Check `last-updated` dates for staleness
-
-**Every Session End:**
-- [ ] Update `current-status` if progress made
-- [ ] Update `decision-log` if decisions made
-- [ ] Verify contexts still consistent with reality
-
-**When Fetching Contexts:**
-- [ ] Be selective: < 10 contexts per session (< 20k tokens)
-- [ ] Use `get_context` with specific names (not `list_context` without filter)
-- [ ] Check for inconsistencies and flag to user if found
-
----
-
-## When to Fetch Context (Start of Session)
-
-### Every New Session - ALWAYS Fetch
+**1. Read contexts to understand where we are:**
 ```
 get_context names=["project-overview", "current-status"]
 ```
 
-**Why:** Quickly understand what this project is and where we are.
+**2. Work on your task**
 
-### Role-Specific - Fetch Based on Task
+**3. Update contexts directly (fast, streaming UX):**
+```python
+# Write .mdc files directly (NOT put_context - it's slow)
+write(".out_of_context/contexts/current-status.mdc", """---
+name: current-status
+type: status
+last-updated: 2024-12-16
+---
 
-**If working as ML Scientist:**
-```
-get_context names=["persona-definitions", "decision-log"]
-```
+# Current Status
 
-**If working as Developer:**
+[Updated content here...]
+""")
 ```
-get_context names=["persona-definitions", "key-documents-index"]
-```
-
-**If reviewing/planning:**
-```
-get_context names=["decision-log", "key-documents-index"]
-```
-
-### After Long Break (> 1 week) - Full Context
-```
-get_context names=["project-overview", "persona-definitions", "decision-log", "current-status", "key-documents-index"]
-```
-
-**Why:** Refresh understanding of project structure, roles, decisions made.
 
 ---
 
-## When to Update Context
+## Write: Use Direct File Operations (Fast)
 
-### ✅ Update `current-status` When:
-- Completing an action item (scientist 01, 02, 03 or developer 01-05)
-- Changing phase (requirements → implementation → evaluation → acceptance)
-- Unblocking a task (dependency resolved)
-- Encountering a blocker (document what's blocking progress)
+**Create/Update Context:**
+```python
+write(".out_of_context/contexts/my-context.mdc", """---
+name: my-context
+type: info
+created_at: 2024-12-16T10:00:00
+---
 
-**Example Update:**
+# Content
+""")
 ```
-put_context(
-  name="current-status",
-  text="... [update completed section] ...",
-  metadata={"last-updated": "2024-12-XX", "phase": "implementation"}
+
+**Update Part of Context:**
+```python
+search_replace(
+    file_path=".out_of_context/contexts/current-status.mdc",
+    old_string="old content",
+    new_string="new content"
 )
 ```
 
-### ✅ Update `decision-log` When:
-- Making a key technology choice (e.g., chose ChromaDB over LanceDB)
-- Changing a requirement or constraint
-- Making a design decision that affects multiple components
-- Discovering an issue that changes approach
-
-**Example Update:**
-```
-put_context(
-  name="decision-log",
-  text="... [append new decision with date and rationale] ...",
-  metadata={"last-updated": "2024-12-XX"}
-)
-```
-
-### ✅ Update `persona-definitions` When:
-- Clarifying or changing role boundaries
-- Adding a new persona (e.g., Product Owner)
-- Documenting lessons learned about collaboration
-
-**Rare - Only if fundamental role changes**
-
----
-
-## When to Create New Context
-
-### Create New Context When:
-- Starting a new major phase (e.g., "phase2-hybrid-search-plan")
-- Documenting a complex decision that needs detail (e.g., "vector-db-benchmark-results")
-- Capturing lessons learned (e.g., "mvp-retrospective")
-
-### Naming Convention:
-- `phase-name` - For phase-specific info (e.g., "phase1-mvp", "phase2-hybrid")
-- `topic-details` - For detailed topics (e.g., "evaluation-methodology", "performance-tuning")
-- `decision-name` - For major decisions (e.g., "database-choice", "api-design")
-
-### Keep Contexts Focused:
-- **Max ~500 lines** per context
-- **Single topic** per context
-- **Update rather than create** if related to existing context
-
----
-
-## When to Delete Context
-
-### ❌ Delete Context When:
-- Phase is complete and archived (e.g., delete "current-status" after MVP accepted, replace with "phase2-status")
-- Decision is superseded (e.g., delete "database-choice-draft" after final decision in "decision-log")
-- Temporary/scratch context no longer needed (e.g., "temp-research-notes")
-
-### Before Deleting:
-1. **Archive important info** - Move key points to permanent context (decision-log, project-overview)
-2. **Verify not referenced** - Check if other contexts reference it
-3. **Document deletion** - Note in decision-log if deleting significant context
-
-**Example:**
-```
-# Archive key info from "mvp-implementation-notes" to "decision-log"
-put_context(name="decision-log", text="...[add MVP lessons]...")
-
-# Then delete
-delete_context(name="mvp-implementation-notes")
+**Delete Context:**
+```python
+delete_file(".out_of_context/contexts/old-context.mdc")
 ```
 
 ---
 
-## Context Size Management
+## Read: Use MCP Tools
 
-### Storage vs Retrieval: Important Distinction
-
-**Storage (No Practical Limit):**
-- Store as many contexts as needed in the MCP tool
-- Contexts persist in `.out_of_context/contexts/` (tracked in git)
-- Storage is cheap, be thorough in documenting
-
-**Retrieval (< 200k Token Limit):**
-- **Constraint:** Total tokens fetched into context window < 200k
-- **Rule of Thumb:** 1 context ≈ 2k tokens (500 lines)
-- **Safe Fetch:** < 10 contexts per session (< 20k tokens)
-- **Be Selective:** Only fetch what you need for current task
-
-### Fetching Strategy
-
-**Start Small, Expand as Needed:**
-1. **Always fetch:** `project-overview` + `current-status` (< 5k tokens)
-2. **Role-based:** Add `persona-definitions` if needed (< 3k tokens)
-3. **Task-specific:** Add relevant contexts (e.g., `decision-log` before deciding)
-4. **Avoid:** `list_context` with no filter (may return 100+ contexts)
-5. **Avoid:** `search_context` with broad query (may return many matches)
-
-**Fetching Guidelines:**
-- ✅ **DO:** Fetch 2-5 most relevant contexts
-- ✅ **DO:** Use `get_context` with specific names
-- ⚠️ **CAUTION:** `list_context` shows all contexts (use `limit` parameter)
-- ⚠️ **CAUTION:** `search_context` may return many matches
-- ❌ **DON'T:** Fetch all contexts at once (will flood context window)
-
-### When Context Count Grows
-
-**If stored contexts > 50:**
-1. **Archive completed phases** (delete old phase contexts after documenting)
-2. **Consolidate related contexts** (merge similar topics)
-3. **Keep fetching selective** (don't load everything)
-
-**If individual context > 1000 lines:**
-1. **Split by topic** (e.g., "requirements-functional" + "requirements-nonfunctional")
-2. **Create summary** (short version for quick reference, detailed in git)
-3. **Keep both** (fetch summary normally, full version when deep-diving)
-
----
-
-## Context Workflow by Phase
-
-### Phase 1: Requirements (Complete)
-**Active Contexts:**
-- `project-overview` ✅
-- `persona-definitions` ✅
-- `decision-log` ✅
-- `current-status` ✅
-- `key-documents-index` ✅
-
-**Action:** All created, ready for implementation phase
-
----
-
-### Phase 2: Implementation (Current)
-
-**Start of Phase:**
+**Fetch specific contexts:**
 ```
-# Fetch to understand project
-get_context names=["project-overview", "current-status", "persona-definitions"]
+get_context names=["project-overview", "current-status"]
 ```
 
-**During Implementation:**
+**Search contexts:**
 ```
-# Update status as action items complete
-put_context(name="current-status", text="... [mark action item complete] ...")
-
-# Document key decisions
-put_context(name="decision-log", text="... [append database choice] ...")
-```
-
-**End of Phase (MVP Acceptance):**
-```
-# Update final status
-put_context(name="current-status", text="Phase 1 Complete. MVP Accepted. Ready for Phase 2.")
-
-# Create Phase 2 status
-put_context(name="phase2-status", text="Starting hybrid search implementation...")
-
-# Archive Phase 1 details (delete from MCP, keep in git)
-delete_context(name="evaluation-testset-notes")  # If created
+search_context query="database selection"
 ```
 
 ---
 
-### Phase 3: Phase 2 Planning (Future)
+## .mdc File Format
 
-**Start of Phase:**
+```markdown
+---
+name: context-name (required, must match filename)
+type: project-info|status|decision (optional)
+created_at: 2024-12-16T10:00:00 (optional)
+custom-field: value (optional)
+---
+
+# Markdown Content
+
+Your content here...
 ```
-# Fetch project context
-get_context names=["project-overview", "decision-log", "phase2-status"]
 
-# Note: "current-status" now refers to Phase 2
-```
-
-**Create New Contexts:**
-- `phase2-hybrid-search-plan` - Detailed Phase 2 plan
-- `bm25-implementation-notes` - BM25-specific notes
-
-**Archive Old:**
-- Delete "phase1-evaluation-results" (moved to git)
-- Keep "decision-log" (cumulative across phases)
+**Rules:**
+- `name` field must match filename (without .mdc)
+- File watcher auto-adds `created_at` if missing
+- File watcher validates and auto-corrects metadata
 
 ---
 
-## Handling Stale or Inconsistent Context
+## Atomicity Principle
 
-### Detecting Staleness
+**Keep contexts small and focused:**
+- ✅ **One topic per context** (< 200 lines ideal, < 300 lines max)
+- ✅ **Split when multiple topics emerge** (database choice vs workflow revision = 2 contexts)
+- ✅ **Use descriptive names** (`decision-database-chromadb` not `decision-log`)
+- ✅ **Group related decisions by timeframe or category**
 
-**Context is stale if:**
-- `last-updated` date is > 2 weeks old during active development
-- References a phase that's complete (e.g., "current-status" says "Week 1" but we're in Week 5)
-- Contains decisions that were overridden
-- Links to files that no longer exist
+**When to split:**
+- Context exceeds 300 lines
+- Contains 3+ distinct topics
+- Historical decisions + active work mixed together
+- Different audiences (scientist vs developer decisions)
 
-**How to Detect:**
-1. **Check metadata:** Look at `last-updated` or `created_at` fields
-2. **Cross-reference:** Compare context claims with actual files/git history
-3. **Ask user:** If context contradicts current understanding, ask for clarification
-
-### Handling Inconsistencies
-
-**If context contradicts reality:**
-
-1. **Verify ground truth:**
-   ```bash
-   # Check actual file state
-   ls docs/v1/database/
-   git log --oneline -10
-   
-   # Compare to what context says
-   ```
-
-2. **Update or flag:**
-   ```
-   # If context is wrong, update it
-   put_context(name="current-status", text="... [corrected info] ...")
-   
-   # If unsure, flag to user
-   "⚠️ Context 'current-status' says X, but files show Y. Which is correct?"
-   ```
-
-3. **Document correction in decision-log:**
-   ```
-   put_context(name="decision-log", text="
-   ... [existing log] ...
-   
-   ## 2024-12-XX: Corrected Inconsistency
-   - Context 'current-status' was stale (said Week 1, actually Week 5)
-   - Updated to reflect actual progress
-   - Cause: Context not updated after completing action items
-   ")
-   ```
-
-### Common Inconsistency Scenarios
-
-**Scenario 1: Action item complete but status says "not started"**
-- **Fix:** Update `current-status` to mark as complete
-- **Verify:** Check if deliverables exist (files, commits)
-
-**Scenario 2: Decision-log says "pending" but git shows implementation**
-- **Fix:** Update `decision-log` with actual decision and date
-- **Backfill:** Document decision based on git commits/files
-
-**Scenario 3: Context references deleted file**
-- **Fix:** Update context to reference current location or remove reference
-- **Document:** Note in decision-log that file was moved/deleted
-
-**Scenario 4: Multiple contexts conflict (e.g., both say "current phase")**
-- **Fix:** Consolidate into one canonical source (`current-status`)
-- **Delete:** Remove duplicate/stale contexts
-- **Update index:** Update `key-documents-index` to reflect single source
-
-### Preventing Staleness
-
-**Best Practices:**
-1. **Update at session end:** Always update `current-status` before ending work
-2. **Date stamp decisions:** Include date in `decision-log` entries
-3. **Use metadata:** Set `last-updated` when updating contexts
-4. **Regular reviews:** Every 2-3 sessions, review context list for staleness
-5. **Trust git:** If context conflicts with git, git is ground truth
-
-### Recovery from Severe Staleness
-
-**If contexts are severely outdated (> 1 month during active work):**
-
-1. **Rebuild from git history:**
-   ```bash
-   git log --oneline --since="1 month ago"
-   # Review what actually happened
-   ```
-
-2. **Create fresh contexts:**
-   ```
-   # Archive old stale contexts
-   delete_context names=["old-current-status", "stale-decision-log"]
-   
-   # Create new based on actual state
-   put_context(name="current-status", text="... [actual current state] ...")
-   ```
-
-3. **Document gap:**
-   ```
-   put_context(name="decision-log", text="
-   ## 2024-12-XX: Context Rebuild
-   - Previous contexts were stale (last updated: 2024-11-XX)
-   - Rebuilt based on git history and current file state
-   - Summary of activity during gap: [key accomplishments]
-   ")
-   ```
+**Naming conventions:**
+- `decision-{topic}-{date}` - Specific decision (e.g., `decision-database-2024-12-16`)
+- `{topic}-status` - Current status of a topic (e.g., `database-status`)
+- `{topic}-overview` - High-level summary (e.g., `project-overview`)
+- `history-{topic}` - Historical record (e.g., `history-decisions-phase0`)
 
 ---
 
-## Anti-Patterns (Don't Do This)
+## Core Contexts
 
-### ❌ Don't: Store Large Documents in Context
-**Problem:** Evaluation test set (500 lines) stored in MCP context  
-**Solution:** Store in git (`evaluation-testset.json`), reference in context:
-```
-Context: "Evaluation test set: docs/v1/database/scientist/evaluation-testset.json"
-```
+**Always read at session start:**
+- `project-overview` - What is this project?
+- `current-status` - Where are we now?
 
-### ❌ Don't: Create Duplicate Contexts
-**Problem:** "project-overview", "project-summary", "what-is-this-project"  
-**Solution:** One canonical context per topic, update it
+**Read as needed (phase-specific):**
+- `decision-*` - Specific decisions (e.g., `decision-database-2024-12-16`)
+- `history-*` - Historical records (e.g., `history-decisions-phase0`)
+- `action-items-revised` - Current workflow
 
-### ❌ Don't: Let Context Get Stale
-**Problem:** "current-status" says "Week 1" but we're in Week 3  
-**Solution:** Update at end of each work session
-
-### ❌ Don't: Over-Contextualize
-**Problem:** 50 contexts for every minor detail  
-**Solution:** Use git for details, MCP for **high-level** continuity
-
-### ❌ Don't: Under-Contextualize  
-**Problem:** No context, start every session from scratch  
-**Solution:** Always fetch project-overview + current-status at session start
+**Update at session end:**
+- `current-status` - Update progress
+- `decision-{new-topic}` - Document NEW decisions (create specific context)
 
 ---
 
-## Prompts for the AI Agent
+## Why Direct File Operations?
 
-### Session Start Prompt
-```
-I'm starting a new session on the out-of-context project. Please:
-1. Fetch project-overview and current-status contexts
-2. Summarize where we are and what's next
-3. Ask what role I'm taking (scientist/developer/reviewer)
-4. Fetch role-specific contexts
-```
+1. **20-60x faster** - Streaming UX (1-3s → 20-50ms)
+2. **Users see progress** - Watch content being drafted
+3. **Metadata consistency maintained** - File watcher auto-corrects
+4. **Simpler** - No MCP tool abstraction layer
 
-### Before Making a Decision
-```
-I'm about to make a decision on [topic]. Please:
-1. Fetch decision-log to check if already decided
-2. Fetch persona-definitions to confirm this is my decision to make
-3. After deciding, update decision-log with rationale
-```
-
-### After Completing Work
-```
-I've completed [action item / task]. Please:
-1. Update current-status to reflect completion
-2. Update decision-log if any decisions made
-3. Identify what's now unblocked
-4. Suggest next action
-```
-
-### Context Cleanup
-```
-We have [N] contexts. Let's clean up:
-1. List all contexts (list_context)
-2. Identify stale or redundant contexts
-3. Archive important info to git
-4. Delete obsolete contexts
-5. Update key-documents-index
-```
+**File watcher handles:**
+- Auto-adds missing `created_at`
+- Validates `name` matches filename
+- Generates embeddings for search
+- Updates vector database
 
 ---
 
-## Example Session Transcript
+## Golden Rules
 
-**Agent Session 1:**
-```
-User: "I want to work on the database layer"
-
-AI: [Fetches project-overview, current-status]
-AI: "We're implementing semantic search. Requirements complete, action items defined.
-     Are you working as scientist or developer?"
-
-User: "Developer"
-
-AI: [Fetches persona-definitions, key-documents-index]
-AI: "You have 5 action items. First is to choose vector database (RT-3).
-     See docs/v1/database/developer/README.md. Ready to start?"
-
-[... work happens ...]
-
-User: "I chose ChromaDB. Document this."
-
-AI: [Updates decision-log]
-AI: "Decision logged. Updated current-status. Next: Implement MVP (Action Item 02)."
-```
-
-**Agent Session 2 (Next Day):**
-```
-User: "Continue database work"
-
-AI: [Fetches project-overview, current-status]
-AI: "Database choice: ChromaDB (see decision-log). Currently on Developer Action Item 02 (Implement MVP).
-     Ready to continue?"
-
-User: "Yes, but remind me what the MVP includes"
-
-AI: [Reads requirements.md Quick Reference]
-AI: "MVP = semantic search + file sync + index rebuild. See requirements.md section 1 for details."
-```
-
----
-
-## Maintenance Schedule
-
-### Weekly (During Active Development)
-- Review context list: `list_context`
-- Check for stale contexts (last_updated > 1 week)
-- Update current-status with week's progress
-
-### Monthly (During Slower Phases)
-- Consolidate decision-log if fragmented
-- Archive completed phase contexts
-- Update project-overview if scope changed
-
-### After Major Milestones
-- Create milestone summary context (e.g., "mvp-retrospective")
-- Archive phase-specific contexts to git
-- Update key-documents-index
-
----
-
-## Summary: Golden Rules
-
-1. **Always fetch `project-overview` + `current-status` at session start** (REQUIRED)
-2. **Be selective when fetching** - < 10 contexts per session to avoid flooding window
-3. **Update `current-status` after each work session** to prevent staleness
-4. **Update `decision-log` when making key decisions** with dates
-5. **Check for staleness** - verify context matches reality (git is ground truth)
-6. **Store liberally, fetch conservatively** - many contexts OK, fetch only what you need
-7. **Use git for details**, MCP for **high-level continuity**
-
----
-
-## Key Distinctions
-
-**Storage (Unlimited):**
-- Store as many contexts as helpful
-- Contexts persist in git (`.out_of_context/contexts/`)
-- Be thorough in documentation
-
-**Retrieval (< 200k tokens):**
-- Fetch only what you need (< 10 contexts typically)
-- Use `get_context` with specific names
-- Avoid `list_context` or broad `search_context` without filters
-
-**Remember:** MCP contexts are for **high-level continuity across sessions**, not **detailed documentation** (that's what git/markdown is for). When in doubt, store in MCP AND document in git markdown files.
+1. ✅ **Read:** Use `get_context` (MCP tool)
+2. ✅ **Write:** Use `write`/`search_replace` (direct file ops)
+3. ✅ **Delete:** Use `delete_file` (direct file ops)
+4. ✅ **Fetch 2-5 contexts** per session (avoid flooding window)
+5. ✅ **Update at session end** (prevent staleness)
+6. ✅ **Keep contexts atomic** (< 200 lines ideal, split if > 300 lines)
+7. ✅ **Split by topic** (one decision = one context)
+8. ❌ **DON'T use `put_context`** (slow, being removed in v2.0)
+9. ❌ **DON'T concatenate unrelated topics** (split instead)

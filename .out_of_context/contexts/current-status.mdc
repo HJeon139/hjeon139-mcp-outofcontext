@@ -1,263 +1,428 @@
 ---
-type: status
-phase: implementation-phase
-last-updated: '2024-12-16'
-scientist-01: complete
-next-action: scientist-02-or-developer-01
 name: current-status
-created_at: '2025-12-16T12:56:16.530883'
+type: status
+phase: phase-0-tech-selection
+last-updated: 2024-12-16
+current-action: developer-01
+workflow-version: 2.0
+dev-00-complete: true
+database-chosen: chromadb
+python-version-fixed: 3.11.9
+architecture-refined: true
+user-feedback-incorporated: true
 ---
 
 # Current Status - Database Layer Enhancement
 
-**Last Updated:** 2024-12-16 (Scientist Action Item 01 Complete)  
-**Phase:** Implementation Phase - Scientist 01 ✅, Developer 01 Ready  
-**Next:** Scientist Action Item 02 (Baseline Evaluation) OR Developer Action Item 01 (Database Choice)
+**Last Updated:** 2024-12-16 (Requirements Revised v2.1.0, Parallel Tracks Started)  
+**Phase:** Technology Selection & Design (Phase 0)  
+**Next Session:** Scientist 04 + Developer 01-R (Parallel)  
+**Workflow Version:** 2.1 (Requirements unblocked)
 
 ---
 
-## ✅ Completed
+## 🎯 Current Actions: PARALLEL WORK (Day 3)
 
-### Scientist Action Item 01: Create Evaluation Test Set - COMPLETE ✅
+### Track 1: Scientist 04 - Embedding Model Research
 
-**Status:** ✅ Complete (2024-12-16)  
-**Time:** 4 hours actual  
-**Owner:** ML Scientist
+**Status:** 🟡 Ready to Start  
+**Priority:** CRITICAL (blocks final design)  
+**Time:** 0.5-1 day (4-6 hours)  
+**Owner:** Scientist  
+**Depends on:** Requirements v2.1.0 ✅ Complete
 
-**Deliverables:**
-- ✅ `evaluation-testset.json` - 55 queries with relevance judgments
-- ✅ `evaluation-testset-methodology.md` - Comprehensive documentation
+**Scope:**
+- Survey embedding models with ≥512 token support
+- Benchmark top 3 candidates (quality + latency)
+- Recommend model with evidence
+- **Deliverable:** `docs/v1/database/scientist/04-model-selection-research.md`
 
-**Key Metrics:**
-- 55 queries (exceeds 50 minimum requirement)
-- Perfect distribution: 22 how-to (40%), 17 factual (31%), 11 troubleshooting (20%), 5 comparison (9%)
+---
+
+### Track 2: Developer 01-R - Chunking + Invalidation Design
+
+**Status:** 🟡 Ready to Start  
+**Priority:** CRITICAL (blocks execution plan)  
+**Time:** 1 day (6-8 hours)  
+**Owner:** Software Developer Lead  
+**Depends on:** Requirements v2.1.0 ✅ Complete
+
+**Scope:**
+- Design chunking strategy compatible with sentence-transformers
+- Design invalidation mechanism for eventual consistency
+- Update design document Section 3
+- **Deliverable:** Updated `docs/v1/database/developer/01-design-document.md`
+
+**CRITICAL UPDATE:** Database choice REVISED after comprehensive user critique:
+- **Original decision:** LanceDB (WRONG - based on flawed benchmark)
+- **Revised decision:** ChromaDB (CORRECT - based on comprehensive benchmark)
+- **Key insight:** ChromaDB is 1.9x faster at max capacity (8.4ms vs 15.9ms p95)
+
+**What to do (UPDATED for ChromaDB):**
+1. System architecture using ChromaDB (2h)
+2. Component designs (4h):
+   - Embedding service (independent sentence-transformers - NOT ChromaDB's built-in)
+   - Vector DB layer (ChromaDB ephemeral client wrapper)
+   - File watcher with metadata moderation
+   - MCP search tools (semantic + future hybrid with `where` + `where_document`)
+3. Data models and schemas (1h) - ChromaDB collection structure
+4. Eventual consistency model (1h)
+5. Error handling strategy (1h)
+6. Testing strategy (2h)
+
+**Deliverable:** `docs/v1/database/developer/01-design-document.md`
+
+**Key Design Changes from Database Selection Revision:**
+- Use ChromaDB ephemeral client (in-memory, fast)
+- Independent sentence-transformers (7-8ms embedding time)
+- Built-in hybrid search support (`where` + `where_document`)
+- Simpler API (no tantivy FTS setup needed)
+
+---
+
+## ✅ Completed Work
+
+### Phase 0: Technology Selection & Design
+
+#### Developer 00: Database Selection ✅ (Dec 16, 2024 - REVISED)
+- **Time Spent:** 10 hours (including Python fix + benchmarking + revision)
+- **Decision:** ChromaDB selected (REVERSED from LanceDB after user critique)
+- **Deliverable:** `docs/v1/database/developer/00-database-choice-decision.md` (REVISED)
+
+**Original Decision (WRONG):**
+- LanceDB selected based on flawed 10-query, 2K-context benchmark
+- Showed LanceDB 18x faster (81.6ms vs 1498ms)
+- Missed critical issues: warmup effects, insufficient queries, max capacity testing
+
+**User Critique (CORRECT):**
+> 1. Why not use sentence transformers independently?
+> 2. Consider holistic features (hybrid search)
+> 3. What about performance at max capacity (4K contexts)?
+
+**Revised Decision (CORRECT):**
+- Created comprehensive benchmark: 55 queries, 1K/2K/4K contexts
+- Used independent sentence-transformers (both databases)
+- Evaluated hybrid search capabilities
+- **Result:** ChromaDB is 1.9x FASTER at max capacity
+
+**Comprehensive Benchmark Results:**
+
+| Database | 1K Contexts | 2K Contexts | 4K Contexts (Max) |
+|----------|-------------|-------------|-------------------|
+| **ChromaDB** | 96.3ms p95 (warmup) | 8.7ms p95 | **8.4ms p95 ✅** |
+| **LanceDB** | 14.8ms p95 | 15.2ms p95 | **15.9ms p95** |
+| **Winner** | LanceDB | ChromaDB | **ChromaDB (1.9x)** |
+
+**Key Findings:**
+- ✅ **ChromaDB 1.9x faster at max capacity** (8.4ms vs 15.9ms)
+- ✅ **ChromaDB 10x faster vector search** (0.8ms vs 7.9ms)
+- ✅ **ChromaDB has built-in hybrid search** (zero setup vs tantivy)
+- ✅ **Both meet < 100ms target** (8.4ms and 15.9ms)
+
+**Critical Implementation Requirement:**
+- ⚠️ **DO NOT use ChromaDB's built-in embedding function**
+- ✅ **Use sentence-transformers independently:** `model.encode([text])[0]`
+- ✅ **Pass pre-computed embeddings:** `collection.add(embeddings=...)`
+- This ensures 7-8ms embedding time (not 300ms+)
+
+---
+
+#### Write Speed Bug Investigation ✅ (Dec 16, 2024)
+- **Time Spent:** 3 hours
+- **Status:** Investigation complete, architecture refined
+- **Deliverables:** Bug report, root cause analysis, recommendations
+
+**User's Critical Insight:**
+> "The perceived latency isn't from our tool but from UX. Before MCP tool calls, LLM drafts the request. In normal file edits, users see the draft. In tool usage, it looks slow."
+
+**Real Issue:** UX perception (streaming vs batch), not tool performance
+
+**Solution:**
+1. Direct file operations (streaming UX)
+2. File watcher moderates metadata
+3. Add value-add search tools (semantic, lexical, metadata, hybrid)
+4. Eventual consistency model (< 10s)
+
+**Immediate Action Taken:**
+- ✅ Created `.cursorrules` with direct file operation guidance
+- ✅ Users can use direct file ops immediately (20-60x faster UX)
+- ✅ Documented .mdc format specification
+
+---
+
+### Scientist Pre-Implementation Work (100% Complete)
+
+#### Scientist Action Item 01: Create Evaluation Test Set ✅
+- Created 55-query test set with perfect distribution
 - All queries have relevance judgments
-- Average 1.33 relevant contexts per query
-- 6 unique contexts referenced
-- All RT-10 requirements met ✅
+- **Files:** evaluation-testset.json, evaluation-testset-methodology.md
 
-**Next Impact:**
-- ✅ Unblocks Scientist Action Item 02 (Baseline Evaluation)
-- ✅ Can share with developer for alignment
-- ✅ Defines what "good retrieval" means for MVP acceptance
+#### Scientist Action Item 02: Baseline Evaluation ✅
+- Measured baseline performance (P@5=0.255, R@5=0.945)
+- Identified failure modes (vocabulary mismatch priority)
+- **Files:** evaluate.py, baseline-results.json, baseline-analysis.md
 
----
-
-## 🔴 Ready to Start (No Blockers)
-
-### NEXT ACTION: Scientist Action Item 02 OR Developer Action Item 01
-
-Both can proceed in parallel:
-
-#### Option A: Scientist Action Item 02 - Baseline Evaluation
-**Task:** Run current substring search against test set  
-**Owner:** ML Scientist  
-**Priority:** HIGH  
-**Time Estimate:** 2-3 hours  
-**Status:** 🔴 Ready to start (test set complete)
-
-**What to do:**
-1. Read: `docs/v1/database/scientist/02-baseline-evaluation.md`
-2. Create evaluation script: `evaluate.py`
-3. Run baseline evaluation
-4. Document results: `baseline-results.json`, `baseline-analysis.md`
-
-**Dependencies met:**
-- ✅ Test set complete (Scientist 01)
-- ✅ MCP server operational
-
-#### Option B: Developer Action Item 01 - Choose Vector Database
-**Task:** Evaluate and choose vector database (ChromaDB/LanceDB/SQLite+ext)  
-**Owner:** Developer  
-**Priority:** HIGH (BLOCKING for MVP implementation)  
-**Time Estimate:** 4-8 hours  
-**Status:** 🔴 Ready to start (no blockers)
-
-**What to do:**
-1. Read: `docs/v1/database/developer/README.md`
-2. Research: RT-3 (database benchmarking)
-3. Create POC implementations
-4. Document decision in decision-log
+**Key Baseline Metrics to Beat:**
+- **Precision@5:** 0.255 → Target: ≥ 0.332 (30% improvement)
+- **Recall@5:** 0.945 → Target: ≥ 0.945 (maintain)
+- **MRR:** 0.652 → Target: ≥ 0.848
+- **NDCG@10:** 0.742 → Target: ≥ 0.965
 
 ---
 
-## 🟡 Blocked (Waiting)
+## 🔄 Current Phase: Phase 0 - Technology Selection & Design (Day 2)
 
-### Scientist Action Item 03: Semantic Search Evaluation
-- **Status:** BLOCKED by Scientist 02 + Developer MVP
-- **Time:** 2-3 hours after MVP complete
-- **Note:** Can only proceed after semantic search implementation done
+### Phase 0 Timeline (Week 1, Days 1-3)
 
-### Developer Action Items 02-05: Implementation
-- **Status:** BLOCKED by Developer 01 (database choice)
-- **Time:** 4-6 days after database chosen
-- **Note:** All implementation depends on database choice
+| Day | Task | Owner | Status | Deliverable |
+|-----|------|-------|--------|-------------|
+| 1 | Dev 00: DB Selection | Dev | ✅ Complete (REVISED) | DB choice + benchmarks |
+| 1 | Write speed investigation | Dev | ✅ Complete | Bug analysis + .cursorrules |
+| 2 | Dev 01: Design Doc | Dev + Sci | ✅ Complete | Design doc (ChromaDB) |
+| 2 | Context mgmt refinement | Dev | ✅ Complete | Atomic contexts |
+| 2 | Dev 02: Execution Plan | Dev + Sci | 🟡 **NEXT** | Execution plan |
+| 2-3 | Gate 1: Approval | User + Sci | 🔴 Blocked | Go/No-Go |
 
----
-
-## 📋 Requirements Phase Summary (Complete ✅)
-
-**Duration:** 1 full session (multiple hours)
-
-**Major Deliverables:**
-1. ✅ Requirements document v2.0.0 (revised and finalized)
-2. ✅ Requirements critique (developer perspective)
-3. ✅ Scientist response (accepted changes)
-4. ✅ Action items structure (scientist + developer)
-5. ✅ Context management system (MCP + cursor rules)
-6. ✅ Evaluation test set (Scientist 01)
-
-**Key Decisions Made:**
-- Evidence-first methodology validated
-- MVP scope clearly defined (semantic only)
-- Research tasks reduced to 6 essential items
-- Two-persona structure maintained
-- Context management rules established
-- Test set creation methodology documented
-
-**Files Created:** 17 markdown documents, 5 MCP contexts, 1 cursor rule, 1 test set
+**Current Task:** Developer 02 (Execution Plan)  
+**Progress:** Phase 0 is 67% complete (2/3 action items done)
 
 ---
 
-## 🎯 Critical Path to MVP (Updated)
+## 📈 Overall Progress
 
-```
-Week 1:
-├─ Scientist 01: Create test set (4h) ✅ COMPLETE
-├─ Scientist 02: Baseline eval (2-3h) ← READY TO START
-└─ Developer 01: Choose database (4-8h) ← READY TO START [parallel]
+### Planning Phase ✅ (100%)
+- Requirements v2.0.0 finalized
+- Context management established
+- Action items structure revised and stored
+- Architecture refined with user feedback
 
-Week 1-2:
-└─ Developer 02-05: Implement MVP (4-6 days) [after database choice]
+### Scientist Pre-Work ✅ (100%)
+- Test set created (55 queries)
+- Baseline evaluated (P@5=0.255)
+- Evaluation infrastructure ready
 
-Week 2:
-├─ Scientist 03: Semantic eval (2-3h) [after MVP]
-└─ MVP Acceptance Decision
-```
+### Developer Phase 0 🟡 (60% - In Progress, Design Revision)
+- ✅ Database selection (Dev 00) - COMPLETE (REVISED to ChromaDB)
+- ✅ Python version fixed (3.11.9)
+- ✅ Write speed investigation - COMPLETE
+- ✅ Architecture refined with user feedback
+- ✅ Comprehensive benchmarking (1K/2K/4K contexts, 55 queries)
+- ✅ Design document (Dev 01 v1) - COMPLETE but needs revision
+- ✅ Context management refined - COMPLETE (atomic contexts < 200 lines)
+- 🟡 Design document (Dev 01 v2) - COMPLETE (revised with WHY/WHAT/HOW structure)
+- 🟡 Research task (Dev 01-R) - NEXT (Model selection & chunking)
+- 🔴 Execution plan (Dev 02) - Blocked by Dev 01-R
+- 🔴 Gate 1 approval - Blocked by Dev 02
 
-**Progress Update:**
-- ✅ Week 1 - Scientist 01: Complete
-- 🔴 Week 1 - Scientist 02: Ready
-- 🔴 Week 1 - Developer 01: Ready
+### Developer Phase 1 🔴 (0% - Blocked by Gate 1)
+- Core implementation (Dev 03-06)
+- Estimated start: Week 1, Day 4 (after Gate 1 approval)
 
-**Estimated Time to MVP:** 1-2 weeks (on track)
+### Developer Phase 2-3 🔴 (0% - Blocked by Phase 1)
+- File sync (Dev 07)
+- Validation (Dev 08-09)
+- Estimated: Week 2, Days 1-2
 
----
+### Scientist Evaluation 🔴 (0% - Blocked by Dev 09)
+- Quality evaluation (Sci 03)
+- Estimated: Week 2, Day 3
 
-## 📚 Key Documents for Next Session
-
-### For Scientist (Baseline Evaluation)
-1. `docs/v1/database/scientist/02-baseline-evaluation.md` - Detailed instructions
-2. `docs/v1/database/scientist/evaluation-testset.json` - Test set to use
-3. `docs/v1/database/scientist/evaluation-testset-methodology.md` - Test set documentation
-
-### For Developer (Database Choice)
-1. `docs/v1/database/developer/README.md` - Developer action items
-2. `docs/v1/database/requirements.md` - Full requirements (Quick Reference section)
-3. `decision-log` (context) - Previous decisions and rationale
-
-### Context Documents (Fetch These)
-```bash
-# At session start, fetch:
-get_context names=["project-overview", "current-status", "persona-definitions"]
-
-# For specific tasks:
-get_context names=["decision-log", "key-documents-index"]
-```
+**Overall MVP Progress:** ~60% (planning + scientist + DB choice + design + context mgmt complete)
 
 ---
 
-## 🎬 Next Session Quick Start
+## 🗓️ Updated Timeline to MVP
 
-**For Scientist (Continue with Baseline Evaluation):**
-```
-1. Fetch contexts
-   get_context names=["project-overview", "current-status"]
+**Week 1:**
+- Day 1: ✅ Dev 00 (DB Selection + Python fix + Benchmarking + REVISION) - COMPLETE
+- Day 1: ✅ Write speed investigation + Architecture refinement - COMPLETE
+- Day 2-3: 🟡 Dev 01 (Design Document with ChromaDB) - IN PROGRESS
+- Day 3: Dev 02 + Gate 1 (Plan & Approval)
+- Days 4-5: Dev 03-06 (Core Implementation)
 
-2. Review Action Item 02
-   Read: docs/v1/database/scientist/02-baseline-evaluation.md
+**Week 2:**
+- Day 1: Dev 07 (File Sync with metadata moderation)
+- Day 2: Dev 08-09 (Validation)
+- Day 3: Sci 03 (Evaluation)
+- Days 4-5: Bug fixes / MVP acceptance
 
-3. Create evaluation script
-   File: docs/v1/database/scientist/evaluate.py
-   
-4. Run baseline evaluation
-   Use: evaluation-testset.json
+**Estimated MVP Complete:** 2 weeks from today (on track)
 
-5. Update status when complete
-   put_context(name="current-status", text="Scientist 02 complete...")
-```
+---
 
-**For Developer (Start Database Choice):**
-```
-1. Fetch contexts
-   get_context names=["project-overview", "current-status", "persona-definitions"]
+## 💡 Key Decisions Made
 
-2. Review quick reference
-   Read: docs/v1/database/requirements.md (Quick Reference section)
+### Database: ChromaDB (REVISED after user critique)
+- **Selected:** ChromaDB over LanceDB (REVERSED)
+- **Benchmark:** 8.4ms p95 at 4K contexts (meets target), 1.9x faster than LanceDB
+- **Python:** 3.11.9 (fixed from 3.14.2)
+- **Critical:** Use independent sentence-transformers (NOT ChromaDB's built-in)
 
-3. Start Action Item 01 (Choose Database)
-   Read: docs/v1/database/developer/README.md
-   Evaluate: ChromaDB, LanceDB, SQLite+extension
-   
-4. Update decision log when complete
-   put_context(name="decision-log", text="Database choice: [chosen] because [rationale]...")
-```
+### Architecture: Remove CRUD Tools, Add Search Tools
+- **Remove:** put_context, get_context, list_context, delete_context (low value)
+- **Add:** semantic_search (Phase 1), hybrid search (Phase 2 with built-in support)
+- **Rationale:** Better UX (streaming), better features (search), better performance (20-60x faster)
+
+### File Watcher: Enhanced with Metadata Moderation
+- **Responsibility:** Not just indexing, but metadata consistency
+- **Auto-correct:** Missing created_at, mismatched name
+- **Eventual consistency:** < 10s from write to searchable
+- **Based on:** User feedback about consistency concerns
+
+---
+
+## 📂 Files Created/Modified
+
+### Created:
+- `docs/v1/database/developer/00-database-choice-decision.md` (606 lines, REVISED)
+- `docs/v1/database/developer/01-design-document.md` (1,270 lines, comprehensive)
+- `docs/v1/database/developer/poc/test_chromadb.py` (POC)
+- `docs/v1/database/developer/poc/test_lancedb.py` (POC)
+- `docs/v1/database/developer/poc/test_comprehensive.py` (Comprehensive benchmark - 418 lines)
+- `docs/v1/bugs/write-speed/*` (Bug analysis)
+- `.cursorrules` (Direct file operations guidance)
+- `.out_of_context/contexts/decision-database-chromadb.mdc` (Atomic decision context)
+- `.out_of_context/contexts/history-decisions-phase0.mdc` (Historical archive)
+
+### Modified:
+- `pyproject.toml` (Python 3.11.9)
+- `.out_of_context/contexts/current-status.mdc` (This file)
+- `.cursor/rules/context-management.mdc` (Added atomicity principle)
+- `.cursorignore` (Removed .out_of_context ignore)
+
+### Deleted:
+- `.out_of_context/contexts/decision-log.mdc` (Split into atomic contexts)
+- 6 outdated contexts (session summaries, duplicates)
+
+---
+
+## 🎯 Success Criteria (Unchanged)
+
+| Metric | Baseline | Target | Status |
+|--------|----------|--------|--------|
+| **Precision@5** | 0.255 | ≥ 0.332 | 🔴 Not tested |
+| **Recall@5** | 0.945 | ≥ 0.945 | 🔴 Not tested |
+| **Query Latency** | N/A | < 100ms p95 | 🟢 Expected: 8.4ms (ChromaDB) |
+| **Convergence Time** | N/A | < 10s p95 | 🔴 Not tested |
+
+**Primary Acceptance Criterion:** Precision@5 improvement ≥ 30%
+
+---
+
+## 🚀 Immediate Next Steps (Developer)
+
+### Start Developer 02: Execution Plan
+
+**Status:** Ready to start (design complete)  
+**Time:** 3-4 hours  
+**Depends on:** Developer 01 ✅ Complete
+
+**What to Create:**
+1. **Task Breakdown** (2h)
+   - Break each component from design into implementable tasks
+   - Estimate time for each task (hours)
+   - Identify test checkpoints
+
+2. **Dependency Sequencing** (1h)
+   - What blocks what (critical path)
+   - What can be parallelized
+   - Which tasks need review gates
+
+3. **Timeline with Milestones** (0.5h)
+   - Map tasks to days/weeks
+   - Set review gates (Gate 2, Gate 3)
+   - Buffer for unknowns
+
+4. **Risk Management** (0.5h)
+   - Identify risks per task
+   - Mitigation strategies
+   - Fallback plans
+
+**Deliverable:** `docs/v1/database/developer/02-execution-plan.md`
+
+**After Dev 02:**
+- Gate 1: Design & Plan Review (User + Scientist)
+- Go/No-Go decision for implementation
+- If approved → Start Dev 03 (Embedding Service)
+
+---
+
+## 📞 Communication
+
+### Developer → Scientist
+- After Dev 01: Share design for review (ChromaDB-based)
+- After Dev 02: Share execution plan for review
+
+### Scientist → Developer
+- Available for design review (Week 1, Day 2)
+- Review for evaluation compatibility
+
+### User → Developer
+- ✅ Provided critical feedback on database choice (CORRECT)
+- ✅ Identified flawed benchmark methodology
+- ✅ Forced comprehensive re-evaluation (THANK YOU!)
+- ✅ Result: ChromaDB is better choice (1.9x faster at max capacity)
 
 ---
 
 ## ⚠️ Important Notes
 
-### Test Set Sharing
-- ✅ Test set ready for developer to review
-- ✅ Developer can use it for integration testing
-- ✅ Ensures alignment on "good retrieval" expectations
+### For Developer Continuing
+1. **ChromaDB selected** - Use this in design document (REVISED decision)
+2. **Expected latency: 8.4ms p95** - Validated with comprehensive benchmark at 4K contexts
+3. **Python 3.11.9** - Fixed and working
+4. **Independent embeddings CRITICAL** - DO NOT use ChromaDB's built-in (causes 300ms+)
+5. **Hybrid search advantage** - Built-in support (simpler than LanceDB's tantivy)
+6. **User critique was correct** - Original benchmark was flawed
 
-### Context Management
-- Always fetch `project-overview` + `current-status` at session start
-- Update `current-status` after completing work
-- Keep contexts consistent with git (git is ground truth)
-- See `.cursor/rules/context-management.mdc` for full rules
+### Lessons Learned
+1. ✅ Test at max capacity (4K contexts), not just average (2K)
+2. ✅ Use enough queries for reliable p95 (55, not 10)
+3. ✅ Evaluate holistic features (hybrid search matters)
+4. ✅ Consider warmup effects (ChromaDB: 96ms @ 1K → 8ms @ 4K)
+5. ✅ Always use independent embeddings (sentence-transformers directly)
 
-### Git Status
-- Scientist 01 deliverables not yet committed
-- Consider committing before proceeding to Scientist 02
-- Contexts are tracked in git (via `.gitignore` exception)
-
-### Collaboration
-- Scientist 02 and Developer 01 can work in parallel
-- Test set available for both scientist and developer
-- Final handoff: Developer MVP ready → Scientist 03 evaluation
+### Version Control
+- Current version: 1.1.1
+- Next version bump: When Dev 01-02 complete (v1.2.0 - feat: design document)
 
 ---
 
-## 🚨 Blockers / Issues
-
-**None currently** - Both scientist and developer can proceed.
-
----
-
-## 📊 Progress Metrics
-
-**Requirements Phase:**
-- ✅ 100% complete
-
-**Implementation Phase:**
-- Scientist 01: ✅ Complete (100%)
-- Scientist 02: 🔴 Ready (0%)
-- Scientist 03: 🟡 Blocked (0%)
-- Developer 01: 🔴 Ready (0%)
-- Developer 02-05: 🟡 Blocked (0%)
-
-**Overall MVP Progress:**
-- Planning: 100% ✅
-- Test Set: 100% ✅
-- Baseline Eval: 0% 🔴
-- Database Choice: 0% 🔴
-- Implementation: 0% 🟡
-- Semantic Eval: 0% 🟡
-- **Total: ~25% complete** (planning + test set done)
+**Last Updated:** 2024-12-16 (Dev 00 & 01 complete, Context management refined)  
+**Current Owner:** Developer  
+**Current Action:** Developer 02 - Execution Plan  
+**Status:** 🟡 Ready to start (design complete, ready to plan implementation)  
+**Critical:** Break design into concrete, estimable tasks with clear dependencies
 
 ---
 
-**Last Updated:** 2024-12-16 23:59  
-**Next Update:** After Scientist 02 or Developer 01 complete
+## 📚 Context Management Improvements
+
+### Atomicity Refinement (2024-12-16)
+
+**Problem:** `decision-log.mdc` grew to 447 lines with 12+ distinct topics concatenated together, violating atomicity principle.
+
+**Solution:** 
+1. Updated `.cursor/rules/context-management.mdc` with atomicity guidelines:
+   - One topic per context (< 200 lines ideal, < 300 max)
+   - Split when multiple topics emerge
+   - Use descriptive names (`decision-database-chromadb` not `decision-log`)
+
+2. Split `decision-log.mdc` into atomic contexts:
+   - `decision-database-chromadb.mdc` - Critical database choice (164 lines)
+   - `history-decisions-phase0.mdc` - All other Phase 0 decisions (280 lines, archived)
+
+3. Pruned 6 outdated contexts (session summaries, duplicates)
+
+**Result:** 
+- 3 core contexts (project-overview, current-status, action-items-revised)
+- 2 decision contexts (database, history-phase0)
+- Total: 5 contexts (down from 10)
+- Average size: ~200 lines (down from mix of 50-450 lines)
+- Better atomicity, easier to maintain
+
+**Naming Conventions Established:**
+- `decision-{topic}-{date}` - Specific decisions
+- `history-{topic}` - Historical archives
+- `{topic}-status` - Current status
+- `{topic}-overview` - High-level summaries
