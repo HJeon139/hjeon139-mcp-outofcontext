@@ -17,7 +17,7 @@ class TestConfig:
     def test_config_defaults(self) -> None:
         """Test config with default values."""
         config = Config()
-        assert config.storage_path == ".out_of_context"
+        assert config.storage_path == "out_of_context"
         assert config.log_level == "INFO"
 
     def test_config_to_dict(self) -> None:
@@ -48,8 +48,8 @@ class TestLoadConfig:
 
         try:
             config = load_config()
-            # Default storage path is .out_of_context in project directory
-            assert config.storage_path == ".out_of_context"
+            # Default storage path is out_of_context in project directory
+            assert config.storage_path == "out_of_context"
             assert config.log_level == "INFO"
         finally:
             # Restore environment variables
@@ -88,7 +88,7 @@ class TestLoadConfig:
         """Test loading config from config file."""
         # Create temporary config file
         with tempfile.TemporaryDirectory() as tmpdir:
-            config_dir = Path(tmpdir) / ".out_of_context"
+            config_dir = Path(tmpdir) / "out_of_context"
             config_dir.mkdir()
             config_file = config_dir / "config.json"
 
@@ -125,7 +125,7 @@ class TestLoadConfig:
         """Test that environment variables override config file."""
         # Create temporary config file
         with tempfile.TemporaryDirectory() as tmpdir:
-            config_dir = Path(tmpdir) / ".out_of_context"
+            config_dir = Path(tmpdir) / "out_of_context"
             config_dir.mkdir()
             config_file = config_dir / "config.json"
 
@@ -161,7 +161,7 @@ class TestLoadConfig:
         """Test that invalid config file is handled gracefully."""
 
         # Create invalid JSON config file
-        config_dir = Path(tmp_path) / ".out_of_context"
+        config_dir = Path(tmp_path) / "out_of_context"
         config_dir.mkdir(exist_ok=True)
         config_file = config_dir / "config.json"
 
@@ -178,7 +178,7 @@ class TestLoadConfig:
 
             # Should not raise, just print warning and continue with defaults
             config = load_config()
-            assert config.storage_path == ".out_of_context"
+            assert config.storage_path == "out_of_context"
             assert config.log_level == "INFO"
         finally:
             if original_home:
@@ -188,7 +188,7 @@ class TestLoadConfig:
     def test_load_config_file_os_error_handling(self, tmp_path) -> None:
         """Test that OS errors when reading config file are handled gracefully."""
 
-        config_dir = Path(tmp_path) / ".out_of_context"
+        config_dir = Path(tmp_path) / "out_of_context"
         config_dir.mkdir(exist_ok=True)
 
         # Save original HOME and CWD
@@ -203,9 +203,98 @@ class TestLoadConfig:
             with patch("builtins.open", side_effect=OSError("Permission denied")):
                 # Should not raise, just print warning and continue with defaults
                 config = load_config()
-                assert config.storage_path == ".out_of_context"
+                assert config.storage_path == "out_of_context"
                 assert config.log_level == "INFO"
         finally:
             if original_home:
                 os.environ["HOME"] = original_home
+            os.chdir(original_cwd)
+
+    def test_migrate_old_storage_directory(self, tmp_path) -> None:
+        """Test migration from .out_of_context to out_of_context."""
+        from hjeon139_mcp_outofcontext.config import migrate_old_storage_directory
+
+        original_cwd = os.getcwd()
+
+        try:
+            os.chdir(tmp_path)
+
+            # Create old directory with some content
+            old_path = Path(".out_of_context")
+            old_path.mkdir()
+            (old_path / "contexts").mkdir()
+            (old_path / "contexts" / "test.mdc").write_text("test content")
+            (old_path / "config.json").write_text('{"storage_path": ".out_of_context"}')
+
+            # Run migration
+            migrate_old_storage_directory()
+
+            # Verify new directory exists with content
+            new_path = Path("out_of_context")
+            assert new_path.exists()
+            assert (new_path / "contexts" / "test.mdc").exists()
+            assert (new_path / "config.json").exists()
+            assert not old_path.exists()  # Old directory should be gone
+            assert (new_path / ".migration_complete").exists()  # Marker file created
+
+            # Run migration again - should be idempotent
+            migrate_old_storage_directory()
+            # Should still have same state
+            assert new_path.exists()
+            assert not old_path.exists()
+
+        finally:
+            os.chdir(original_cwd)
+
+    def test_migrate_old_storage_directory_no_old_dir(self, tmp_path) -> None:
+        """Test migration when old directory doesn't exist."""
+        from hjeon139_mcp_outofcontext.config import migrate_old_storage_directory
+
+        original_cwd = os.getcwd()
+
+        try:
+            os.chdir(tmp_path)
+
+            # Run migration when old directory doesn't exist
+            migrate_old_storage_directory()
+
+            # Should not create new directory if old doesn't exist
+            new_path = Path("out_of_context")
+            assert not new_path.exists()
+
+        finally:
+            os.chdir(original_cwd)
+
+    def test_migrate_old_storage_directory_both_exist(self, tmp_path) -> None:
+        """Test migration when both old and new directories exist."""
+        from hjeon139_mcp_outofcontext.config import migrate_old_storage_directory
+
+        original_cwd = os.getcwd()
+
+        try:
+            os.chdir(tmp_path)
+
+            # Create both directories
+            old_path = Path(".out_of_context")
+            old_path.mkdir()
+            (old_path / "contexts").mkdir()
+            (old_path / "contexts" / "old.mdc").write_text("old content")
+
+            new_path = Path("out_of_context")
+            new_path.mkdir()
+            (new_path / "contexts").mkdir()
+            (new_path / "contexts" / "new.mdc").write_text("new content")
+
+            # Run migration
+            migrate_old_storage_directory()
+
+            # Both should still exist (no migration)
+            assert old_path.exists()
+            assert new_path.exists()
+            assert (old_path / "contexts" / "old.mdc").exists()
+            assert (new_path / "contexts" / "new.mdc").exists()
+            # Marker should be created to prevent repeated warnings
+            assert (new_path / ".migration_complete").exists()
+
+        finally:
             os.chdir(original_cwd)

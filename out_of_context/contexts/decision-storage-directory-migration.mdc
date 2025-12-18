@@ -1,0 +1,78 @@
+---
+name: decision-storage-directory-migration
+type: decision
+created_at: 2025-12-17T21:48:00
+tags: [migration, storage, configuration, user-experience]
+---
+
+# Decision: Storage Directory Migration (.out_of_context → out_of_context)
+
+**Date:** 2025-12-17  
+**Status:** ✅ Implemented  
+**Impact:** Breaking change requiring user migration
+
+## Problem
+
+The default storage directory `.out_of_context` (hidden directory) caused permission issues when agents tried to edit context files directly. Cursor requires agents to get permissions every time when trying to edit files in hidden directories, creating a poor user experience.
+
+## Solution
+
+Changed the default storage directory from `.out_of_context` to `out_of_context` (non-hidden directory).
+
+## Implementation
+
+### Code Changes
+
+1. **Default path updated:**
+   - `config.py`: Changed default from `.out_of_context` to `out_of_context`
+   - `storage/mdc_storage.py`: Updated default path reference
+   - `main.py`: Added automatic migration on server startup
+
+2. **Migration logic:**
+   - Automatic migration when old directory exists and new doesn't
+   - Warning when both directories exist
+   - Warning when `OUT_OF_CONTEXT_STORAGE_PATH` is set to old path
+
+3. **Documentation:**
+   - Created `CHANGELOG.md` with migration guide
+   - Updated `README.md` with new default path
+   - Updated `.cursor/rules/context-management.mdc` with new paths
+
+### User Migration
+
+**For users with custom `OUT_OF_CONTEXT_STORAGE_PATH`:**
+1. Update MCP configuration to use `out_of_context`
+2. Manually migrate: `mv .out_of_context out_of_context`
+3. Restart MCP server
+
+**For users without custom path:**
+- Automatic migration on server startup (if old directory exists)
+
+## Context Management Rule Updates
+
+Updated `.cursor/rules/context-management.mdc` to:
+1. Use `list_context` as first step to see all available contexts
+2. Use `get_context names=[...]` for bulk fetching
+3. Update all path references to `out_of_context`
+
+## Files Changed
+
+- `src/hjeon139_mcp_outofcontext/config.py` - Default path + warning
+- `src/hjeon139_mcp_outofcontext/storage/mdc_storage.py` - Default path
+- `src/hjeon139_mcp_outofcontext/main.py` - Migration logic
+- `tests/test_config.py` - Updated tests + migration tests
+- `README.md` - Updated examples
+- `CHANGELOG.md` - Created with migration guide
+- `.cursor/rules/context-management.mdc` - Updated paths and workflow
+
+## Testing
+
+- All 125 unit tests pass
+- Added 3 new migration tests
+- Migration verified with existing context files
+
+## Related Contexts
+
+- `project-overview` - Project structure and storage format
+- `current-status` - Recent work and changes
+- `CHANGELOG.md` - Migration instructions for users

@@ -1,14 +1,14 @@
 ---
 name: design-revision-learning
 type: learning
-date: 2024-12-16
+date: 2025-12-16
 phase: phase-0-tech-selection
-created_at: 2024-12-16T20:00:00
+created_at: 2025-12-16T20:00:00
 ---
 
 # Design Revision Learning - Developer 01 v1 → v2
 
-**Date:** 2024-12-16  
+**Date:** 2025-12-16  
 **Context:** User feedback on Developer 01 design document (v1, 1,598 lines)  
 **Result:** Complete redesign with WHY/WHAT/HOW structure (v2, 600 lines)
 
@@ -256,7 +256,7 @@ Research task added because design identified critical unknown (model/chunking s
 
 - Original design: `docs/v1/database/developer/01-design-document-draft-v1.md`
 - Revised design: `docs/v1/database/developer/01-design-document.md`
-- User feedback: In conversation history (2024-12-16)
+- User feedback: In conversation history (2025-12-16)
 - Context management rules: `.cursor/rules/context-management.mdc`
 
 ---

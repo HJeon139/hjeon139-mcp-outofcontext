@@ -12,17 +12,22 @@ alwaysApply: true
 
 ## Quick Start (Every Session)
 
-**1. Read contexts to understand where we are:**
+**1. List available contexts to see what we have:**
+```
+list_context
+```
+
+**2. Read core contexts to understand where we are:**
 ```
 get_context names=["project-overview", "current-status"]
 ```
 
-**2. Work on your task**
+**3. Work on your task**
 
 **3. Update contexts directly (fast, streaming UX):**
 ```python
 # Write .mdc files directly (NOT put_context - it's slow)
-write(".out_of_context/contexts/current-status.mdc", """---
+write("out_of_context/contexts/current-status.mdc", """---
 name: current-status
 type: status
 last-updated: 2024-12-16
@@ -40,7 +45,7 @@ last-updated: 2024-12-16
 
 **Create/Update Context:**
 ```python
-write(".out_of_context/contexts/my-context.mdc", """---
+write("out_of_context/contexts/my-context.mdc", """---
 name: my-context
 type: info
 created_at: 2024-12-16T10:00:00
@@ -53,7 +58,7 @@ created_at: 2024-12-16T10:00:00
 **Update Part of Context:**
 ```python
 search_replace(
-    file_path=".out_of_context/contexts/current-status.mdc",
+    file_path="out_of_context/contexts/current-status.mdc",
     old_string="old content",
     new_string="new content"
 )
@@ -61,14 +66,19 @@ search_replace(
 
 **Delete Context:**
 ```python
-delete_file(".out_of_context/contexts/old-context.mdc")
+delete_file("out_of_context/contexts/old-context.mdc")
 ```
 
 ---
 
 ## Read: Use MCP Tools
 
-**Fetch specific contexts:**
+**List all contexts:**
+```
+list_context
+```
+
+**Fetch specific contexts (single or bulk):**
 ```
 get_context names=["project-overview", "current-status"]
 ```
@@ -158,7 +168,7 @@ Your content here...
 
 ## Golden Rules
 
-1. ✅ **Read:** Use `get_context` (MCP tool)
+1. ✅ **Read:** Use `list_context` to see all contexts, then `get_context` to fetch specific ones (MCP tools)
 2. ✅ **Write:** Use `write`/`search_replace` (direct file ops)
 3. ✅ **Delete:** Use `delete_file` (direct file ops)
 4. ✅ **Fetch 2-5 contexts** per session (avoid flooding window)

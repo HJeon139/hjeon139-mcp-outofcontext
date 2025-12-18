@@ -120,7 +120,7 @@ def load_existing_results(output_file: Path) -> dict[str, Any] | None:
     """
     if output_file.exists():
         try:
-            with open(output_file, "r", encoding="utf-8") as f:
+            with open(output_file, encoding="utf-8") as f:
                 existing = json.load(f)
                 logger.info(f"✅ Loaded existing results from {output_file}")
                 logger.info(f"   Found {existing.get('tasks_completed', 0)} completed tasks")
@@ -144,9 +144,12 @@ def get_completed_task_names(existing_results: dict[str, Any] | None) -> set[str
     results = existing_results.get("results", {})
     for task_name, task_data in results.items():
         # Task is completed if it has a result and no error
-        if isinstance(task_data, dict) and "error" not in task_data:
-            if "result" in task_data or "main_score" in task_data:
-                completed.add(task_name)
+        if (
+            isinstance(task_data, dict)
+            and "error" not in task_data
+            and ("result" in task_data or "main_score" in task_data)
+        ):
+            completed.add(task_name)
 
     return completed
 
@@ -158,7 +161,7 @@ def save_results_incremental(output_file: Path, summary: dict[str, Any]) -> None
         json.dump(summary, f, indent=2, default=str)
 
 
-def run_mteb_benchmark(
+def run_mteb_benchmark(  # noqa: C901
     model_name: str,
     output_file: Path,
     device: str | None = None,
@@ -458,7 +461,7 @@ def run_mteb_benchmark(
                 else:
                     logger.info(f"✅ Completed: {task_name} (duration: {task_duration:.2f}s)")
 
-            except TimeoutError as e:
+            except TimeoutError:
                 task_duration = time.time() - task_start
                 logger.error(f"⏱️  TIMEOUT: {task_name} exceeded {task_timeout_seconds}s")
                 logger.error(f"   Duration before timeout: {task_duration:.2f} seconds")
@@ -526,7 +529,7 @@ def run_mteb_benchmark(
 
         # Extract main scores for summary
         main_scores = []
-        for task_name, task_data in task_results.items():
+        for _task_name, task_data in task_results.items():
             if "error" not in task_data and isinstance(task_data.get("result"), dict):
                 main_score = task_data["result"].get("main_score")
                 if main_score is not None:

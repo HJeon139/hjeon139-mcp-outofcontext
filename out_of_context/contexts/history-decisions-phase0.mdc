@@ -2,14 +2,14 @@
 name: history-decisions-phase0
 type: history
 phase: phase-0-tech-selection
-timeframe: 2024-12-16
+timeframe: 2025-12-16
 status: archived
-created_at: 2024-12-16T18:00:00
+created_at: 2025-12-16T18:00:00
 ---
 
 # Decision History - Phase 0 (Planning & Technology Selection)
 
-**Timeframe:** 2024-12-16 (Day 1)  
+**Timeframe:** 2025-12-16 (Day 1)  
 **Phase:** Phase 0 - Technology Selection & Design  
 **Status:** Archived (reference only)
 
@@ -19,7 +19,7 @@ This context archives all non-critical decisions made during Phase 0 planning. F
 
 ## Workflow Revision - Action Items Resequenced
 
-**Decision Date:** 2024-12-16 (afternoon session)
+**Decision Date:** 2025-12-16 (afternoon session)
 
 **Problem Identified:**
 - Original workflow had design document before database selection
@@ -55,7 +55,7 @@ See `action-items-revised` context for complete details.
 
 ## Requirements Document (v2.0.0 - Revised)
 
-**Decision Date:** 2024-12-16 morning
+**Decision Date:** 2025-12-16 morning
 
 **Changes from v1.0:**
 - Added Quick Reference section for developers
@@ -74,7 +74,7 @@ See `action-items-revised` context for complete details.
 **Decision:** Requirements derived from evidence, not narrative-first approach
 
 **Key Evidence:**
-- [ANT-2024] Anthropic Contextual Retrieval: 49% improvement (semantic), 67% (hybrid)
+- [ANT-2025] Anthropic Contextual Retrieval: 49% improvement (semantic), 67% (hybrid)
 - Informs: Semantic search MUST, BM25 SHOULD, hybrid is Phase 2
 
 **Application:** Each requirement cites evidence, explains derivation, states confidence level
@@ -197,7 +197,7 @@ Phase 4: Acceptance (Days 14-15)
 
 ## Context Management System
 
-**Decision Date:** 2024-12-16 morning
+**Decision Date:** 2025-12-16 morning
 
 **Implementation:**
 - Created MCP contexts for multi-session continuity
@@ -223,7 +223,7 @@ Phase 4: Acceptance (Days 14-15)
 
 ## Evaluation Test Set Design (Scientist Action Item 01)
 
-**Decision Date:** 2024-12-16 morning 
+**Decision Date:** 2025-12-16 morning 
 **Status:** ✅ Complete
 
 **Decisions Made:**
@@ -252,7 +252,7 @@ Phase 4: Acceptance (Days 14-15)
 
 ## Baseline Evaluation Design (Scientist Action Item 02)
 
-**Decision Date:** 2024-12-16 afternoon  
+**Decision Date:** 2025-12-16 afternoon  
 **Status:** ✅ Complete
 
 **Key Decisions:**

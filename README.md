@@ -34,7 +34,7 @@ Add to your MCP platform configuration (e.g., Cursor or Claude Desktop):
     "out-of-context": {
       "command": "hjeon139_mcp_outofcontext",
       "env": {
-        "OUT_OF_CONTEXT_STORAGE_PATH": ".out_of_context"
+        "OUT_OF_CONTEXT_STORAGE_PATH": "out_of_context"
       }
     }
   }
@@ -161,7 +161,7 @@ Searches in both YAML frontmatter (metadata) and markdown body (text content).
 
 ## Storage Format
 
-Contexts are stored as `.mdc` files (markdown with YAML frontmatter) in the `.out_of_context/contexts/` directory.
+Contexts are stored as `.mdc` files (markdown with YAML frontmatter) in the `out_of_context/contexts/` directory.
 
 **File format:**
 ```markdown
@@ -199,7 +199,7 @@ Key decisions about the REST API design...
 
 - **Context**: A markdown document with YAML frontmatter (metadata) and markdown body (content)
 - **Name**: Agent-recognizable identifier (e.g., "api-design-notes", "bug-fix-context")
-- **Storage**: Individual .mdc files in `.out_of_context/contexts/` directory
+- **Storage**: Individual .mdc files in `out_of_context/contexts/` directory
 - **Bulk Operations**: Process multiple contexts in a single call (put, get, delete)
 
 ---

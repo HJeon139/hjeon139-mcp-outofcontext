@@ -117,6 +117,51 @@ class TestMDCStorage:
         # Newest should be first
         assert contexts[0]["name"] == "new"
 
+    def test_list_contexts_with_datetime_created_at(self, mdc_storage: MDCStorage) -> None:
+        """Test that list_contexts handles datetime objects in created_at (YAML parsing edge case)."""
+        from datetime import datetime
+
+        # Create a context file with datetime object in metadata (simulating YAML parsing)
+        import yaml
+
+        # Save a context normally
+        mdc_storage.save_context("test-context", "Test content")
+
+        # Manually modify the file to have a datetime object (simulating YAML parsing)
+        file_path = mdc_storage.storage_path / "test-context.mdc"
+        with open(file_path) as f:
+            content = f.read()
+
+        # Parse and modify the YAML to include a datetime object
+        parts = content.split("---\n", 2)
+        frontmatter_str = parts[1]
+        metadata = yaml.safe_load(frontmatter_str)
+        # Add a datetime object (simulating what YAML might do)
+        metadata["created_at"] = datetime(2024, 12, 17, 10, 0, 0)
+
+        # Write back with datetime object
+        new_frontmatter = yaml.dump(metadata, default_flow_style=False, sort_keys=False)
+        new_content = f"---\n{new_frontmatter}---\n\n{parts[2]}"
+
+        with open(file_path, "w") as f:
+            f.write(new_content)
+
+        # Now read it back - YAML will parse it as datetime
+        with open(file_path) as f:
+            read_content = f.read()
+        read_parts = read_content.split("---\n", 2)
+        read_metadata = yaml.safe_load(read_parts[1])
+
+        # Verify YAML parsed it as datetime
+        assert isinstance(read_metadata.get("created_at"), datetime)
+
+        # This should not raise an error
+        contexts = mdc_storage.list_contexts()
+        assert len(contexts) == 1
+        assert contexts[0]["name"] == "test-context"
+        # created_at should be normalized to string
+        assert isinstance(contexts[0]["created_at"], str)
+
     def test_delete_context(self, mdc_storage: MDCStorage) -> None:
         """Test deleting a context."""
         name = "test-context"

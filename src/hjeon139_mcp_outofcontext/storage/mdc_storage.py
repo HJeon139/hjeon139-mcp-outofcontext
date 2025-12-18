@@ -38,10 +38,10 @@ class MDCStorage:
         """Initialize MDC storage.
 
         Args:
-            storage_path: Path to storage directory. Defaults to .out_of_context/contexts/ in project root
+            storage_path: Path to storage directory. Defaults to out_of_context/contexts/ in project root
         """
         if storage_path is None:
-            default_path = Path(".out_of_context") / "contexts"
+            default_path = Path("out_of_context") / "contexts"
             storage_path = os.getenv("OUT_OF_CONTEXT_STORAGE_PATH", str(default_path))
         else:
             # If storage_path is provided, ensure it points to the contexts subdirectory
@@ -194,10 +194,17 @@ class MDCStorage:
                     text = data.get("text", "")
                     preview = text[:100] if text else ""
 
+                    # Normalize created_at to string (YAML may parse it as datetime)
+                    created_at = metadata.get("created_at", "")
+                    if isinstance(created_at, datetime):
+                        created_at = created_at.isoformat()
+                    elif not isinstance(created_at, str):
+                        created_at = str(created_at) if created_at else ""
+
                     contexts.append(
                         {
                             "name": name,
-                            "created_at": metadata.get("created_at", ""),
+                            "created_at": created_at,
                             "preview": preview,
                         }
                     )
@@ -205,8 +212,9 @@ class MDCStorage:
                 logger.warning(f"Failed to read context file '{file_path}': {e}")
 
         # Sort by created_at (newest first)
+        # Normalize all created_at values to strings for consistent sorting
         contexts.sort(
-            key=lambda x: x.get("created_at", ""), reverse=True
+            key=lambda x: x.get("created_at", "") or "", reverse=True
         )  # Empty string sorts last
 
         return contexts

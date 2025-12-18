@@ -2,7 +2,7 @@
 name: current-status
 type: status
 phase: phase-0-tech-selection
-last-updated: 2024-12-16
+last-updated: 2025-12-16
 current-action: developer-01
 workflow-version: 2.0
 dev-00-complete: true
@@ -14,7 +14,7 @@ user-feedback-incorporated: true
 
 # Current Status - Database Layer Enhancement
 
-**Last Updated:** 2024-12-16 (Requirements Revised v2.1.0, Parallel Tracks Started)  
+**Last Updated:** 2025-12-17 (Storage Directory Migration Complete)  
 **Phase:** Technology Selection & Design (Phase 0)  
 **Next Session:** Scientist 04 + Developer 01-R (Parallel)  
 **Workflow Version:** 2.1 (Requirements unblocked)
@@ -82,9 +82,22 @@ user-feedback-incorporated: true
 
 ## ✅ Completed Work
 
+### Storage Directory Migration ✅ (Dec 17, 2025)
+- **Time Spent:** 2 hours
+- **Status:** Complete
+- **Decision:** Changed default storage from `.out_of_context` to `out_of_context`
+- **Reason:** Resolve permission issues when agents edit context files directly
+- **Deliverables:** 
+  - Code changes (config, storage, main)
+  - Migration logic with warnings
+  - CHANGELOG.md with migration guide
+  - Updated context management rules
+  - All context files migrated
+- **Context:** `decision-storage-directory-migration`
+
 ### Phase 0: Technology Selection & Design
 
-#### Developer 00: Database Selection ✅ (Dec 16, 2024 - REVISED)
+#### Developer 00: Database Selection ✅ (Dec 16, 2025 - REVISED)
 - **Time Spent:** 10 hours (including Python fix + benchmarking + revision)
 - **Decision:** ChromaDB selected (REVERSED from LanceDB after user critique)
 - **Deliverable:** `docs/v1/database/developer/00-database-choice-decision.md` (REVISED)
@@ -127,7 +140,7 @@ user-feedback-incorporated: true
 
 ---
 
-#### Write Speed Bug Investigation ✅ (Dec 16, 2024)
+#### Write Speed Bug Investigation ✅ (Dec 16, 2025)
 - **Time Spent:** 3 hours
 - **Status:** Investigation complete, architecture refined
 - **Deliverables:** Bug report, root cause analysis, recommendations
@@ -281,14 +294,21 @@ user-feedback-incorporated: true
 - `docs/v1/database/developer/poc/test_comprehensive.py` (Comprehensive benchmark - 418 lines)
 - `docs/v1/bugs/write-speed/*` (Bug analysis)
 - `.cursorrules` (Direct file operations guidance)
-- `.out_of_context/contexts/decision-database-chromadb.mdc` (Atomic decision context)
-- `.out_of_context/contexts/history-decisions-phase0.mdc` (Historical archive)
+- `out_of_context/contexts/decision-database-chromadb.mdc` (Atomic decision context)
+- `out_of_context/contexts/history-decisions-phase0.mdc` (Historical archive)
+- `out_of_context/contexts/decision-storage-directory-migration.mdc` (Storage migration decision)
+- `CHANGELOG.md` (Migration guide and changelog)
 
 ### Modified:
 - `pyproject.toml` (Python 3.11.9)
-- `.out_of_context/contexts/current-status.mdc` (This file)
-- `.cursor/rules/context-management.mdc` (Added atomicity principle)
+- `out_of_context/contexts/current-status.mdc` (This file)
+- `.cursor/rules/context-management.mdc` (Added atomicity principle, updated paths, MCP tool workflow)
 - `.cursorignore` (Removed .out_of_context ignore)
+- `src/hjeon139_mcp_outofcontext/config.py` (Default path + migration warning)
+- `src/hjeon139_mcp_outofcontext/storage/mdc_storage.py` (Default path)
+- `src/hjeon139_mcp_outofcontext/main.py` (Migration logic)
+- `README.md` (Updated default path)
+- `CHANGELOG.md` (Created with migration guide)
 
 ### Deleted:
 - `.out_of_context/contexts/decision-log.mdc` (Split into atomic contexts)
@@ -388,7 +408,7 @@ user-feedback-incorporated: true
 
 ---
 
-**Last Updated:** 2024-12-16 (Dev 00 & 01 complete, Context management refined)  
+**Last Updated:** 2025-12-17 (Storage directory migration complete, context management updated)  
 **Current Owner:** Developer  
 **Current Action:** Developer 02 - Execution Plan  
 **Status:** 🟡 Ready to start (design complete, ready to plan implementation)  
@@ -398,7 +418,7 @@ user-feedback-incorporated: true
 
 ## 📚 Context Management Improvements
 
-### Atomicity Refinement (2024-12-16)
+### Atomicity Refinement (2025-12-16)
 
 **Problem:** `decision-log.mdc` grew to 447 lines with 12+ distinct topics concatenated together, violating atomicity principle.
 

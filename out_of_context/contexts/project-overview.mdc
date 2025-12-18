@@ -16,11 +16,13 @@ created_at: '2025-12-16T12:37:01.193231'
 
 ## Core Functionality
 
-- **Storage:** Contexts stored as .mdc files (markdown + YAML frontmatter)
+- **Storage:** Contexts stored as .mdc files (markdown + YAML frontmatter) in `out_of_context/contexts/` directory
 - **Operations:** CRUD tools (put, get, list, search, delete) via MCP
 - **Current Search:** Simple substring matching (`query_lower in text.lower()`)
 - **Transport:** STDIO (single process, no external services)
 - **Tech Stack:** Python, FastMCP, Pydantic, PyYAML
+
+**Note:** Storage directory changed from `.out_of_context` to `out_of_context` (2025-12-17) to resolve permission issues. See `decision-storage-directory-migration` context for details.
 
 ## Active Enhancement: Database Layer (v2.0)
 

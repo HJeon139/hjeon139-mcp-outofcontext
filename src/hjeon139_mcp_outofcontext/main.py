@@ -20,6 +20,11 @@ logger = logging.getLogger(__name__)
 def main() -> None:
     """Main entry point for MCP server."""
     try:
+        # Migrate old storage directory if it exists
+        from hjeon139_mcp_outofcontext.config import migrate_old_storage_directory
+
+        migrate_old_storage_directory()
+
         # Startup: Initialize AppState
         config = load_config()
 
