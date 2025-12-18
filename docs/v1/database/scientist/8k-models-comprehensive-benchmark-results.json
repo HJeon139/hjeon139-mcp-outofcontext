@@ -1,0 +1,2365 @@
+{
+  "metadata": {
+    "testset_path": "evaluation-testset.json",
+    "contexts_dir": "../../../../.out_of_context/contexts",
+    "baseline_metrics": {
+      "precision_at_5": 0.2545454545454545,
+      "recall_at_5": 0.9454545454545454,
+      "mrr": 0.6518181818181819,
+      "ndcg_at_10": 0.74176923163691
+    },
+    "num_models_tested": 5,
+    "benchmark_type": "8k_context_models"
+  },
+  "models": [
+    {
+      "model_name": "nomic-ai/modernbert-embed-base",
+      "max_seq_length": 8192,
+      "status": "success",
+      "chunking_required": false,
+      "quality_metrics": {
+        "precision_at_5": 0.061818181818181835,
+        "recall_at_5": 0.20909090909090908,
+        "mrr": 0.1929437229437229,
+        "ndcg_at_10": 0.18056968360931303
+      },
+      "improvement_vs_baseline": {
+        "precision_at_5_pct": -75.71428571428571,
+        "recall_at_5_pct": -77.88461538461539,
+        "mrr_pct": -70.39914989705785,
+        "ndcg_at_10_pct": -75.65689221015029
+      },
+      "latency_metrics": {
+        "embedding": {
+          "mean_ms": 2558.7270061175027,
+          "p95_ms": 2686.159936587016,
+          "min_ms": 2416.038751602173,
+          "max_ms": 2686.387062072754,
+          "num_runs": 20
+        },
+        "query": {
+          "mean_ms": 40.92288884249601,
+          "p95_ms": 45.83139419555664,
+          "min_ms": 37.718772888183594,
+          "max_ms": 108.80589485168457
+        }
+      },
+      "latency_meets_target": true,
+      "per_query_results": [
+        {
+          "query_id": "q001",
+          "query": "How do I set up context management for my project?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 41.085004806518555
+        },
+        {
+          "query_id": "q002",
+          "query": "What is the out-of-context MCP server?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 1.0,
+          "query_latency_ms": 40.33780097961426
+        },
+        {
+          "query_id": "q003",
+          "query": "How do I create a new context?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 38.056135177612305
+        },
+        {
+          "query_id": "q004",
+          "query": "What are the scientist and developer personas?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 38.10620307922363
+        },
+        {
+          "query_id": "q005",
+          "query": "What is semantic search and why do we need it?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.38685280723454163,
+          "query_latency_ms": 39.75200653076172
+        },
+        {
+          "query_id": "q006",
+          "query": "How do I fetch contexts at the start of a session?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.3065735963827292,
+          "query_latency_ms": 40.183067321777344
+        },
+        {
+          "query_id": "q007",
+          "query": "What is the current status of the database enhancement?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.6309297535714575,
+          "query_latency_ms": 38.93899917602539
+        },
+        {
+          "query_id": "q008",
+          "query": "When should I update the decision log?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 38.419246673583984
+        },
+        {
+          "query_id": "q009",
+          "query": "What are the constraints for the semantic search implementation?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 38.771867752075195
+        },
+        {
+          "query_id": "q010",
+          "query": "How many contexts should I fetch per session?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.39676284790039
+        },
+        {
+          "query_id": "q011",
+          "query": "What is the MVP scope for semantic search?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 39.79682922363281
+        },
+        {
+          "query_id": "q012",
+          "query": "How do I handle stale contexts?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 37.718772888183594
+        },
+        {
+          "query_id": "q013",
+          "query": "What are the scientist's action items?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_10": 0.23719771276929622,
+          "query_latency_ms": 38.05088996887207
+        },
+        {
+          "query_id": "q014",
+          "query": "What embedding model are we using?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 37.72997856140137
+        },
+        {
+          "query_id": "q015",
+          "query": "How do I validate that contexts match reality?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.60394859313965
+        },
+        {
+          "query_id": "q016",
+          "query": "What is the difference between storage and retrieval limits?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.31593894958496
+        },
+        {
+          "query_id": "q017",
+          "query": "Why was BM25 moved to Phase 2?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.53218460083008
+        },
+        {
+          "query_id": "q018",
+          "query": "What are the acceptance criteria for the MVP?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.3065735963827292,
+          "query_latency_ms": 39.26205635070801
+        },
+        {
+          "query_id": "q019",
+          "query": "How do I create an evaluation test set?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.5,
+          "query_latency_ms": 39.42298889160156
+        },
+        {
+          "query_id": "q020",
+          "query": "What transport does the MCP server use?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 38.49315643310547
+        },
+        {
+          "query_id": "q021",
+          "query": "Context says Week 1 but we're in Week 3 - what should I do?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 38.73896598815918
+        },
+        {
+          "query_id": "q022",
+          "query": "What file format are contexts stored in?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 1.0,
+          "query_latency_ms": 38.41280937194824
+        },
+        {
+          "query_id": "q023",
+          "query": "How do I delete a context?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 37.85109519958496
+        },
+        {
+          "query_id": "q024",
+          "query": "What is the role of the ML scientist persona?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.58702087402344
+        },
+        {
+          "query_id": "q025",
+          "query": "When should I create a new context vs update existing?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.81304168701172
+        },
+        {
+          "query_id": "q026",
+          "query": "What is the target improvement for semantic search?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.14285714285714285,
+          "ndcg_at_10": 0.20438239758848611,
+          "query_latency_ms": 38.7420654296875
+        },
+        {
+          "query_id": "q027",
+          "query": "How do I start a new session on this project?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 38.85388374328613
+        },
+        {
+          "query_id": "q028",
+          "query": "What are the research tasks that were removed?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.353132247924805
+        },
+        {
+          "query_id": "q029",
+          "query": "How do I prevent contexts from becoming stale?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.93391990661621
+        },
+        {
+          "query_id": "q030",
+          "query": "What is the scale target for the database?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_10": 0.23719771276929622,
+          "query_latency_ms": 39.53289985656738
+        },
+        {
+          "query_id": "q031",
+          "query": "Why use eventual consistency instead of strong consistency?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.041996002197266
+        },
+        {
+          "query_id": "q032",
+          "query": "Context conflicts with git history - which should I trust?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 40.183067321777344
+        },
+        {
+          "query_id": "q033",
+          "query": "What are the key documents I should read?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.649009704589844
+        },
+        {
+          "query_id": "q034",
+          "query": "How do I update current-status after completing work?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 40.292978286743164
+        },
+        {
+          "query_id": "q035",
+          "query": "What is the critical path to MVP?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_10": 0.43067655807339306,
+          "query_latency_ms": 38.80596160888672
+        },
+        {
+          "query_id": "q036",
+          "query": "Which vector databases are being considered?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 38.35606575012207
+        },
+        {
+          "query_id": "q037",
+          "query": "How do I know if a context is stale?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.23201560974121
+        },
+        {
+          "query_id": "q038",
+          "query": "What is the two-persona approach?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.31689262390137
+        },
+        {
+          "query_id": "q039",
+          "query": "I have 100 contexts - should I fetch them all?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 40.158987045288086
+        },
+        {
+          "query_id": "q040",
+          "query": "What evidence supports the 30% improvement target?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.35408592224121
+        },
+        {
+          "query_id": "q041",
+          "query": "How do I coordinate with the developer persona?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_10": 0.23719771276929622,
+          "query_latency_ms": 39.01815414428711
+        },
+        {
+          "query_id": "q042",
+          "query": "What does STDIO transport mean for the implementation?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.14285714285714285,
+          "ndcg_at_10": 0.20438239758848611,
+          "query_latency_ms": 40.04502296447754
+        },
+        {
+          "query_id": "q043",
+          "query": "When should I delete a context?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 38.2847785949707
+        },
+        {
+          "query_id": "q044",
+          "query": "What is the next action to take?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.16666666666666666,
+          "ndcg_at_10": 0.3562071871080222,
+          "query_latency_ms": 38.429975509643555
+        },
+        {
+          "query_id": "q045",
+          "query": "Why use sentence-transformers for embeddings?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.305925369262695
+        },
+        {
+          "query_id": "q046",
+          "query": "Context list is too long - how do I clean it up?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 41.207075119018555
+        },
+        {
+          "query_id": "q047",
+          "query": "What are the developer's responsibilities vs scientist's?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 45.72296142578125
+        },
+        {
+          "query_id": "q048",
+          "query": "How do I search for contexts by topic?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 44.259071350097656
+        },
+        {
+          "query_id": "q049",
+          "query": "What files should I read to understand the project?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.14285714285714285,
+          "ndcg_at_10": 0.20438239758848611,
+          "query_latency_ms": 45.22085189819336
+        },
+        {
+          "query_id": "q050",
+          "query": "Test set shows contexts are severely outdated - how to recover?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 46.2651252746582
+        },
+        {
+          "query_id": "q051",
+          "query": "What is the latency requirement for semantic search?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.38685280723454163,
+          "query_latency_ms": 108.80589485168457
+        },
+        {
+          "query_id": "q052",
+          "query": "Which contexts should I always fetch at session start?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.33382034301758
+        },
+        {
+          "query_id": "q053",
+          "query": "What is evidence-first methodology?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 38.03229331970215
+        },
+        {
+          "query_id": "q054",
+          "query": "How do I know if my test set is good enough?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.6309297535714575,
+          "query_latency_ms": 39.53409194946289
+        },
+        {
+          "query_id": "q055",
+          "query": "What is the difference between scientist and developer action items?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.16666666666666666,
+          "ndcg_at_10": 0.21840743681816419,
+          "query_latency_ms": 40.110111236572266
+        }
+      ]
+    },
+    {
+      "model_name": "nomic-ai/nomic-embed-text-v2-moe",
+      "error": "This modeling file requires the following packages that were not found in your environment: einops. Run `pip install einops`",
+      "status": "failed"
+    },
+    {
+      "model_name": "Snowflake/snowflake-arctic-embed-l-v2.0",
+      "max_seq_length": 8192,
+      "status": "success",
+      "chunking_required": false,
+      "quality_metrics": {
+        "precision_at_5": 0.07272727272727274,
+        "recall_at_5": 0.24545454545454545,
+        "mrr": 0.21199134199134195,
+        "ndcg_at_10": 0.19444539747949824
+      },
+      "improvement_vs_baseline": {
+        "precision_at_5_pct": -71.42857142857142,
+        "recall_at_5_pct": -74.03846153846153,
+        "mrr_pct": -67.4769210334064,
+        "ndcg_at_10_pct": -73.78626812945544
+      },
+      "latency_metrics": {
+        "embedding": {
+          "mean_ms": 4276.165660222371,
+          "p95_ms": 4349.510967731476,
+          "min_ms": 4209.839344024658,
+          "max_ms": 4350.2852121988935,
+          "num_runs": 20
+        },
+        "query": {
+          "mean_ms": 108.36286544799805,
+          "p95_ms": 111.85641288757324,
+          "min_ms": 106.02498054504395,
+          "max_ms": 114.50505256652832
+        }
+      },
+      "latency_meets_target": false,
+      "per_query_results": [
+        {
+          "query_id": "q001",
+          "query": "How do I set up context management for my project?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 109.2522144317627
+        },
+        {
+          "query_id": "q002",
+          "query": "What is the out-of-context MCP server?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 1.0,
+          "query_latency_ms": 108.85310173034668
+        },
+        {
+          "query_id": "q003",
+          "query": "How do I create a new context?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 106.02498054504395
+        },
+        {
+          "query_id": "q004",
+          "query": "What are the scientist and developer personas?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 106.77099227905273
+        },
+        {
+          "query_id": "q005",
+          "query": "What is semantic search and why do we need it?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 108.69669914245605
+        },
+        {
+          "query_id": "q006",
+          "query": "How do I fetch contexts at the start of a session?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.3065735963827292,
+          "query_latency_ms": 106.32205009460449
+        },
+        {
+          "query_id": "q007",
+          "query": "What is the current status of the database enhancement?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.6309297535714575,
+          "query_latency_ms": 108.66093635559082
+        },
+        {
+          "query_id": "q008",
+          "query": "When should I update the decision log?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 108.05010795593262
+        },
+        {
+          "query_id": "q009",
+          "query": "What are the constraints for the semantic search implementation?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 106.25624656677246
+        },
+        {
+          "query_id": "q010",
+          "query": "How many contexts should I fetch per session?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 107.6200008392334
+        },
+        {
+          "query_id": "q011",
+          "query": "What is the MVP scope for semantic search?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 108.33001136779785
+        },
+        {
+          "query_id": "q012",
+          "query": "How do I handle stale contexts?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 106.58931732177734
+        },
+        {
+          "query_id": "q013",
+          "query": "What are the scientist's action items?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_10": 0.23719771276929622,
+          "query_latency_ms": 107.15699195861816
+        },
+        {
+          "query_id": "q014",
+          "query": "What embedding model are we using?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 107.37109184265137
+        },
+        {
+          "query_id": "q015",
+          "query": "How do I validate that contexts match reality?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 108.15811157226562
+        },
+        {
+          "query_id": "q016",
+          "query": "What is the difference between storage and retrieval limits?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 109.72881317138672
+        },
+        {
+          "query_id": "q017",
+          "query": "Why was BM25 moved to Phase 2?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 107.59973526000977
+        },
+        {
+          "query_id": "q018",
+          "query": "What are the acceptance criteria for the MVP?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_10": 0.2640681225725909,
+          "query_latency_ms": 107.89108276367188
+        },
+        {
+          "query_id": "q019",
+          "query": "How do I create an evaluation test set?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.5,
+          "query_latency_ms": 107.19609260559082
+        },
+        {
+          "query_id": "q020",
+          "query": "What transport does the MCP server use?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 109.89189147949219
+        },
+        {
+          "query_id": "q021",
+          "query": "Context says Week 1 but we're in Week 3 - what should I do?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 114.50505256652832
+        },
+        {
+          "query_id": "q022",
+          "query": "What file format are contexts stored in?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 1.0,
+          "query_latency_ms": 107.1629524230957
+        },
+        {
+          "query_id": "q023",
+          "query": "How do I delete a context?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 107.01799392700195
+        },
+        {
+          "query_id": "q024",
+          "query": "What is the role of the ML scientist persona?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 108.29424858093262
+        },
+        {
+          "query_id": "q025",
+          "query": "When should I create a new context vs update existing?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 108.5660457611084
+        },
+        {
+          "query_id": "q026",
+          "query": "What is the target improvement for semantic search?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_10": 0.2640681225725909,
+          "query_latency_ms": 107.02919960021973
+        },
+        {
+          "query_id": "q027",
+          "query": "How do I start a new session on this project?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 107.85484313964844
+        },
+        {
+          "query_id": "q028",
+          "query": "What are the research tasks that were removed?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 106.47201538085938
+        },
+        {
+          "query_id": "q029",
+          "query": "How do I prevent contexts from becoming stale?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 108.01815986633301
+        },
+        {
+          "query_id": "q030",
+          "query": "What is the scale target for the database?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.16666666666666666,
+          "ndcg_at_10": 0.21840743681816419,
+          "query_latency_ms": 107.40184783935547
+        },
+        {
+          "query_id": "q031",
+          "query": "Why use eventual consistency instead of strong consistency?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 107.82289505004883
+        },
+        {
+          "query_id": "q032",
+          "query": "Context conflicts with git history - which should I trust?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 109.2221736907959
+        },
+        {
+          "query_id": "q033",
+          "query": "What are the key documents I should read?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 107.44595527648926
+        },
+        {
+          "query_id": "q034",
+          "query": "How do I update current-status after completing work?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_10": 0.23719771276929622,
+          "query_latency_ms": 107.85198211669922
+        },
+        {
+          "query_id": "q035",
+          "query": "What is the critical path to MVP?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_10": 0.43067655807339306,
+          "query_latency_ms": 106.99009895324707
+        },
+        {
+          "query_id": "q036",
+          "query": "Which vector databases are being considered?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 108.05487632751465
+        },
+        {
+          "query_id": "q037",
+          "query": "How do I know if a context is stale?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 107.16104507446289
+        },
+        {
+          "query_id": "q038",
+          "query": "What is the two-persona approach?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 107.18226432800293
+        },
+        {
+          "query_id": "q039",
+          "query": "I have 100 contexts - should I fetch them all?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 108.69193077087402
+        },
+        {
+          "query_id": "q040",
+          "query": "What evidence supports the 30% improvement target?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 108.23988914489746
+        },
+        {
+          "query_id": "q041",
+          "query": "How do I coordinate with the developer persona?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_10": 0.23719771276929622,
+          "query_latency_ms": 108.89768600463867
+        },
+        {
+          "query_id": "q042",
+          "query": "What does STDIO transport mean for the implementation?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.38685280723454163,
+          "query_latency_ms": 109.62677001953125
+        },
+        {
+          "query_id": "q043",
+          "query": "When should I delete a context?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 108.14213752746582
+        },
+        {
+          "query_id": "q044",
+          "query": "What is the next action to take?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.6309297535714575,
+          "query_latency_ms": 108.40821266174316
+        },
+        {
+          "query_id": "q045",
+          "query": "Why use sentence-transformers for embeddings?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 110.20016670227051
+        },
+        {
+          "query_id": "q046",
+          "query": "Context list is too long - how do I clean it up?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 106.8120002746582
+        },
+        {
+          "query_id": "q047",
+          "query": "What are the developer's responsibilities vs scientist's?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 110.88204383850098
+        },
+        {
+          "query_id": "q048",
+          "query": "How do I search for contexts by topic?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 108.45804214477539
+        },
+        {
+          "query_id": "q049",
+          "query": "What files should I read to understand the project?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.14285714285714285,
+          "ndcg_at_10": 0.20438239758848611,
+          "query_latency_ms": 109.15589332580566
+        },
+        {
+          "query_id": "q050",
+          "query": "Test set shows contexts are severely outdated - how to recover?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 110.74709892272949
+        },
+        {
+          "query_id": "q051",
+          "query": "What is the latency requirement for semantic search?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.38685280723454163,
+          "query_latency_ms": 112.60581016540527
+        },
+        {
+          "query_id": "q052",
+          "query": "Which contexts should I always fetch at session start?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 109.05981063842773
+        },
+        {
+          "query_id": "q053",
+          "query": "What is evidence-first methodology?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 108.4280014038086
+        },
+        {
+          "query_id": "q054",
+          "query": "How do I know if my test set is good enough?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 1.0,
+          "query_latency_ms": 109.45892333984375
+        },
+        {
+          "query_id": "q055",
+          "query": "What is the difference between scientist and developer action items?",
+          "query_type": "comparison",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.3065735963827292,
+          "query_latency_ms": 111.66906356811523
+        }
+      ]
+    },
+    {
+      "model_name": "Alibaba-NLP/gte-multilingual-base",
+      "max_seq_length": 8192,
+      "status": "success",
+      "chunking_required": false,
+      "quality_metrics": {
+        "precision_at_5": 0.08000000000000003,
+        "recall_at_5": 0.2636363636363636,
+        "mrr": 0.27121212121212124,
+        "ndcg_at_10": 0.22428619163417665
+      },
+      "improvement_vs_baseline": {
+        "precision_at_5_pct": -68.57142857142856,
+        "recall_at_5_pct": -72.11538461538463,
+        "mrr_pct": -58.39144583914459,
+        "ndcg_at_10_pct": -69.76334659510886
+      },
+      "latency_metrics": {
+        "embedding": {
+          "mean_ms": 1495.976750055949,
+          "p95_ms": 1537.7494533856711,
+          "min_ms": 1474.7332731882732,
+          "max_ms": 1537.8240744272869,
+          "num_runs": 20
+        },
+        "query": {
+          "mean_ms": 34.42205949263139,
+          "p95_ms": 35.57119369506836,
+          "min_ms": 31.919240951538086,
+          "max_ms": 36.484718322753906
+        }
+      },
+      "latency_meets_target": true,
+      "per_query_results": [
+        {
+          "query_id": "q001",
+          "query": "How do I set up context management for my project?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.58094596862793
+        },
+        {
+          "query_id": "q002",
+          "query": "What is the out-of-context MCP server?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 1.0,
+          "query_latency_ms": 34.95383262634277
+        },
+        {
+          "query_id": "q003",
+          "query": "How do I create a new context?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.65104103088379
+        },
+        {
+          "query_id": "q004",
+          "query": "What are the scientist and developer personas?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.3851318359375
+        },
+        {
+          "query_id": "q005",
+          "query": "What is semantic search and why do we need it?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 34.4088077545166
+        },
+        {
+          "query_id": "q006",
+          "query": "How do I fetch contexts at the start of a session?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 35.1259708404541
+        },
+        {
+          "query_id": "q007",
+          "query": "What is the current status of the database enhancement?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 1.0,
+          "query_latency_ms": 34.55305099487305
+        },
+        {
+          "query_id": "q008",
+          "query": "When should I update the decision log?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.912109375
+        },
+        {
+          "query_id": "q009",
+          "query": "What are the constraints for the semantic search implementation?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 34.848928451538086
+        },
+        {
+          "query_id": "q010",
+          "query": "How many contexts should I fetch per session?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.0041389465332
+        },
+        {
+          "query_id": "q011",
+          "query": "What is the MVP scope for semantic search?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 34.41286087036133
+        },
+        {
+          "query_id": "q012",
+          "query": "How do I handle stale contexts?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.74879264831543
+        },
+        {
+          "query_id": "q013",
+          "query": "What are the scientist's action items?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.3065735963827292,
+          "query_latency_ms": 34.48295593261719
+        },
+        {
+          "query_id": "q014",
+          "query": "What embedding model are we using?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.49504280090332
+        },
+        {
+          "query_id": "q015",
+          "query": "How do I validate that contexts match reality?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.72797775268555
+        },
+        {
+          "query_id": "q016",
+          "query": "What is the difference between storage and retrieval limits?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 36.484718322753906
+        },
+        {
+          "query_id": "q017",
+          "query": "Why was BM25 moved to Phase 2?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.153865814208984
+        },
+        {
+          "query_id": "q018",
+          "query": "What are the acceptance criteria for the MVP?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.3065735963827292,
+          "query_latency_ms": 35.53199768066406
+        },
+        {
+          "query_id": "q019",
+          "query": "How do I create an evaluation test set?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.6309297535714575,
+          "query_latency_ms": 34.010887145996094
+        },
+        {
+          "query_id": "q020",
+          "query": "What transport does the MCP server use?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 34.30604934692383
+        },
+        {
+          "query_id": "q021",
+          "query": "Context says Week 1 but we're in Week 3 - what should I do?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 31.919240951538086
+        },
+        {
+          "query_id": "q022",
+          "query": "What file format are contexts stored in?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.6309297535714575,
+          "query_latency_ms": 33.4317684173584
+        },
+        {
+          "query_id": "q023",
+          "query": "How do I delete a context?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.813880920410156
+        },
+        {
+          "query_id": "q024",
+          "query": "What is the role of the ML scientist persona?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 33.60390663146973
+        },
+        {
+          "query_id": "q025",
+          "query": "When should I create a new context vs update existing?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.873008728027344
+        },
+        {
+          "query_id": "q026",
+          "query": "What is the target improvement for semantic search?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.38685280723454163,
+          "query_latency_ms": 33.815860748291016
+        },
+        {
+          "query_id": "q027",
+          "query": "How do I start a new session on this project?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.75189208984375
+        },
+        {
+          "query_id": "q028",
+          "query": "What are the research tasks that were removed?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 33.86521339416504
+        },
+        {
+          "query_id": "q029",
+          "query": "How do I prevent contexts from becoming stale?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.34014320373535
+        },
+        {
+          "query_id": "q030",
+          "query": "What is the scale target for the database?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_10": 0.2640681225725909,
+          "query_latency_ms": 33.854007720947266
+        },
+        {
+          "query_id": "q031",
+          "query": "Why use eventual consistency instead of strong consistency?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.13724899291992
+        },
+        {
+          "query_id": "q032",
+          "query": "Context conflicts with git history - which should I trust?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.57903861999512
+        },
+        {
+          "query_id": "q033",
+          "query": "What are the key documents I should read?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.040212631225586
+        },
+        {
+          "query_id": "q034",
+          "query": "How do I update current-status after completing work?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 33.77890586853027
+        },
+        {
+          "query_id": "q035",
+          "query": "What is the critical path to MVP?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.5,
+          "query_latency_ms": 34.37089920043945
+        },
+        {
+          "query_id": "q036",
+          "query": "Which vector databases are being considered?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 33.659934997558594
+        },
+        {
+          "query_id": "q037",
+          "query": "How do I know if a context is stale?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 33.38122367858887
+        },
+        {
+          "query_id": "q038",
+          "query": "What is the two-persona approach?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 33.824920654296875
+        },
+        {
+          "query_id": "q039",
+          "query": "I have 100 contexts - should I fetch them all?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.909963607788086
+        },
+        {
+          "query_id": "q040",
+          "query": "What evidence supports the 30% improvement target?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.317970275878906
+        },
+        {
+          "query_id": "q041",
+          "query": "How do I coordinate with the developer persona?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.38685280723454163,
+          "query_latency_ms": 34.046173095703125
+        },
+        {
+          "query_id": "q042",
+          "query": "What does STDIO transport mean for the implementation?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.38685280723454163,
+          "query_latency_ms": 33.50090980529785
+        },
+        {
+          "query_id": "q043",
+          "query": "When should I delete a context?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.25908088684082
+        },
+        {
+          "query_id": "q044",
+          "query": "What is the next action to take?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.6309297535714575,
+          "query_latency_ms": 34.85608100891113
+        },
+        {
+          "query_id": "q045",
+          "query": "Why use sentence-transformers for embeddings?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.03592109680176
+        },
+        {
+          "query_id": "q046",
+          "query": "Context list is too long - how do I clean it up?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.47215461730957
+        },
+        {
+          "query_id": "q047",
+          "query": "What are the developer's responsibilities vs scientist's?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.715890884399414
+        },
+        {
+          "query_id": "q048",
+          "query": "How do I search for contexts by topic?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 33.400774002075195
+        },
+        {
+          "query_id": "q049",
+          "query": "What files should I read to understand the project?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.3065735963827292,
+          "query_latency_ms": 33.63513946533203
+        },
+        {
+          "query_id": "q050",
+          "query": "Test set shows contexts are severely outdated - how to recover?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.96503829956055
+        },
+        {
+          "query_id": "q051",
+          "query": "What is the latency requirement for semantic search?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 34.34872627258301
+        },
+        {
+          "query_id": "q052",
+          "query": "Which contexts should I always fetch at session start?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.552812576293945
+        },
+        {
+          "query_id": "q053",
+          "query": "What is evidence-first methodology?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 33.78915786743164
+        },
+        {
+          "query_id": "q054",
+          "query": "How do I know if my test set is good enough?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 1.0,
+          "query_latency_ms": 34.26098823547363
+        },
+        {
+          "query_id": "q055",
+          "query": "What is the difference between scientist and developer action items?",
+          "query_type": "comparison",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.3065735963827292,
+          "query_latency_ms": 34.32607650756836
+        }
+      ]
+    },
+    {
+      "model_name": "ibm-granite/granite-embedding-english-r2",
+      "max_seq_length": 8192,
+      "status": "success",
+      "chunking_required": false,
+      "quality_metrics": {
+        "precision_at_5": 0.0690909090909091,
+        "recall_at_5": 0.23636363636363636,
+        "mrr": 0.19216450216450218,
+        "ndcg_at_10": 0.18511338376101505
+      },
+      "improvement_vs_baseline": {
+        "precision_at_5_pct": -72.85714285714285,
+        "recall_at_5_pct": -75.0,
+        "mrr_pct": -70.51869562329813,
+        "ndcg_at_10_pct": -75.04434319114135
+      },
+      "latency_metrics": {
+        "embedding": {
+          "mean_ms": 2474.1673549016314,
+          "p95_ms": 2523.457400004069,
+          "min_ms": 2451.9195556640625,
+          "max_ms": 2524.0019957224526,
+          "num_runs": 20
+        },
+        "query": {
+          "mean_ms": 37.35185102982955,
+          "p95_ms": 41.29996299743652,
+          "min_ms": 34.990787506103516,
+          "max_ms": 44.68107223510742
+        }
+      },
+      "latency_meets_target": true,
+      "per_query_results": [
+        {
+          "query_id": "q001",
+          "query": "How do I set up context management for my project?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 36.99302673339844
+        },
+        {
+          "query_id": "q002",
+          "query": "What is the out-of-context MCP server?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 1.0,
+          "query_latency_ms": 36.50403022766113
+        },
+        {
+          "query_id": "q003",
+          "query": "How do I create a new context?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 41.28098487854004
+        },
+        {
+          "query_id": "q004",
+          "query": "What are the scientist and developer personas?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 40.73977470397949
+        },
+        {
+          "query_id": "q005",
+          "query": "What is semantic search and why do we need it?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.38685280723454163,
+          "query_latency_ms": 35.75611114501953
+        },
+        {
+          "query_id": "q006",
+          "query": "How do I fetch contexts at the start of a session?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.38685280723454163,
+          "query_latency_ms": 36.438941955566406
+        },
+        {
+          "query_id": "q007",
+          "query": "What is the current status of the database enhancement?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 1.0,
+          "query_latency_ms": 35.93277931213379
+        },
+        {
+          "query_id": "q008",
+          "query": "When should I update the decision log?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 40.632009506225586
+        },
+        {
+          "query_id": "q009",
+          "query": "What are the constraints for the semantic search implementation?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.38685280723454163,
+          "query_latency_ms": 36.59200668334961
+        },
+        {
+          "query_id": "q010",
+          "query": "How many contexts should I fetch per session?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.81595420837402
+        },
+        {
+          "query_id": "q011",
+          "query": "What is the MVP scope for semantic search?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 35.634756088256836
+        },
+        {
+          "query_id": "q012",
+          "query": "How do I handle stale contexts?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 39.92414474487305
+        },
+        {
+          "query_id": "q013",
+          "query": "What are the scientist's action items?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_10": 0.2640681225725909,
+          "query_latency_ms": 40.4970645904541
+        },
+        {
+          "query_id": "q014",
+          "query": "What embedding model are we using?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 40.18402099609375
+        },
+        {
+          "query_id": "q015",
+          "query": "How do I validate that contexts match reality?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.34579277038574
+        },
+        {
+          "query_id": "q016",
+          "query": "What is the difference between storage and retrieval limits?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.79282760620117
+        },
+        {
+          "query_id": "q017",
+          "query": "Why was BM25 moved to Phase 2?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 36.023855209350586
+        },
+        {
+          "query_id": "q018",
+          "query": "What are the acceptance criteria for the MVP?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.14285714285714285,
+          "ndcg_at_10": 0.20438239758848611,
+          "query_latency_ms": 35.336971282958984
+        },
+        {
+          "query_id": "q019",
+          "query": "How do I create an evaluation test set?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.6309297535714575,
+          "query_latency_ms": 36.07821464538574
+        },
+        {
+          "query_id": "q020",
+          "query": "What transport does the MCP server use?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 0.6131471927654584,
+          "query_latency_ms": 40.448904037475586
+        },
+        {
+          "query_id": "q021",
+          "query": "Context says Week 1 but we're in Week 3 - what should I do?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 38.5279655456543
+        },
+        {
+          "query_id": "q022",
+          "query": "What file format are contexts stored in?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_10": 1.0,
+          "query_latency_ms": 41.37587547302246
+        },
+        {
+          "query_id": "q023",
+          "query": "How do I delete a context?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 40.941715240478516
+        },
+        {
+          "query_id": "q024",
+          "query": "What is the role of the ML scientist persona?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.68887710571289
+        },
+        {
+          "query_id": "q025",
+          "query": "When should I create a new context vs update existing?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.566091537475586
+        },
+        {
+          "query_id": "q026",
+          "query": "What is the target improvement for semantic search?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.3065735963827292,
+          "query_latency_ms": 35.74109077453613
+        },
+        {
+          "query_id": "q027",
+          "query": "How do I start a new session on this project?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 36.12637519836426
+        },
+        {
+          "query_id": "q028",
+          "query": "What are the research tasks that were removed?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.585880279541016
+        },
+        {
+          "query_id": "q029",
+          "query": "How do I prevent contexts from becoming stale?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 34.990787506103516
+        },
+        {
+          "query_id": "q030",
+          "query": "What is the scale target for the database?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_10": 0.2640681225725909,
+          "query_latency_ms": 35.19797325134277
+        },
+        {
+          "query_id": "q031",
+          "query": "Why use eventual consistency instead of strong consistency?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.76993942260742
+        },
+        {
+          "query_id": "q032",
+          "query": "Context conflicts with git history - which should I trust?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 36.29422187805176
+        },
+        {
+          "query_id": "q033",
+          "query": "What are the key documents I should read?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.569190979003906
+        },
+        {
+          "query_id": "q034",
+          "query": "How do I update current-status after completing work?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.3065735963827292,
+          "query_latency_ms": 35.7820987701416
+        },
+        {
+          "query_id": "q035",
+          "query": "What is the critical path to MVP?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_10": 0.38685280723454163,
+          "query_latency_ms": 40.74287414550781
+        },
+        {
+          "query_id": "q036",
+          "query": "Which vector databases are being considered?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 40.862083435058594
+        },
+        {
+          "query_id": "q037",
+          "query": "How do I know if a context is stale?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 36.00621223449707
+        },
+        {
+          "query_id": "q038",
+          "query": "What is the two-persona approach?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.35914421081543
+        },
+        {
+          "query_id": "q039",
+          "query": "I have 100 contexts - should I fetch them all?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 37.05906867980957
+        },
+        {
+          "query_id": "q040",
+          "query": "What evidence supports the 30% improvement target?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.67814826965332
+        },
+        {
+          "query_id": "q041",
+          "query": "How do I coordinate with the developer persona?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_10": 0.2640681225725909,
+          "query_latency_ms": 36.2858772277832
+        },
+        {
+          "query_id": "q042",
+          "query": "What does STDIO transport mean for the implementation?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.3065735963827292,
+          "query_latency_ms": 36.24391555786133
+        },
+        {
+          "query_id": "q043",
+          "query": "When should I delete a context?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 40.138959884643555
+        },
+        {
+          "query_id": "q044",
+          "query": "What is the next action to take?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.5,
+          "query_latency_ms": 40.45891761779785
+        },
+        {
+          "query_id": "q045",
+          "query": "Why use sentence-transformers for embeddings?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.84098815917969
+        },
+        {
+          "query_id": "q046",
+          "query": "Context list is too long - how do I clean it up?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 37.38117218017578
+        },
+        {
+          "query_id": "q047",
+          "query": "What are the developer's responsibilities vs scientist's?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 36.132097244262695
+        },
+        {
+          "query_id": "q048",
+          "query": "How do I search for contexts by topic?",
+          "query_type": "how-to",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.717010498046875
+        },
+        {
+          "query_id": "q049",
+          "query": "What files should I read to understand the project?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.14285714285714285,
+          "ndcg_at_10": 0.20438239758848611,
+          "query_latency_ms": 35.80522537231445
+        },
+        {
+          "query_id": "q050",
+          "query": "Test set shows contexts are severely outdated - how to recover?",
+          "query_type": "troubleshooting",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 44.68107223510742
+        },
+        {
+          "query_id": "q051",
+          "query": "What is the latency requirement for semantic search?",
+          "query_type": "factual",
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_10": 0.3065735963827292,
+          "query_latency_ms": 36.4077091217041
+        },
+        {
+          "query_id": "q052",
+          "query": "Which contexts should I always fetch at session start?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 35.346031188964844
+        },
+        {
+          "query_id": "q053",
+          "query": "What is evidence-first methodology?",
+          "query_type": "factual",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.0,
+          "ndcg_at_10": 0.0,
+          "query_latency_ms": 40.426015853881836
+        },
+        {
+          "query_id": "q054",
+          "query": "How do I know if my test set is good enough?",
+          "query_type": "how-to",
+          "precision_at_5": 0.2,
+          "recall_at_5": 1.0,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_10": 0.6309297535714575,
+          "query_latency_ms": 36.00287437438965
+        },
+        {
+          "query_id": "q055",
+          "query": "What is the difference between scientist and developer action items?",
+          "query_type": "comparison",
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0,
+          "reciprocal_rank": 0.16666666666666666,
+          "ndcg_at_10": 0.21840743681816419,
+          "query_latency_ms": 36.666154861450195
+        }
+      ]
+    }
+  ]
+}

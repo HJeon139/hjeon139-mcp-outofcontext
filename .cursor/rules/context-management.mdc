@@ -34,6 +34,8 @@ last-updated: 2024-12-16
 """)
 ```
 
+When prompted to load context from memory, always use the list or read the files directly from .out_of_context/contexts. The current search and batch get will most likely miss since you don't have context until you read at least one context file from memory.
+
 ---
 
 ## Write: Use Direct File Operations (Fast)

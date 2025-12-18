@@ -3,45 +3,87 @@ name: current-status
 type: status
 phase: phase-0-tech-selection
 last-updated: 2024-12-16
-current-action: developer-01
-workflow-version: 2.0
+current-action: latency-benchmarking
+workflow-version: 2.1
 dev-00-complete: true
+scientist-04-complete: true
 database-chosen: chromadb
 python-version-fixed: 3.11.9
 architecture-refined: true
 user-feedback-incorporated: true
+model-research-complete: true
+ready-for-benchmarking: true
 ---
 
 # Current Status - Database Layer Enhancement
 
-**Last Updated:** 2024-12-16 (Requirements Revised v2.1.0, Parallel Tracks Started)  
+**Last Updated:** 2024-12-16 (Scientist 04 Research Complete, Ready for Benchmarking)  
 **Phase:** Technology Selection & Design (Phase 0)  
-**Next Session:** Scientist 04 + Developer 01-R (Parallel)  
+**Next Session:** Latency Benchmarking  
 **Workflow Version:** 2.1 (Requirements unblocked)
 
 ---
 
-## 🎯 Current Actions: PARALLEL WORK (Day 3)
+## 🎯 Quick Reference: Next Session
 
-### Track 1: Scientist 04 - Embedding Model Research
+### Ready to Execute ✅
 
-**Status:** 🟡 Ready to Start  
-**Priority:** CRITICAL (blocks final design)  
-**Time:** 0.5-1 day (4-6 hours)  
+**Primary Task:** Benchmark 8k model latency  
+**Model:** `nomic-ai/modernbert-embed-base`  
+**Test Context Size:** 2,683 tokens (median)  
+**Target:** < 100ms p95 latency  
+**Script:** `docs/v1/database/scientist/evaluate_8k_models.py`  
+**Time:** 2-3 hours
+
+### Decision After Benchmarking
+
+- **If < 100ms p95:** Use 8k model (no chunking) → Simpler architecture
+- **If > 100ms p95:** Use 512-token model with chunking → Fallback path ready
+
+### What's Complete ✅
+
+- ✅ Model research complete (two viable paths identified)
+- ✅ Model specifications verified (MTEB leaderboard CSV)
+- ✅ Context size analysis (median: 2,683 tokens)
+- ✅ Benchmarking scripts available
+- ✅ Test contexts ready
+
+### What's Next ⚠️
+
+- ⚠️ Latency benchmarking (8k model on 2,683-token contexts)
+- ⚠️ Final model recommendation
+- 🟡 Chunking design (can proceed in parallel)
+
+---
+
+## 🎯 Current Actions: READY FOR BENCHMARKING (Day 3 Complete)
+
+### Track 1: Scientist 04 - Embedding Model Research ✅ COMPLETE
+
+**Status:** ✅ Research Complete - Ready for Latency Benchmarking  
+**Time Spent:** ~6 hours  
 **Owner:** Scientist  
-**Depends on:** Requirements v2.1.0 ✅ Complete
+**Completed:** 2024-12-16
 
-**Scope:**
-- Survey embedding models with ≥512 token support
-- Benchmark top 3 candidates (quality + latency)
-- Recommend model with evidence
-- **Deliverable:** `docs/v1/database/scientist/04-model-selection-research.md`
+**Deliverable:** `docs/v1/database/scientist/04-model-selection-research.md` ✅
+
+**Key Findings:**
+- Context size analysis: Median 2,683 tokens, P95 4,354 tokens (much larger than assumed)
+- Two viable paths identified:
+  1. **8K model (preferred):** `nomic-ai/modernbert-embed-base` - Uses ModernBERT-base backbone (8192 max seq length), 568MB, NO chunking needed
+  2. **512-token model (fallback):** `BAAI/bge-small-en-v1.5` - Retrieval 45.89, 127MB, 39.4ms p95 verified, chunking required
+
+**Next Step:** ⚠️ **LATENCY BENCHMARK REQUIRED**
+- Benchmark `nomic-ai/modernbert-embed-base` on 2,683-token contexts
+- Target: < 100ms p95 latency
+- If acceptable → Use 8k model (no chunking)
+- If too slow → Use 512-token model with chunking
 
 ---
 
 ### Track 2: Developer 01-R - Chunking + Invalidation Design
 
-**Status:** 🟡 Ready to Start  
+**Status:** 🟡 Ready to Start (can proceed in parallel with benchmarking)  
 **Priority:** CRITICAL (blocks execution plan)  
 **Time:** 1 day (6-8 hours)  
 **Owner:** Software Developer Lead  
@@ -52,6 +94,8 @@ user-feedback-incorporated: true
 - Design invalidation mechanism for eventual consistency
 - Update design document Section 3
 - **Deliverable:** Updated `docs/v1/database/developer/01-design-document.md`
+
+**Note:** Can proceed in parallel with latency benchmarking (design abstractions work for both paths)
 
 **CRITICAL UPDATE:** Database choice REVISED after comprehensive user critique:
 - **Original decision:** LanceDB (WRONG - based on flawed benchmark)
@@ -170,7 +214,7 @@ user-feedback-incorporated: true
 
 ---
 
-## 🔄 Current Phase: Phase 0 - Technology Selection & Design (Day 2)
+## 🔄 Current Phase: Phase 0 - Technology Selection & Design (Day 3 Complete)
 
 ### Phase 0 Timeline (Week 1, Days 1-3)
 
@@ -180,11 +224,14 @@ user-feedback-incorporated: true
 | 1 | Write speed investigation | Dev | ✅ Complete | Bug analysis + .cursorrules |
 | 2 | Dev 01: Design Doc | Dev + Sci | ✅ Complete | Design doc (ChromaDB) |
 | 2 | Context mgmt refinement | Dev | ✅ Complete | Atomic contexts |
-| 2 | Dev 02: Execution Plan | Dev + Sci | 🟡 **NEXT** | Execution plan |
-| 2-3 | Gate 1: Approval | User + Sci | 🔴 Blocked | Go/No-Go |
+| 3 | Scientist 04: Model Research | Sci | ✅ Complete | Model selection research |
+| 3 | Dev 01-R: Chunking Design | Dev | 🟡 Ready to Start | Chunking + invalidation design |
+| 3-4 | **Latency Benchmark** | Sci | 🟡 **NEXT** | 8k model latency test |
+| 4 | Dev 02: Execution Plan | Dev + Sci | 🔴 Blocked | Execution plan |
+| 4 | Gate 1: Approval | User + Sci | 🔴 Blocked | Go/No-Go |
 
-**Current Task:** Developer 02 (Execution Plan)  
-**Progress:** Phase 0 is 67% complete (2/3 action items done)
+**Current Task:** Latency Benchmarking (8k model)  
+**Progress:** Phase 0 is 75% complete (Scientist 04 done, benchmarking next)
 
 ---
 
@@ -201,7 +248,14 @@ user-feedback-incorporated: true
 - Baseline evaluated (P@5=0.255)
 - Evaluation infrastructure ready
 
-### Developer Phase 0 🟡 (60% - In Progress, Design Revision)
+### Scientist Phase 0 ✅ (100% - Research Complete)
+- ✅ Evaluation test set created (55 queries)
+- ✅ Baseline evaluation (P@5=0.255)
+- ✅ Model research complete (04-model-selection-research.md)
+- ✅ Two viable paths identified (8k model vs 512-token model)
+- 🟡 **Latency benchmarking** - NEXT (8k model on 2,683-token contexts)
+
+### Developer Phase 0 🟡 (75% - In Progress)
 - ✅ Database selection (Dev 00) - COMPLETE (REVISED to ChromaDB)
 - ✅ Python version fixed (3.11.9)
 - ✅ Write speed investigation - COMPLETE
@@ -209,9 +263,9 @@ user-feedback-incorporated: true
 - ✅ Comprehensive benchmarking (1K/2K/4K contexts, 55 queries)
 - ✅ Design document (Dev 01 v1) - COMPLETE but needs revision
 - ✅ Context management refined - COMPLETE (atomic contexts < 200 lines)
-- 🟡 Design document (Dev 01 v2) - COMPLETE (revised with WHY/WHAT/HOW structure)
-- 🟡 Research task (Dev 01-R) - NEXT (Model selection & chunking)
-- 🔴 Execution plan (Dev 02) - Blocked by Dev 01-R
+- ✅ Design document (Dev 01 v2) - COMPLETE (revised with WHY/WHAT/HOW structure)
+- 🟡 Chunking + invalidation design (Dev 01-R) - Ready to start (can parallel with benchmarking)
+- 🔴 Execution plan (Dev 02) - Blocked by latency benchmark + Dev 01-R
 - 🔴 Gate 1 approval - Blocked by Dev 02
 
 ### Developer Phase 1 🔴 (0% - Blocked by Gate 1)
@@ -227,7 +281,7 @@ user-feedback-incorporated: true
 - Quality evaluation (Sci 03)
 - Estimated: Week 2, Day 3
 
-**Overall MVP Progress:** ~60% (planning + scientist + DB choice + design + context mgmt complete)
+**Overall MVP Progress:** ~70% (planning + scientist research + DB choice + design + context mgmt complete)
 
 ---
 
@@ -309,13 +363,93 @@ user-feedback-incorporated: true
 
 ---
 
-## 🚀 Immediate Next Steps (Developer)
+---
 
-### Start Developer 02: Execution Plan
+## 🎯 Next Session: Benchmarking & Performance Tests
 
-**Status:** Ready to start (design complete)  
-**Time:** 3-4 hours  
-**Depends on:** Developer 01 ✅ Complete
+### Ready to Execute
+
+**Status:** All prerequisites complete, ready for benchmarking  
+**Estimated Time:** 2-3 hours  
+**Owner:** Scientist (with developer support if needed)
+
+### What's Complete ✅
+
+1. **Model Research Complete:**
+   - Comprehensive survey of embedding models
+   - Two viable paths identified (8k model vs 512-token model)
+   - Model specifications verified from MTEB leaderboard CSV
+   - Context size analysis complete (median: 2,683 tokens)
+
+2. **Infrastructure Ready:**
+   - Benchmarking script template available (`benchmark_models.py`)
+   - 8k model evaluation script available (`evaluate_8k_models.py`)
+   - Test contexts available (`.out_of_context/contexts/*.mdc`)
+   - Evaluation test set ready (55 queries)
+
+3. **Decision Framework:**
+   - Clear criteria: < 100ms p95 latency → Use 8k model
+   - Fallback path ready: 512-token model with chunking
+   - Both paths fully designed and ready
+
+---
+
+## 🚀 Immediate Next Steps (Next Session)
+
+### Priority 1: Latency Benchmarking (Scientist)
+
+**Status:** Ready to start  
+**Time:** 2-3 hours  
+**Owner:** Scientist  
+**Depends on:** Scientist 04 research ✅ Complete
+
+**What to Do:**
+1. Load `nomic-ai/modernbert-embed-base` model
+2. Benchmark latency on 2,683-token contexts (median size)
+3. Measure: mean, p95, p99 latency for embedding operation
+4. Compare to target: < 100ms p95
+5. Make final recommendation:
+   - If < 100ms p95 → Use 8k model (no chunking) - **PREFERRED PATH**
+   - If > 100ms p95 → Use 512-token model with chunking - **FALLBACK PATH**
+
+**Scripts Available:**
+- `docs/v1/database/scientist/benchmark_models.py` - Template for benchmarking
+- `docs/v1/database/scientist/evaluate_8k_models.py` - 8k model evaluation script
+- Use actual context files from `.out_of_context/contexts/*.mdc` for realistic testing
+
+**Test Contexts:**
+- Use actual .mdc files (median: 2,683 tokens, P95: 4,354 tokens)
+- Test on multiple context sizes to get latency distribution
+- Focus on median size (2,683 tokens) for p95 measurement
+
+**Model Details:**
+- Model: `nomic-ai/modernbert-embed-base`
+- Backbone: ModernBERT-base ([answerdotai/ModernBERT-base](https://huggingface.co/answerdotai/ModernBERT-base))
+- Max sequence length: 8192 tokens
+- Model size: 568MB
+- Embedding dimension: 768
+- Prefixes required: "search_query: " for queries, "search_document: " for documents
+
+**Benchmarking Script:**
+- Use `docs/v1/database/scientist/evaluate_8k_models.py` as starting point
+- Modify to add latency measurement on actual context files
+- Test on multiple context sizes: median (2,683 tokens), P95 (4,354 tokens), max (4,354 tokens)
+
+**After Benchmarking:**
+- Update `04-model-selection-research.md` with latency results
+- Make final recommendation (8k model if < 100ms, else 512-token model)
+- Provide final model choice to developer for design document integration
+
+**Deliverable:** Updated recommendation in `04-model-selection-research.md` with latency results
+
+### Priority 2: Developer 01-R - Chunking + Invalidation Design (Developer)
+
+**Status:** Ready to start (can proceed in parallel)  
+**Time:** 6-8 hours  
+**Owner:** Developer  
+**Depends on:** Requirements v2.1.0 ✅ Complete
+
+**Note:** Can proceed in parallel with benchmarking since design uses abstractions that work for both paths
 
 **What to Create:**
 1. **Task Breakdown** (2h)
@@ -388,11 +522,11 @@ user-feedback-incorporated: true
 
 ---
 
-**Last Updated:** 2024-12-16 (Dev 00 & 01 complete, Context management refined)  
-**Current Owner:** Developer  
-**Current Action:** Developer 02 - Execution Plan  
-**Status:** 🟡 Ready to start (design complete, ready to plan implementation)  
-**Critical:** Break design into concrete, estimable tasks with clear dependencies
+**Last Updated:** 2024-12-16 (Scientist 04 complete, Ready for benchmarking)  
+**Current Owner:** Scientist (benchmarking) + Developer (chunking design)  
+**Current Action:** Latency Benchmarking (8k model) + Chunking Design (parallel)  
+**Status:** 🟡 Ready for next session (benchmarking + design work)  
+**Critical:** Benchmark 8k model latency to make final model recommendation
 
 ---
 

@@ -1,0 +1,51 @@
+[
+  {
+    "model_name": "nomic-ai/modernbert-embed-base",
+    "status": "success",
+    "issues": [],
+    "warnings": [
+      "Cannot determine normalize_embeddings setting",
+      "Model supports Matryoshka but benchmark uses full 768 dimensions"
+    ],
+    "config": {
+      "max_seq_length": 8192,
+      "embedding_dim": 768
+    }
+  },
+  {
+    "model_name": "Alibaba-NLP/gte-multilingual-base",
+    "status": "success",
+    "issues": [],
+    "warnings": [
+      "Cannot determine normalize_embeddings setting"
+    ],
+    "config": {
+      "max_seq_length": 8192,
+      "embedding_dim": 768
+    }
+  },
+  {
+    "model_name": "ibm-granite/granite-embedding-english-r2",
+    "status": "success",
+    "issues": [],
+    "warnings": [
+      "Cannot determine normalize_embeddings setting"
+    ],
+    "config": {
+      "max_seq_length": 8192,
+      "embedding_dim": 768
+    }
+  },
+  {
+    "model_name": "Snowflake/snowflake-arctic-embed-l-v2.0",
+    "status": "success",
+    "issues": [],
+    "warnings": [
+      "Cannot determine normalize_embeddings setting"
+    ],
+    "config": {
+      "max_seq_length": 8192,
+      "embedding_dim": 1024
+    }
+  }
+]

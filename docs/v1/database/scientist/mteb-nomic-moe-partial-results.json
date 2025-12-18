@@ -1,0 +1,24 @@
+{
+  "model_name": "nomic-ai/nomic-embed-text-v2-moe",
+  "status": "partial",
+  "note": "MTEB run was interrupted (timeout after 20 minutes). Only one task completed.",
+  "completed_tasks": 1,
+  "total_tasks_attempted": 5,
+  "results": {
+    "CQADupstackAndroidRetrieval": {
+      "main_score": 0.53791,
+      "main_metric": "ndcg_at_10",
+      "metrics": {
+        "ndcg_at_10": 0.53791,
+        "ndcg_at_100": 0.58591,
+        "map_at_100": 0.48899,
+        "recall_at_100": 0.85119,
+        "precision_at_1": 0.43777,
+        "mrr_at_10": 0.535334
+      },
+      "evaluation_time_seconds": 805.89
+    }
+  },
+  "note_on_completion": "Full MTEB evaluation would require running 361+ retrieval tasks, which can take many hours. This partial result shows the model can complete tasks successfully, but full evaluation was not completed due to time constraints."
+}
+

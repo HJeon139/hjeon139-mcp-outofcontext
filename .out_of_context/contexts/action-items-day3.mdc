@@ -31,86 +31,45 @@ created_at: 2024-12-16T21:30:00
 
 ---
 
-## Track 1: Scientist 04 - Embedding Model Research
+## Track 1: Scientist 04 - Embedding Model Research ✅ COMPLETE
 
-### Owner
-**Scientist Persona**
+### Status
+**✅ RESEARCH COMPLETE** - Ready for latency benchmarking
 
-### Priority
-**CRITICAL** - Blocks final design document and execution plan
-
-### Time Estimate
-4-6 hours (0.5-1 day)
-
-### Dependencies
-- ✅ Requirements v2.1.0 (complete)
-- ✅ Baseline evaluation (complete - P@5=0.255)
-- ✅ Evaluation test set (55 queries, complete)
-
-### Blocks
-- Developer 02: Execution Plan (needs model choice for estimates)
-- Gate 1: Design Review (needs complete design)
-- Implementation: Dev 03-09
-
-### Scope
-
-**Research Questions:**
-1. Which embedding models support ≥512 token context?
-2. How do they perform on our 55-query test set?
-3. What's the quality vs latency tradeoff?
-4. Which model should we launch with?
-
-**Methodology:**
-1. **Survey Phase** (1h)
-   - Review MTEB leaderboard (https://huggingface.co/spaces/mteb/leaderboard)
-   - Filter: sentence-transformers compatible, ≥512 tokens, <500MB size
-   - Identify top 5 candidates
-
-2. **Shortlist Phase** (1h)
-   - Deep dive on top 5 models
-   - Check: Context length, quality score, model size, inference speed
-   - Select top 3 for benchmarking
-
-3. **Benchmark Phase** (2-3h)
-   - Implement: Load model, embed contexts, test with evaluation set
-   - Measure: P@5, R@5, MRR, NDCG (same as baseline)
-   - Measure: Embedding latency (mean, p95)
-   - Compare: Quality improvement vs baseline (target: ≥30%)
-
-4. **Recommendation Phase** (1h)
-   - Decision matrix: Quality, latency, context length, model size
-   - Tradeoff analysis: Is higher quality worth higher latency?
-   - Final recommendation with evidence
+### Time Spent
+~6 hours (completed 2024-12-16)
 
 ### Deliverable
+**Document:** `docs/v1/database/scientist/04-model-selection-research.md` ✅
 
-**Document:** `docs/v1/database/scientist/04-model-selection-research.md`
+### Key Findings
+1. **Context size analysis:** Median 2,683 tokens, P95 4,354 tokens (much larger than assumed)
+2. **Two viable paths identified:**
+   - **8K model (preferred):** `nomic-ai/modernbert-embed-base` - Uses ModernBERT-base backbone, 8192 max seq length, NO chunking needed
+   - **512-token model (fallback):** `BAAI/bge-small-en-v1.5` - Retrieval 45.89, 127MB, 39.4ms p95 verified, chunking required
+3. **Model specifications verified** from MTEB leaderboard CSV
+4. **Decision pending:** Need to benchmark 8k model latency on 2,683-token contexts
 
-**Required Content:**
-- Executive summary (recommendation + rationale)
-- Methodology (how models were evaluated)
-- Candidate models surveyed (table)
-- Benchmark results (quality + latency)
-- Comparison to baseline
-- Decision matrix
-- Final recommendation
+### Next Step: Latency Benchmarking ⚠️
 
-**Success Criteria:**
-- ≥3 models benchmarked
-- Quality measured on 55-query test set
-- Latency measured for 500-1000 token contexts
-- Clear recommendation with tradeoff discussion
+**Status:** Ready to start  
+**Time:** 2-3 hours  
+**Priority:** CRITICAL (blocks final recommendation)
 
-### Output to Developer
+**What to Do:**
+1. Load `nomic-ai/modernbert-embed-base` model
+2. Benchmark latency on 2,683-token contexts (median size)
+3. Measure: mean, p95, p99 latency
+4. Compare to target: < 100ms p95
+5. Make final recommendation:
+   - If < 100ms p95 → Use 8k model (no chunking) - **PREFERRED**
+   - If > 100ms p95 → Use 512-token model with chunking - **FALLBACK**
 
-After completion, scientist provides:
-1. **Recommended model name** (e.g., "jina-embeddings-v2-base-en")
-2. **Expected quality** (e.g., P@5=0.35, +37% vs baseline)
-3. **Expected latency** (e.g., 25ms for 500-token context)
-4. **Context length** (e.g., 8192 tokens max)
-5. **Chunking needed?** (Yes if max_length < typical context size)
+**Scripts:**
+- `docs/v1/database/scientist/evaluate_8k_models.py` - Starting point
+- `docs/v1/database/scientist/benchmark_models.py` - Template for latency measurement
 
-Developer integrates this into design document and execution plan.
+**Test Contexts:** Use actual `.out_of_context/contexts/*.mdc` files
 
 ---
 

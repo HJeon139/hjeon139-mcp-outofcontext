@@ -1,0 +1,84 @@
+{
+  "files": [
+    {
+      "name": "action-items-day3",
+      "tokens": 2761,
+      "words": 1526,
+      "characters": 10959,
+      "file_size_kb": 10.7646484375
+    },
+    {
+      "name": "current-status",
+      "tokens": 4354,
+      "words": 2214,
+      "characters": 15665,
+      "file_size_kb": 15.5048828125
+    },
+    {
+      "name": "decision-database-chromadb",
+      "tokens": 1142,
+      "words": 521,
+      "characters": 3998,
+      "file_size_kb": 3.962890625
+    },
+    {
+      "name": "design-revision-learning",
+      "tokens": 1937,
+      "words": 1113,
+      "characters": 8156,
+      "file_size_kb": 7.99609375
+    },
+    {
+      "name": "history-action-items-original",
+      "tokens": 3653,
+      "words": 2031,
+      "characters": 13806,
+      "file_size_kb": 13.544921875
+    },
+    {
+      "name": "history-decisions-phase0",
+      "tokens": 2625,
+      "words": 1395,
+      "characters": 10367,
+      "file_size_kb": 10.2646484375
+    },
+    {
+      "name": "project-overview",
+      "tokens": 437,
+      "words": 212,
+      "characters": 1704,
+      "file_size_kb": 1.681640625
+    },
+    {
+      "name": "requirements-revision-changelog",
+      "tokens": 2740,
+      "words": 1466,
+      "characters": 10735,
+      "file_size_kb": 10.5595703125
+    }
+  ],
+  "statistics": {
+    "num_files": 8,
+    "tokens": {
+      "min": 437,
+      "max": 4354,
+      "mean": 2456.125,
+      "median": 2682.5,
+      "p75": 3430.0,
+      "p95": 4354,
+      "p99": 4354
+    },
+    "words": {
+      "min": 212,
+      "max": 2214,
+      "mean": 1309.75,
+      "median": 1430.5
+    },
+    "characters": {
+      "min": 1704,
+      "max": 15665,
+      "mean": 9423.75,
+      "median": 10551.0
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "model_name": "nomic-ai/modernbert-embed-base",
+  "status": "success",
+  "device": "mps",
+  "start_time": "2025-12-16T23:24:06.790711",
+  "end_time": "2025-12-16T23:34:21.958453",
+  "total_duration_seconds": 615.1674060821533,
+  "tasks_total": 10,
+  "tasks_completed": 0,
+  "tasks_failed": 2,
+  "cpu_fallback_count": 2,
+  "cpu_fallback_rate": 0.2,
+  "mps_success_rate": 0.8,
+  "main_scores": [],
+  "average_main_score": null,
+  "results": {
+    "task_1": {
+      "error": "Timeout after 300s",
+      "duration_seconds": 310.93153500556946,
+      "start_time": "2025-12-16T23:24:09.803770",
+      "end_time": "2025-12-16T23:29:20.736267",
+      "timeout": true
+    },
+    "task_2": {
+      "error": "Timeout after 300s",
+      "duration_seconds": 300.23060727119446,
+      "start_time": "2025-12-16T23:29:21.661867",
+      "end_time": "2025-12-16T23:34:21.892616",
+      "timeout": true
+    }
+  }
+}
